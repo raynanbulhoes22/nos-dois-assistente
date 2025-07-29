@@ -201,25 +201,38 @@ export const AuthForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 p-4">
-      <Card className="w-full max-w-md shadow-large">
-        <CardHeader className="text-center space-y-4">
-          <div className="flex items-center justify-center gap-2">
-            <Heart className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold gradient-primary bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Nós Dois
-            </h1>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-accent/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+      </div>
+      
+      <Card variant="floating" className="w-full max-w-md backdrop-blur-sm bg-card/80 animate-fade-in">
+        <CardHeader className="text-center space-y-6">
+          <div className="flex items-center justify-center gap-3">
+            <div className="relative">
+              <Heart className="h-10 w-10 text-primary animate-pulse-glow" />
+              <div className="absolute inset-0 h-10 w-10 text-primary/20 animate-ping"></div>
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                Nós Dois
+              </h1>
+              <div className="h-1 w-full bg-gradient-to-r from-primary via-secondary to-accent rounded-full mt-2"></div>
+            </div>
           </div>
-          <CardDescription>
+          <CardDescription className="text-center text-base">
             Seu assistente pessoal para finanças, tarefas e agendamentos
           </CardDescription>
         </CardHeader>
         
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Entrar</TabsTrigger>
-              <TabsTrigger value="signup">Cadastrar</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 bg-muted/50 backdrop-blur-sm">
+              <TabsTrigger value="signin" className="transition-smooth data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Entrar</TabsTrigger>
+              <TabsTrigger value="signup" className="transition-smooth data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Cadastrar</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
@@ -264,7 +277,8 @@ export const AuthForm = () => {
                   <Button 
                     type="submit" 
                     variant="gradient"
-                    className="w-full"
+                    size="lg"
+                    className="w-full font-semibold"
                     disabled={isLoading}
                   >
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -370,7 +384,8 @@ export const AuthForm = () => {
                   <Button 
                     type="submit" 
                     variant="gradient"
-                    className="w-full"
+                    size="lg"
+                    className="w-full font-semibold"
                     disabled={isLoading || !passwordStrength.isStrong}
                   >
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

@@ -19,16 +19,19 @@ export type Database = {
           id: number
           message: Json
           session_id: string
+          user_id: string | null
         }
         Insert: {
           id?: number
           message: Json
           session_id: string
+          user_id?: string | null
         }
         Update: {
           id?: number
           message?: Json
           session_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -79,16 +82,19 @@ export type Database = {
           id: number
           message: Json
           session_id: string
+          user_id: string | null
         }
         Insert: {
           id?: number
           message: Json
           session_id: string
+          user_id?: string | null
         }
         Update: {
           id?: number
           message?: Json
           session_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -130,6 +136,7 @@ export type Database = {
           recorrente: boolean | null
           tipo: string | null
           tipo_movimento: string | null
+          user_id: string | null
           valor: number
         }
         Insert: {
@@ -148,6 +155,7 @@ export type Database = {
           recorrente?: boolean | null
           tipo?: string | null
           tipo_movimento?: string | null
+          user_id?: string | null
           valor: number
         }
         Update: {
@@ -166,6 +174,7 @@ export type Database = {
           recorrente?: boolean | null
           tipo?: string | null
           tipo_movimento?: string | null
+          user_id?: string | null
           valor?: number
         }
         Relationships: []

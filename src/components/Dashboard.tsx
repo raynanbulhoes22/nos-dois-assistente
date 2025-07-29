@@ -69,6 +69,7 @@ export const Dashboard = ({ user }: { user: User }) => {
         const { data: financialData, error: financialError } = await supabase
           .from('registros_financeiros')
           .select('*')
+          .eq('user_id', user.id)
           .order('data', { ascending: false })
           .limit(10);
 

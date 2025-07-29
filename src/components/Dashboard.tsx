@@ -137,37 +137,37 @@ export const Dashboard = ({ user }: { user: User }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/3 via-background to-secondary/3 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-1/2 right-0 w-80 h-80 bg-secondary/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-1/2 right-0 w-80 h-80 bg-purple-500/3 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-green-500/3 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }}></div>
       </div>
       
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-md sticky top-0 z-40 shadow-sm">
+      <header className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-sm border-gray-200">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="relative">
-                <Heart className="h-10 w-10 text-primary animate-pulse-glow" />
-                <div className="absolute inset-0 h-10 w-10 text-primary/20 animate-ping"></div>
+                <Heart className="h-10 w-10 text-blue-500 animate-pulse-glow" />
+                <div className="absolute inset-0 h-10 w-10 text-blue-500/20 animate-ping"></div>
               </div>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 bg-clip-text text-transparent">
                   Nós Dois
                 </h1>
-                <p className="text-sm text-muted-foreground font-medium">
+                <p className="text-sm text-gray-600 font-medium">
                   Olá, {profile?.nome || user.email}! 👋
                 </p>
               </div>
             </div>
             <Button 
-              variant="floating" 
+              variant="outline"
               size="sm" 
               onClick={handleSignOut}
-              className="gap-2 hover:scale-105 transition-spring"
+              className="gap-2 hover:scale-105 transition-spring border-gray-300 hover:bg-gray-50"
             >
               <LogOut className="h-4 w-4" />
               Sair
@@ -180,10 +180,9 @@ export const Dashboard = ({ user }: { user: User }) => {
         {/* Enhanced Hero Section */}
         <div className="relative overflow-hidden rounded-2xl mb-8 group">
           <div 
-            className="h-72 bg-cover bg-center bg-no-repeat relative"
-            style={{ backgroundImage: `url(${heroImage})` }}
+            className="h-72 bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 relative"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/90 via-secondary/70 to-accent/80 flex items-center transition-smooth group-hover:from-primary/95 group-hover:via-secondary/75 group-hover:to-accent/85">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 via-purple-600/70 to-green-600/80 flex items-center transition-smooth group-hover:from-blue-600/95 group-hover:via-purple-600/75 group-hover:to-green-600/85">
               <div className="container mx-auto px-6">
                 <div className="max-w-2xl animate-fade-in">
                   <h2 className="text-5xl font-bold text-white mb-4 leading-tight">
@@ -197,7 +196,7 @@ export const Dashboard = ({ user }: { user: User }) => {
                     Gerencie suas finanças, tarefas e agenda em um só lugar com inteligência e simplicidade
                   </p>
                   <div className="flex gap-4">
-                    <Button variant="glass" size="lg" className="text-white border-white/30 hover:bg-white/20">
+                    <Button size="lg" className="bg-white/20 text-white border border-white/30 hover:bg-white/30 backdrop-blur-sm">
                       Explorar recursos
                     </Button>
                   </div>
@@ -209,61 +208,61 @@ export const Dashboard = ({ user }: { user: User }) => {
 
         {/* Enhanced Financial Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card variant="elevated" className="group hover:scale-[1.02] transition-spring overflow-hidden">
+          <Card className="group hover:scale-[1.02] transition-spring overflow-hidden bg-white shadow-lg hover:shadow-xl border border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Entradas</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Entradas</CardTitle>
               <div className="relative">
-                <TrendingUp className="h-5 w-5 text-income" />
-                <div className="absolute inset-0 h-5 w-5 text-income/30 animate-ping group-hover:animate-pulse"></div>
+                <TrendingUp className="h-5 w-5 text-green-500" />
+                <div className="absolute inset-0 h-5 w-5 text-green-500/30 animate-ping group-hover:animate-pulse"></div>
               </div>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-income/10 rounded-full blur-xl"></div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-xl"></div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-income mb-1">
+              <div className="text-3xl font-bold text-green-600 mb-1">
                 {formatCurrency(dashboardData.totalIncome)}
               </div>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <span className="inline-block w-2 h-2 bg-income rounded-full"></span>
+              <p className="text-xs text-gray-500 flex items-center gap-1">
+                <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
                 Total de receitas
               </p>
             </CardContent>
           </Card>
 
-          <Card variant="elevated" className="group hover:scale-[1.02] transition-spring overflow-hidden">
+          <Card className="group hover:scale-[1.02] transition-spring overflow-hidden bg-white shadow-lg hover:shadow-xl border border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Saídas</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Saídas</CardTitle>
               <div className="relative">
-                <TrendingDown className="h-5 w-5 text-expense" />
-                <div className="absolute inset-0 h-5 w-5 text-expense/30 animate-ping group-hover:animate-pulse"></div>
+                <TrendingDown className="h-5 w-5 text-red-500" />
+                <div className="absolute inset-0 h-5 w-5 text-red-500/30 animate-ping group-hover:animate-pulse"></div>
               </div>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-expense/10 rounded-full blur-xl"></div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/10 rounded-full blur-xl"></div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-expense mb-1">
+              <div className="text-3xl font-bold text-red-600 mb-1">
                 {formatCurrency(dashboardData.totalExpenses)}
               </div>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <span className="inline-block w-2 h-2 bg-expense rounded-full"></span>
+              <p className="text-xs text-gray-500 flex items-center gap-1">
+                <span className="inline-block w-2 h-2 bg-red-500 rounded-full"></span>
                 Total de gastos
               </p>
             </CardContent>
           </Card>
 
-          <Card variant="elevated" className="group hover:scale-[1.02] transition-spring overflow-hidden">
+          <Card className="group hover:scale-[1.02] transition-spring overflow-hidden bg-white shadow-lg hover:shadow-xl border border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Saldo</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Saldo</CardTitle>
               <div className="relative">
-                <DollarSign className="h-5 w-5 text-primary" />
-                <div className="absolute inset-0 h-5 w-5 text-primary/30 animate-ping group-hover:animate-pulse"></div>
+                <DollarSign className="h-5 w-5 text-blue-500" />
+                <div className="absolute inset-0 h-5 w-5 text-blue-500/30 animate-ping group-hover:animate-pulse"></div>
               </div>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full blur-xl"></div>
+              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full blur-xl"></div>
             </CardHeader>
             <CardContent>
-              <div className={`text-3xl font-bold mb-1 ${dashboardData.balance >= 0 ? 'text-income' : 'text-expense'}`}>
+              <div className={`text-3xl font-bold mb-1 ${dashboardData.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {formatCurrency(dashboardData.balance)}
               </div>
-              <p className="text-xs text-muted-foreground flex items-center gap-1">
-                <span className={`inline-block w-2 h-2 rounded-full ${dashboardData.balance >= 0 ? 'bg-income' : 'bg-expense'}`}></span>
+              <p className="text-xs text-gray-500 flex items-center gap-1">
+                <span className={`inline-block w-2 h-2 rounded-full ${dashboardData.balance >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></span>
                 Saldo atual
               </p>
             </CardContent>
@@ -272,16 +271,16 @@ export const Dashboard = ({ user }: { user: User }) => {
 
         {/* Enhanced Main Content Tabs */}
         <Tabs defaultValue="financial" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-card/50 backdrop-blur-sm shadow-md p-1">
-            <TabsTrigger value="financial" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-smooth">
+          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm shadow-md p-1 border border-gray-200">
+            <TabsTrigger value="financial" className="gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth">
               <CreditCard className="h-4 w-4" />
               Financeiro
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-smooth">
+            <TabsTrigger value="tasks" className="gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth">
               <CheckSquare className="h-4 w-4" />
               Tarefas
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-smooth">
+            <TabsTrigger value="calendar" className="gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth">
               <Calendar className="h-4 w-4" />
               Agenda
             </TabsTrigger>
@@ -289,22 +288,22 @@ export const Dashboard = ({ user }: { user: User }) => {
 
           <TabsContent value="financial" className="space-y-6 animate-fade-in">
             <div className="flex items-center justify-between">
-              <h3 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Gestão Financeira
               </h3>
               <div className="flex gap-3">
-                <Button variant="glass" size="sm" className="shadow-md hover:shadow-lg">
+                <Button variant="outline" size="sm" className="shadow-md hover:shadow-lg border-gray-300">
                   <Filter className="h-4 w-4 mr-2" />
                   Filtros
                 </Button>
-                <Button size="sm" variant="gradient" className="shadow-glow hover:shadow-glow-accent">
+                <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg">
                   <Plus className="h-4 w-4 mr-2" />
                   Nova Transação
                 </Button>
               </div>
             </div>
 
-            <Card variant="elevated" className="shadow-xl">
+            <Card className="shadow-xl bg-white border border-gray-200">
               <CardHeader>
                 <CardTitle>Transações Recentes</CardTitle>
                 <CardDescription>
@@ -324,7 +323,7 @@ export const Dashboard = ({ user }: { user: User }) => {
                         </div>
                         <div className="text-right">
                           <p className={`font-semibold ${
-                            transaction.tipo_movimento === 'entrada' ? 'text-income' : 'text-expense'
+                            transaction.tipo_movimento === 'entrada' ? 'text-green-600' : 'text-red-600'
                           }`}>
                             {transaction.tipo_movimento === 'entrada' ? '+' : '-'}
                             {formatCurrency(Number(transaction.valor))}
@@ -338,9 +337,9 @@ export const Dashboard = ({ user }: { user: User }) => {
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <PieChart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">Nenhuma transação encontrada</p>
-                    <Button size="sm" className="mt-4">
+                    <PieChart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">Nenhuma transação encontrada</p>
+                    <Button size="sm" className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
                       Adicionar primeira transação
                     </Button>
                   </div>
@@ -352,18 +351,18 @@ export const Dashboard = ({ user }: { user: User }) => {
           <TabsContent value="tasks" className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-semibold">Gerenciador de Tarefas</h3>
-              <Button size="sm" variant="gradient">
+              <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
                 <Plus className="h-4 w-4 mr-2" />
                 Nova Tarefa
               </Button>
             </div>
             
-            <Card className="shadow-medium">
+            <Card className="shadow-lg bg-white border border-gray-200">
               <CardContent className="flex items-center justify-center h-64">
                 <div className="text-center">
-                  <CheckSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground mb-4">Sistema de tarefas em desenvolvimento</p>
-                  <p className="text-sm text-muted-foreground">
+                  <CheckSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500 mb-4">Sistema de tarefas em desenvolvimento</p>
+                  <p className="text-sm text-gray-400">
                     Em breve você poderá gerenciar suas tarefas aqui
                   </p>
                 </div>
@@ -374,18 +373,18 @@ export const Dashboard = ({ user }: { user: User }) => {
           <TabsContent value="calendar" className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-semibold">Agenda</h3>
-              <Button size="sm" variant="gradient">
+              <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Evento
               </Button>
             </div>
             
-            <Card className="shadow-medium">
+            <Card className="shadow-lg bg-white border border-gray-200">
               <CardContent className="flex items-center justify-center h-64">
                 <div className="text-center">
-                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground mb-4">Sistema de agenda em desenvolvimento</p>
-                  <p className="text-sm text-muted-foreground">
+                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500 mb-4">Sistema de agenda em desenvolvimento</p>
+                  <p className="text-sm text-gray-400">
                     Em breve você poderá gerenciar seus compromissos aqui
                   </p>
                 </div>

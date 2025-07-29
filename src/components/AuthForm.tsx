@@ -201,38 +201,38 @@ export const AuthForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/5 p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 p-4 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-accent/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-green-500/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
       </div>
       
-      <Card variant="floating" className="w-full max-w-md backdrop-blur-sm bg-card/80 animate-fade-in">
+      <Card variant="floating" className="w-full max-w-md backdrop-blur-sm bg-white/90 border border-gray-200 animate-fade-in shadow-xl">
         <CardHeader className="text-center space-y-6">
           <div className="flex items-center justify-center gap-3">
             <div className="relative">
-              <Heart className="h-10 w-10 text-primary animate-pulse-glow" />
-              <div className="absolute inset-0 h-10 w-10 text-primary/20 animate-ping"></div>
+              <Heart className="h-10 w-10 text-blue-500 animate-pulse-glow" />
+              <div className="absolute inset-0 h-10 w-10 text-blue-500/20 animate-ping"></div>
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 bg-clip-text text-transparent">
                 Nós Dois
               </h1>
-              <div className="h-1 w-full bg-gradient-to-r from-primary via-secondary to-accent rounded-full mt-2"></div>
+              <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 rounded-full mt-2"></div>
             </div>
           </div>
-          <CardDescription className="text-center text-base">
+          <CardDescription className="text-center text-base text-gray-600">
             Seu assistente pessoal para finanças, tarefas e agendamentos
           </CardDescription>
         </CardHeader>
         
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-muted/50 backdrop-blur-sm">
-              <TabsTrigger value="signin" className="transition-smooth data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Entrar</TabsTrigger>
-              <TabsTrigger value="signup" className="transition-smooth data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Cadastrar</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 bg-gray-100/80 backdrop-blur-sm">
+              <TabsTrigger value="signin" className="transition-smooth data-[state=active]:bg-blue-500 data-[state=active]:text-white">Entrar</TabsTrigger>
+              <TabsTrigger value="signup" className="transition-smooth data-[state=active]:bg-blue-500 data-[state=active]:text-white">Cadastrar</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
@@ -276,9 +276,8 @@ export const AuthForm = () => {
                   />
                   <Button 
                     type="submit" 
-                    variant="gradient"
+                    className="w-full font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
                     size="lg"
-                    className="w-full font-semibold"
                     disabled={isLoading}
                   >
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -383,9 +382,8 @@ export const AuthForm = () => {
                   />
                   <Button 
                     type="submit" 
-                    variant="gradient"
+                    className="w-full font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
                     size="lg"
-                    className="w-full font-semibold"
                     disabled={isLoading || !passwordStrength.isStrong}
                   >
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

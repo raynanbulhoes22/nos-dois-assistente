@@ -18,7 +18,9 @@ import {
   Filter
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import heroImage from "@/assets/hero-image.jpg";
+import { TransactionForm } from "./TransactionForm";
+import { TransactionsList } from "./TransactionsList";
+import { FinancialChart } from "./FinancialChart";
 
 interface DashboardData {
   totalIncome: number;
@@ -47,6 +49,8 @@ export const Dashboard = ({ user }: { user: User }) => {
     monthlyTrend: "up"
   });
   const [isLoading, setIsLoading] = useState(true);
+  const [showTransactionForm, setShowTransactionForm] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -65,23 +69,27 @@ export const Dashboard = ({ user }: { user: User }) => {
           setProfile(profileData);
         }
 
-        // Buscar dados financeiros
+        // Buscar dados financeiros do mês atual
+        const currentDate = new Date();
+        const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
         const { data: financialData, error: financialError } = await supabase
           .from('registros_financeiros')
           .select('*')
           .eq('user_id', user.id)
-          .order('data', { ascending: false })
-          .limit(10);
+          .gte('data', firstDayOfMonth.toISOString().split('T')[0])
+          .lte('data', lastDayOfMonth.toISOString().split('T')[0]);
 
         if (financialError) {
           console.error('Erro ao buscar dados financeiros:', financialError);
         } else {
           const income = financialData
-            ?.filter(item => item.tipo_movimento === 'entrada')
+            ?.filter(item => item.tipo === 'Receita')
             ?.reduce((sum, item) => sum + Number(item.valor), 0) || 0;
 
           const expenses = financialData
-            ?.filter(item => item.tipo_movimento === 'saida')
+            ?.filter(item => item.tipo === 'Despesa')
             ?.reduce((sum, item) => sum + Number(item.valor), 0) || 0;
 
           setDashboardData({
@@ -100,7 +108,11 @@ export const Dashboard = ({ user }: { user: User }) => {
     };
 
     fetchData();
-  }, [user.id]);
+  }, [user.id, refreshTrigger]);
+
+  const handleTransactionSuccess = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   const handleSignOut = async () => {
     try {
@@ -296,56 +308,28 @@ export const Dashboard = ({ user }: { user: User }) => {
                   <Filter className="h-4 w-4 mr-2" />
                   Filtros
                 </Button>
-                <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg">
+                <Button 
+                  size="sm" 
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg"
+                  onClick={() => setShowTransactionForm(true)}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Nova Transação
                 </Button>
               </div>
             </div>
 
-            <Card className="shadow-xl bg-white border border-gray-200">
-              <CardHeader>
-                <CardTitle>Transações Recentes</CardTitle>
-                <CardDescription>
-                  Últimas movimentações financeiras
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {dashboardData.recentTransactions.length > 0 ? (
-                  <div className="space-y-4">
-                    {dashboardData.recentTransactions.slice(0, 5).map((transaction) => (
-                      <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg border">
-                        <div>
-                          <p className="font-medium">{transaction.categoria || 'Sem categoria'}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(transaction.data).toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className={`font-semibold ${
-                            transaction.tipo_movimento === 'entrada' ? 'text-green-600' : 'text-red-600'
-                          }`}>
-                            {transaction.tipo_movimento === 'entrada' ? '+' : '-'}
-                            {formatCurrency(Number(transaction.valor))}
-                          </p>
-                          <Badge variant="secondary" className="text-xs">
-                            {transaction.forma_pagamento || 'N/A'}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <PieChart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">Nenhuma transação encontrada</p>
-                    <Button size="sm" className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
-                      Adicionar primeira transação
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {/* Lista de Transações */}
+            <TransactionsList 
+              userId={user.id} 
+              refreshTrigger={refreshTrigger} 
+            />
+
+            {/* Gráficos Financeiros */}
+            <FinancialChart 
+              userId={user.id} 
+              refreshTrigger={refreshTrigger} 
+            />
           </TabsContent>
 
           <TabsContent value="tasks" className="space-y-6">
@@ -393,6 +377,15 @@ export const Dashboard = ({ user }: { user: User }) => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Formulário de Nova Transação */}
+      <TransactionForm
+        open={showTransactionForm}
+        onOpenChange={setShowTransactionForm}
+        onSuccess={handleTransactionSuccess}
+        editTransaction={null}
+        userId={user.id}
+      />
     </div>
   );
 };

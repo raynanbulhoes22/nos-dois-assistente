@@ -34,7 +34,7 @@ export const Movimentacoes = () => {
     try {
       setIsLoading(true);
 
-      // Primeiro, buscar o número de WhatsApp do usuário
+      // Buscar o número de WhatsApp do usuário logado
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('numero_wpp')
@@ -48,32 +48,37 @@ export const Movimentacoes = () => {
       const userWhatsapp = (profileData as any)?.numero_wpp;
       console.log('User WhatsApp:', userWhatsapp);
 
-      // Buscar todos os registros que pertencem ao usuário
-      let query = `user_id.eq.${user.id}`;
-      if (userWhatsapp) {
-        query = `user_id.eq.${user.id},numero_wpp.eq.${userWhatsapp}`;
+      if (!userWhatsapp) {
+        console.log('Usuário não tem WhatsApp conectado');
+        setEntradas([]);
+        setSaidas([]);
+        return;
       }
 
-      // Fetch TODOS os registros primeiro para debug
+      // Buscar TODOS os registros deste número de WhatsApp 
+      // @ts-ignore - evitar erro de tipagem excessiva do Supabase
       const { data: allData, error: allError } = await supabase
         .from('registros_financeiros')
         .select('*')
-        .or(query)
+        .eq('numero_wpp', userWhatsapp)
         .order('data', { ascending: false });
 
       if (allError) throw allError;
 
-      console.log('All data found:', allData);
+      console.log('Dados encontrados para WhatsApp:', userWhatsapp, allData);
 
-      // Separar entradas e saídas manualmente, considerando diferentes formatos
+      // Separar entradas e saídas baseado na categoria ou outros campos
       const entradasList: Movimentacao[] = [];
       const saidasList: Movimentacao[] = [];
 
       (allData || []).forEach((item: any) => {
-        // Verificar se é entrada baseado em categoria ou campo tipo
-        const isEntrada = item.categoria?.toLowerCase().includes('pagamento') || 
-                         item.categoria?.toLowerCase().includes('salário') ||
-                         item.categoria?.toLowerCase().includes('renda') ||
+        // Determinar se é entrada baseado em palavras-chave na categoria
+        const categoria = (item.categoria || '').toLowerCase();
+        const isEntrada = categoria.includes('pagamento') || 
+                         categoria.includes('salário') ||
+                         categoria.includes('renda') ||
+                         categoria.includes('recebimento') ||
+                         categoria.includes('entrada') ||
                          item.tipo === 'entrada' ||
                          item.tipo_movimento === 'entrada';
 
@@ -95,8 +100,8 @@ export const Movimentacoes = () => {
         }
       });
 
-      console.log('Entradas:', entradasList);
-      console.log('Saídas:', saidasList);
+      console.log('Entradas encontradas:', entradasList.length);
+      console.log('Saídas encontradas:', saidasList.length);
 
       setEntradas(entradasList);
       setSaidas(saidasList);

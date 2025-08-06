@@ -33,6 +33,7 @@ export const Configuracoes = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [isConnectingWhatsapp, setIsConnectingWhatsapp] = useState(false);
+  const [isRemovingWhatsapp, setIsRemovingWhatsapp] = useState(false);
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -123,6 +124,40 @@ export const Configuracoes = () => {
       });
     } finally {
       setIsConnectingWhatsapp(false);
+    }
+  };
+
+  const handleDisconnectWhatsapp = async () => {
+    if (!user) return;
+
+    setIsRemovingWhatsapp(true);
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ numero_wpp: null } as any)
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Limpar o estado local
+      setProfile(prev => prev ? { ...prev, numero_wpp: null } : null);
+      setWhatsappNumber("");
+      
+      toast({
+        title: "✅ Sucesso!",
+        description: "Número do WhatsApp removido com sucesso!"
+      });
+
+    } catch (error) {
+      console.error('Erro ao desconectar WhatsApp:', error);
+      toast({
+        title: "❌ Erro",
+        description: "Não foi possível remover o número. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRemovingWhatsapp(false);
     }
   };
 
@@ -314,20 +349,48 @@ export const Configuracoes = () => {
                 Conecte seu WhatsApp para registrar gastos por mensagem ou áudio
               </p>
               
-              <div className="flex gap-2">
-                <Input 
-                  placeholder="+55 (11) 99999-9999" 
-                  value={whatsappNumber}
-                  onChange={(e) => setWhatsappNumber(e.target.value)}
-                />
-                <Button 
-                  variant="outline" 
-                  onClick={handleConnectWhatsapp}
-                  disabled={isConnectingWhatsapp}
-                >
-                  {isConnectingWhatsapp ? "Conectando..." : "Conectar"}
-                </Button>
-              </div>
+              {(profile as any)?.numero_wpp ? (
+                // Número já conectado - mostrar info e opção de remover
+                <div className="space-y-3">
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-green-800">
+                          ✅ WhatsApp Conectado
+                        </p>
+                        <p className="text-sm text-green-600">
+                          Número: +{(profile as any).numero_wpp}
+                        </p>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={handleDisconnectWhatsapp}
+                        disabled={isRemovingWhatsapp}
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                      >
+                        {isRemovingWhatsapp ? "Removendo..." : "Remover"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Nenhum número conectado - mostrar formulário
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="+55 (11) 99999-9999" 
+                    value={whatsappNumber}
+                    onChange={(e) => setWhatsappNumber(e.target.value)}
+                  />
+                  <Button 
+                    variant="outline" 
+                    onClick={handleConnectWhatsapp}
+                    disabled={isConnectingWhatsapp}
+                  >
+                    {isConnectingWhatsapp ? "Conectando..." : "Conectar"}
+                  </Button>
+                </div>
+              )}
               
               <div className="p-3 bg-accent/50 rounded-lg">
                 <p className="text-sm">

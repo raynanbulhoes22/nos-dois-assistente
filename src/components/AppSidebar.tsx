@@ -24,8 +24,7 @@ import {
 
 const navigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Entradas", url: "/entradas", icon: TrendingUp },
-  { title: "Saídas", url: "/saidas", icon: TrendingDown },
+  { title: "Movimentações", url: "/movimentacoes", icon: TrendingUp },
   { title: "Assinaturas", url: "/assinaturas", icon: CreditCard },
   { title: "Orçamento", url: "/orcamento", icon: Target },
   { title: "Dívidas", url: "/dividas", icon: AlertTriangle },

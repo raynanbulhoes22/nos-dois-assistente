@@ -8,8 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AuthForm } from "@/components/AuthForm";
 import { AppSidebar } from "@/components/AppSidebar";
 import Index from "./pages/Index";
-import { Entradas } from "./pages/Entradas";
-import { Saidas } from "./pages/Saidas";
+import { Movimentacoes } from "./pages/Movimentacoes";
 import { Assinaturas } from "./pages/Assinaturas";
 import { Orcamento } from "./pages/Orcamento";
 import { Dividas } from "./pages/Dividas";
@@ -62,8 +61,7 @@ const App = () => {
                   <Routes>
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/dashboard" element={<Index />} />
-                    <Route path="/entradas" element={<Entradas />} />
-                    <Route path="/saidas" element={<Saidas />} />
+                    <Route path="/movimentacoes" element={<Movimentacoes />} />
                     <Route path="/assinaturas" element={<Assinaturas />} />
                     <Route path="/orcamento" element={<Orcamento />} />
                     <Route path="/dividas" element={<Dividas />} />

@@ -46,44 +46,60 @@ export const Movimentacoes = () => {
       }
 
       const userWhatsapp = (profileData as any)?.numero_wpp;
+      console.log('User WhatsApp:', userWhatsapp);
 
-      // Fetch entradas - buscar por user_id ou numero_wpp
-      const entradasQuery = supabase
-        .from('registros_financeiros')
-        .select('*')
-        .eq('tipo', 'entrada')
-        .order('data', { ascending: false });
-
+      // Buscar todos os registros que pertencem ao usuário
+      let query = `user_id.eq.${user.id}`;
       if (userWhatsapp) {
-        // Se tem WhatsApp, buscar por user_id OU numero_wpp
-        const { data: entradasData, error: entradasError } = await entradasQuery.or(`user_id.eq.${user.id},numero_wpp.eq.${userWhatsapp}`);
-        if (entradasError) throw entradasError;
-        setEntradas(entradasData || []);
-      } else {
-        // Se não tem WhatsApp, buscar apenas por user_id
-        const { data: entradasData, error: entradasError } = await entradasQuery.eq('user_id', user.id);
-        if (entradasError) throw entradasError;
-        setEntradas(entradasData || []);
+        query = `user_id.eq.${user.id},numero_wpp.eq.${userWhatsapp}`;
       }
 
-      // Fetch saídas - buscar por user_id ou numero_wpp
-      const saidasQuery = supabase
+      // Fetch TODOS os registros primeiro para debug
+      const { data: allData, error: allError } = await supabase
         .from('registros_financeiros')
         .select('*')
-        .eq('tipo', 'saida')
+        .or(query)
         .order('data', { ascending: false });
 
-      if (userWhatsapp) {
-        // Se tem WhatsApp, buscar por user_id OU numero_wpp
-        const { data: saidasData, error: saidasError } = await saidasQuery.or(`user_id.eq.${user.id},numero_wpp.eq.${userWhatsapp}`);
-        if (saidasError) throw saidasError;
-        setSaidas(saidasData || []);
-      } else {
-        // Se não tem WhatsApp, buscar apenas por user_id
-        const { data: saidasData, error: saidasError } = await saidasQuery.eq('user_id', user.id);
-        if (saidasError) throw saidasError;
-        setSaidas(saidasData || []);
-      }
+      if (allError) throw allError;
+
+      console.log('All data found:', allData);
+
+      // Separar entradas e saídas manualmente, considerando diferentes formatos
+      const entradasList: Movimentacao[] = [];
+      const saidasList: Movimentacao[] = [];
+
+      (allData || []).forEach((item: any) => {
+        // Verificar se é entrada baseado em categoria ou campo tipo
+        const isEntrada = item.categoria?.toLowerCase().includes('pagamento') || 
+                         item.categoria?.toLowerCase().includes('salário') ||
+                         item.categoria?.toLowerCase().includes('renda') ||
+                         item.tipo === 'entrada' ||
+                         item.tipo_movimento === 'entrada';
+
+        const movimentacao: Movimentacao = {
+          id: item.id,
+          valor: item.valor,
+          data: item.data,
+          categoria: item.categoria || 'Sem categoria',
+          nome: item.nome || 'Sem nome',
+          forma_pagamento: item.forma_pagamento,
+          estabelecimento: item.estabelecimento,
+          observacao: item.observacao
+        };
+
+        if (isEntrada) {
+          entradasList.push(movimentacao);
+        } else {
+          saidasList.push(movimentacao);
+        }
+      });
+
+      console.log('Entradas:', entradasList);
+      console.log('Saídas:', saidasList);
+
+      setEntradas(entradasList);
+      setSaidas(saidasList);
 
     } catch (error) {
       console.error('Erro ao buscar movimentações:', error);

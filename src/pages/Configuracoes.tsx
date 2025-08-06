@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Plus, CreditCard, User, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Cartao {
   id: string;
@@ -22,6 +23,7 @@ interface Profile {
   nome?: string;
   email?: string;
   grupo_id?: string;
+  numero_wpp?: string;
 }
 
 export const Configuracoes = () => {
@@ -29,6 +31,9 @@ export const Configuracoes = () => {
   const [cartoes, setCartoes] = useState<Cartao[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [isConnectingWhatsapp, setIsConnectingWhatsapp] = useState(false);
+  const { toast } = useToast();
 
   const fetchData = async () => {
     if (!user) return;
@@ -57,11 +62,67 @@ export const Configuracoes = () => {
       }
 
       setProfile(profileData);
+      setWhatsappNumber((profileData as any)?.numero_wpp || "");
 
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const normalizePhoneNumber = (phone: string): string => {
+    // Remove todos os caracteres que não são dígitos
+    return phone.replace(/\D/g, '');
+  };
+
+  const validatePhoneNumber = (phone: string): boolean => {
+    const normalized = normalizePhoneNumber(phone);
+    // Deve ter entre 10 e 15 dígitos
+    return normalized.length >= 10 && normalized.length <= 15;
+  };
+
+  const handleConnectWhatsapp = async () => {
+    if (!user) return;
+
+    if (!validatePhoneNumber(whatsappNumber)) {
+      toast({
+        title: "❌ Número inválido",
+        description: "Verifique e tente novamente.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsConnectingWhatsapp(true);
+
+    try {
+      const normalizedNumber = normalizePhoneNumber(whatsappNumber);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ numero_wpp: normalizedNumber } as any)
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      // Atualizar o estado local
+      setProfile(prev => prev ? { ...prev, numero_wpp: normalizedNumber } : null);
+      
+      toast({
+        title: "✅ Sucesso!",
+        description: "Seu número foi conectado com sucesso!"
+      });
+
+    } catch (error) {
+      console.error('Erro ao conectar WhatsApp:', error);
+      toast({
+        title: "❌ Erro",
+        description: "Não foi possível conectar seu número. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsConnectingWhatsapp(false);
     }
   };
 
@@ -254,8 +315,18 @@ export const Configuracoes = () => {
               </p>
               
               <div className="flex gap-2">
-                <Input placeholder="+55 (11) 99999-9999" />
-                <Button variant="outline">Conectar</Button>
+                <Input 
+                  placeholder="+55 (11) 99999-9999" 
+                  value={whatsappNumber}
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                />
+                <Button 
+                  variant="outline" 
+                  onClick={handleConnectWhatsapp}
+                  disabled={isConnectingWhatsapp}
+                >
+                  {isConnectingWhatsapp ? "Conectando..." : "Conectar"}
+                </Button>
               </div>
               
               <div className="p-3 bg-accent/50 rounded-lg">

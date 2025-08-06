@@ -34,28 +34,57 @@ export const Movimentacoes = () => {
     try {
       setIsLoading(true);
 
-      // Fetch entradas
-      const { data: entradasData, error: entradasError } = await supabase
+      // Primeiro, buscar o número de WhatsApp do usuário
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('numero_wpp')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        throw profileError;
+      }
+
+      const userWhatsapp = (profileData as any)?.numero_wpp;
+
+      // Fetch entradas - buscar por user_id ou numero_wpp
+      const entradasQuery = supabase
         .from('registros_financeiros')
         .select('*')
-        .eq('user_id', user.id)
         .eq('tipo', 'entrada')
         .order('data', { ascending: false });
 
-      if (entradasError) throw entradasError;
+      if (userWhatsapp) {
+        // Se tem WhatsApp, buscar por user_id OU numero_wpp
+        const { data: entradasData, error: entradasError } = await entradasQuery.or(`user_id.eq.${user.id},numero_wpp.eq.${userWhatsapp}`);
+        if (entradasError) throw entradasError;
+        setEntradas(entradasData || []);
+      } else {
+        // Se não tem WhatsApp, buscar apenas por user_id
+        const { data: entradasData, error: entradasError } = await entradasQuery.eq('user_id', user.id);
+        if (entradasError) throw entradasError;
+        setEntradas(entradasData || []);
+      }
 
-      // Fetch saídas
-      const { data: saidasData, error: saidasError } = await supabase
+      // Fetch saídas - buscar por user_id ou numero_wpp
+      const saidasQuery = supabase
         .from('registros_financeiros')
         .select('*')
-        .eq('user_id', user.id)
         .eq('tipo', 'saida')
         .order('data', { ascending: false });
 
-      if (saidasError) throw saidasError;
+      if (userWhatsapp) {
+        // Se tem WhatsApp, buscar por user_id OU numero_wpp
+        const { data: saidasData, error: saidasError } = await saidasQuery.or(`user_id.eq.${user.id},numero_wpp.eq.${userWhatsapp}`);
+        if (saidasError) throw saidasError;
+        setSaidas(saidasData || []);
+      } else {
+        // Se não tem WhatsApp, buscar apenas por user_id
+        const { data: saidasData, error: saidasError } = await saidasQuery.eq('user_id', user.id);
+        if (saidasError) throw saidasError;
+        setSaidas(saidasData || []);
+      }
 
-      setEntradas(entradasData || []);
-      setSaidas(saidasData || []);
     } catch (error) {
       console.error('Erro ao buscar movimentações:', error);
     } finally {

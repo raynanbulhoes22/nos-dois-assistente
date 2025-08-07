@@ -85,21 +85,22 @@ export const useMovimentacoes = () => {
         return;
       }
 
-      // Criar variações do número de WhatsApp
+      // Criar variações do número de WhatsApp (limpar espaços e quebras de linha)
+      const cleanWhatsapp = userWhatsapp.trim().replace(/\s+/g, '');
       const variations = [
-        userWhatsapp,
-        userWhatsapp.substring(2),
-        userWhatsapp.substring(1),
-        userWhatsapp.replace(/^55/, ''),
+        cleanWhatsapp,
+        cleanWhatsapp.substring(2),
+        cleanWhatsapp.substring(1),
+        cleanWhatsapp.replace(/^55/, ''),
       ].filter(num => num && num.length >= 10);
 
       console.log('Buscando movimentações para números:', variations);
 
-      // Buscar todos os registros financeiros
+      // Buscar todos os registros financeiros usando LIKE para ignorar espaços e quebras de linha
       const { data: registros, error: registrosError } = await supabase
         .from('registros_financeiros')
         .select('*')
-        .or(variations.map(num => `numero_wpp.eq.${num}`).join(','))
+        .or(variations.map(num => `numero_wpp.like.${num}%`).join(','))
         .order('data', { ascending: false });
 
       if (registrosError) throw registrosError;

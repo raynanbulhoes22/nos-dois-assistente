@@ -1,135 +1,29 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { useMovimentacoes } from "@/hooks/useMovimentacoes";
+import { MovimentacaoCard } from "@/components/MovimentacaoCard";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { TransactionForm } from "@/components/TransactionForm";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface Movimentacao {
-  id: string;
-  valor: number;
-  data: string;
-  categoria: string;
-  nome: string;
-  forma_pagamento?: string;
-  estabelecimento?: string;
-  fonte?: string;
-  observacao?: string;
-}
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, TrendingUp, TrendingDown, RefreshCw, AlertCircle } from "lucide-react";
+import { TransactionForm } from "@/components/TransactionForm";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Movimentacoes = () => {
   const { user } = useAuth();
-  const [entradas, setEntradas] = useState<Movimentacao[]>([]);
-  const [saidas, setSaidas] = useState<Movimentacao[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { movimentacoes, entradas, saidas, isLoading, error, refetch } = useMovimentacoes();
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState<'entrada' | 'saida'>('entrada');
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  const fetchMovimentacoes = async () => {
-    if (!user) return;
-
-    try {
-      setIsLoading(true);
-
-      // Buscar o número de WhatsApp do usuário logado
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('numero_wpp')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError && profileError.code !== 'PGRST116') {
-        throw profileError;
-      }
-
-      const userWhatsapp = (profileData as any)?.numero_wpp;
-      console.log('User WhatsApp:', userWhatsapp);
-
-      if (!userWhatsapp) {
-        console.log('Usuário não tem WhatsApp conectado');
-        setEntradas([]);
-        setSaidas([]);
-        return;
-      }
-
-      // Buscar TODOS os registros deste número de WhatsApp 
-      // Considerar todas as variações possíveis do número
-      const variations = [
-        userWhatsapp, // número completo
-        userWhatsapp.substring(2), // sem código do país (55)
-        userWhatsapp.substring(1), // sem o primeiro 5
-        userWhatsapp.replace(/^55/, ''), // remove 55 do início especificamente
-      ].filter(num => num && num.length >= 10); // filtrar números válidos
-
-      console.log('Buscando por variações do número:', variations);
-      
-      // @ts-ignore - evitar erro de tipagem excessiva do Supabase
-      const { data: allData, error: allError } = await supabase
-        .from('registros_financeiros')
-        .select('*')
-        .or(variations.map(num => `numero_wpp.eq.${num}`).join(','))
-        .order('data', { ascending: false });
-
-      if (allError) throw allError;
-
-      console.log('Dados encontrados para WhatsApp:', userWhatsapp, allData);
-
-      // Separar entradas e saídas baseado na categoria ou outros campos
-      const entradasList: Movimentacao[] = [];
-      const saidasList: Movimentacao[] = [];
-
-      (allData || []).forEach((item: any) => {
-        // Determinar se é entrada baseado em palavras-chave na categoria
-        const categoria = (item.categoria || '').toLowerCase();
-        const isEntrada = categoria.includes('pagamento') || 
-                         categoria.includes('salário') ||
-                         categoria.includes('renda') ||
-                         categoria.includes('recebimento') ||
-                         categoria.includes('entrada') ||
-                         item.tipo === 'entrada' ||
-                         item.tipo_movimento === 'entrada';
-
-        const movimentacao: Movimentacao = {
-          id: item.id,
-          valor: item.valor,
-          data: item.data,
-          categoria: item.categoria || 'Sem categoria',
-          nome: item.nome || 'Sem nome',
-          forma_pagamento: item.forma_pagamento,
-          estabelecimento: item.estabelecimento,
-          observacao: item.observacao
-        };
-
-        if (isEntrada) {
-          entradasList.push(movimentacao);
-        } else {
-          saidasList.push(movimentacao);
-        }
-      });
-
-      console.log('Entradas encontradas:', entradasList.length);
-      console.log('Saídas encontradas:', saidasList.length);
-
-      setEntradas(entradasList);
-      setSaidas(saidasList);
-
-    } catch (error) {
-      console.error('Erro ao buscar movimentações:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMovimentacoes();
-  }, [user, refreshTrigger]);
 
   const handleSuccess = () => {
     setShowForm(false);
-    setRefreshTrigger(prev => prev + 1);
+    refetch();
+  };
+
+  const openForm = (type: 'entrada' | 'saida') => {
+    setFormType(type);
+    setShowForm(true);
   };
 
   const formatCurrency = (value: number) => {
@@ -139,120 +33,196 @@ export const Movimentacoes = () => {
     }).format(value);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
-
-  const openForm = (type: 'entrada' | 'saida') => {
-    setFormType(type);
-    setShowForm(true);
-  };
+  const totalEntradas = entradas.reduce((sum, item) => sum + item.valor, 0);
+  const totalSaidas = saidas.reduce((sum, item) => sum + item.valor, 0);
+  const saldo = totalEntradas - totalSaidas;
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center">Carregando movimentações...</div>
+      <div className="p-6 space-y-6">
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-64" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+            <Skeleton className="h-32" />
+          </div>
+          <Skeleton className="h-96" />
+        </div>
       </div>
     );
   }
 
-  const renderMovimentacoes = (movimentacoes: Movimentacao[], tipo: 'entrada' | 'saida') => (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">
-          {tipo === 'entrada' ? 'Entradas Registradas' : 'Saídas Registradas'}
-        </h2>
-        <Button onClick={() => openForm(tipo)} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          {tipo === 'entrada' ? 'Nova Entrada' : 'Nova Saída'}
-        </Button>
+  if (error) {
+    return (
+      <div className="p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={refetch}
+              className="ml-2"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Tentar Novamente
+            </Button>
+          </AlertDescription>
+        </Alert>
       </div>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {tipo === 'entrada' ? 'Entradas' : 'Saídas'} ({movimentacoes.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {movimentacoes.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              Nenhuma {tipo} registrada ainda.
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {movimentacoes.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex justify-between items-center p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{item.nome}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {item.categoria} • {formatDate(item.data)}
-                        </p>
-                        {item.estabelecimento && (
-                          <p className="text-sm text-muted-foreground">
-                            {item.estabelecimento}
-                          </p>
-                        )}
-                        {item.fonte && (
-                          <p className="text-sm text-muted-foreground">
-                            Fonte: {item.fonte}
-                          </p>
-                        )}
-                        {item.forma_pagamento && (
-                          <p className="text-sm text-muted-foreground">
-                            {item.forma_pagamento}
-                          </p>
-                        )}
-                        {item.observacao && (
-                          <p className="text-sm text-muted-foreground italic">
-                            {item.observacao}
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <p className={`font-semibold ${
-                          tipo === 'entrada' ? 'text-green-600' : 'text-red-600'
-                        }`}>
-                          {tipo === 'entrada' ? '+' : '-'} {formatCurrency(item.valor)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Movimentações Financeiras</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Movimentações Financeiras</h1>
+          <p className="text-muted-foreground mt-1">
+            Gerencie suas entradas e saídas financeiras
+          </p>
+        </div>
+        <Button onClick={refetch} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Atualizar
+        </Button>
       </div>
 
-      <Tabs defaultValue="entradas" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="entradas">Entradas</TabsTrigger>
-          <TabsTrigger value="saidas">Saídas</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="entradas" className="space-y-6">
-          {renderMovimentacoes(entradas, 'entrada')}
+      {/* Cards de Resumo */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total de Entradas</CardTitle>
+            <TrendingUp className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">
+              {formatCurrency(totalEntradas)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {entradas.length} transações
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total de Saídas</CardTitle>
+            <TrendingDown className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">
+              {formatCurrency(totalSaidas)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {saidas.length} transações
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Saldo</CardTitle>
+            <div className={`h-4 w-4 ${saldo >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {saldo >= 0 ? <TrendingUp /> : <TrendingDown />}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${
+              saldo >= 0 ? 'text-green-600' : 'text-red-600'
+            }`}>
+              {formatCurrency(saldo)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {movimentacoes.length} transações totais
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Tabs de Movimentações */}
+      <Tabs defaultValue="todas" className="space-y-6">
+        <div className="flex justify-between items-center">
+          <TabsList className="grid w-full max-w-md grid-cols-3">
+            <TabsTrigger value="todas">Todas</TabsTrigger>
+            <TabsTrigger value="entradas">Entradas</TabsTrigger>
+            <TabsTrigger value="saidas">Saídas</TabsTrigger>
+          </TabsList>
+          
+          <div className="flex gap-2">
+            <Button onClick={() => openForm('entrada')} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Nova Entrada
+            </Button>
+            <Button onClick={() => openForm('saida')} variant="outline" className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Nova Saída
+            </Button>
+          </div>
+        </div>
+
+        <TabsContent value="todas" className="space-y-4">
+          {movimentacoes.length === 0 ? (
+            <Card>
+              <CardContent className="py-16 text-center">
+                <p className="text-muted-foreground">
+                  Nenhuma movimentação encontrada.
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Adicione uma nova transação para começar.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4">
+              {movimentacoes.map((movimentacao) => (
+                <MovimentacaoCard key={movimentacao.id} movimentacao={movimentacao} />
+              ))}
+            </div>
+          )}
         </TabsContent>
-        
-        <TabsContent value="saidas" className="space-y-6">
-          {renderMovimentacoes(saidas, 'saida')}
+
+        <TabsContent value="entradas" className="space-y-4">
+          {entradas.length === 0 ? (
+            <Card>
+              <CardContent className="py-16 text-center">
+                <p className="text-muted-foreground">
+                  Nenhuma entrada registrada ainda.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4">
+              {entradas.map((movimentacao) => (
+                <MovimentacaoCard key={movimentacao.id} movimentacao={movimentacao} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="saidas" className="space-y-4">
+          {saidas.length === 0 ? (
+            <Card>
+              <CardContent className="py-16 text-center">
+                <p className="text-muted-foreground">
+                  Nenhuma saída registrada ainda.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-4">
+              {saidas.map((movimentacao) => (
+                <MovimentacaoCard key={movimentacao.id} movimentacao={movimentacao} />
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
+      {/* Form Modal */}
       {showForm && (
         <TransactionForm
           open={showForm}

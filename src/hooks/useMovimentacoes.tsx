@@ -69,7 +69,7 @@ export const useMovimentacoes = () => {
       setIsLoading(true);
       setError(null);
 
-      // Buscar o número de WhatsApp do usuário usando uma query mais segura
+      // Buscar o número de WhatsApp do usuário
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
@@ -77,36 +77,52 @@ export const useMovimentacoes = () => {
         .limit(1);
 
       const userWhatsapp = (profileData as any)?.[0]?.numero_wpp;
-      if (!userWhatsapp) {
-        console.log('Usuário não tem WhatsApp conectado');
-        setMovimentacoes([]);
-        setEntradas([]);
-        setSaidas([]);
-        return;
-      }
+      console.log('Número do usuário:', userWhatsapp);
 
-      // Criar variações do número de WhatsApp (limpar espaços e quebras de linha)
-      const cleanWhatsapp = userWhatsapp.trim().replace(/\s+/g, '');
-      const variations = [
-        cleanWhatsapp,
-        cleanWhatsapp.substring(2),
-        cleanWhatsapp.substring(1),
-        cleanWhatsapp.replace(/^55/, ''),
-      ].filter(num => num && num.length >= 10);
+      let registros: any[] = [];
 
-      console.log('Buscando movimentações para números:', variations);
-
-      // Buscar todos os registros financeiros usando LIKE para ignorar espaços e quebras de linha
-      const { data: registros, error: registrosError } = await supabase
+      // Estratégia 1: Buscar por user_id (dados inseridos manualmente)
+      const { data: registrosPorUserId, error: errorUserId } = await supabase
         .from('registros_financeiros')
         .select('*')
-        .or(variations.map(num => `numero_wpp.like.${num}%`).join(','))
+        .eq('user_id', user.id)
         .order('data', { ascending: false });
 
-      if (registrosError) throw registrosError;
+      if (registrosPorUserId && registrosPorUserId.length > 0) {
+        registros = [...registrosPorUserId];
+        console.log(`Encontrados ${registrosPorUserId.length} registros por user_id`);
+      }
+
+      // Estratégia 2: Buscar por numero_wpp usando TRIM() no SQL (dados do WhatsApp)
+      if (userWhatsapp) {
+        const cleanWhatsapp = userWhatsapp.trim().replace(/\s+/g, '');
+        const variations = [
+          cleanWhatsapp,
+          cleanWhatsapp.substring(2),
+          cleanWhatsapp.substring(1),
+          cleanWhatsapp.replace(/^55/, ''),
+        ].filter(num => num && num.length >= 10);
+
+        console.log('Buscando por números:', variations);
+
+        // Buscar usando uma estratégia mais agressiva com ILIKE
+        const { data: registrosPorWhatsapp } = await supabase
+          .from('registros_financeiros')
+          .select('*')
+          .or(variations.map(num => `numero_wpp.ilike.%${num}%`).join(','))
+          .order('data', { ascending: false });
+
+        if (registrosPorWhatsapp && registrosPorWhatsapp.length > 0) {
+          // Combinar com registros existentes e remover duplicatas
+          const idsExistentes = new Set(registros.map((r: any) => r.id));
+          const novosRegistros = registrosPorWhatsapp.filter((r: any) => !idsExistentes.has(r.id));
+          registros = [...registros, ...novosRegistros];
+          console.log(`Encontrados ${novosRegistros.length} novos registros por WhatsApp`);
+        }
+      }
 
       if (!registros || registros.length === 0) {
-        console.log('Nenhum registro encontrado');
+        console.log('Nenhum registro encontrado com nenhuma estratégia');
         setMovimentacoes([]);
         setEntradas([]);
         setSaidas([]);

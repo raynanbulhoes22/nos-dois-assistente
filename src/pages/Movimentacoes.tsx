@@ -56,11 +56,12 @@ export const Movimentacoes = () => {
       }
 
       // Buscar TODOS os registros deste número de WhatsApp 
+      // Considerar variações do número (com/sem código do país)
       // @ts-ignore - evitar erro de tipagem excessiva do Supabase
       const { data: allData, error: allError } = await supabase
         .from('registros_financeiros')
         .select('*')
-        .eq('numero_wpp', userWhatsapp)
+        .or(`numero_wpp.eq.${userWhatsapp},numero_wpp.eq.${userWhatsapp.substring(2)}`)
         .order('data', { ascending: false });
 
       if (allError) throw allError;

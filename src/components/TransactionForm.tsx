@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,11 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, CreditCard, TrendingUp, ArrowLeftRight } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { FINANCIAL_CATEGORIES, TRANSACTION_TYPES, PAYMENT_METHODS } from "@/constants/categories";
+import { useCartoes } from "@/hooks/useCartoes";
+import { useFontesRenda } from "@/hooks/useFontesRenda";
 
 interface Transaction {
   id: string;
@@ -58,9 +60,43 @@ export const TransactionForm = ({
     origem: editTransaction?.origem || "",
     recorrente: editTransaction?.recorrente || false,
     observacao: editTransaction?.observacao || "",
+    cartao_id: "",
+    parcelas: "1",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
+  const { cartoes } = useCartoes();
+  const { fontes } = useFontesRenda();
+
+  // Categorias filtradas baseadas no tipo selecionado
+  const availableCategories = useMemo(() => {
+    if (!formData.tipo) return FINANCIAL_CATEGORIES;
+    
+    switch (formData.tipo) {
+      case "entrada_manual":
+        return { "Entradas": FINANCIAL_CATEGORIES.Entradas };
+      case "comprovante_pagamento":
+        return { "Financeiras": FINANCIAL_CATEGORIES.Financeiras };
+      case "registro_manual":
+      default:
+        const { Entradas, ...restCategories } = FINANCIAL_CATEGORIES;
+        return restCategories;
+    }
+  }, [formData.tipo]);
+
+  // Campos visíveis baseados no tipo
+  const showField = useMemo(() => {
+    const type = formData.tipo;
+    return {
+      formaPagamento: type === "registro_manual",
+      estabelecimento: type === "registro_manual",
+      cartao: type === "registro_manual" && (formData.forma_pagamento === "Cartão de Crédito" || formData.forma_pagamento === "Cartão de Débito"),
+      parcelas: type === "registro_manual" && formData.forma_pagamento === "Cartão de Crédito",
+      instituicao: type === "comprovante_pagamento",
+      origem: type !== "entrada_manual",
+      fonteRenda: type === "entrada_manual",
+    };
+  }, [formData.tipo, formData.forma_pagamento]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -147,9 +183,55 @@ export const TransactionForm = ({
   };
 
   const updateFormData = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      
+      // Reset campos relacionados quando o tipo muda
+      if (field === "tipo") {
+        newData.categoria = "";
+        newData.forma_pagamento = "";
+        newData.cartao_id = "";
+        newData.parcelas = "1";
+      }
+      
+      // Reset cartão quando forma de pagamento muda
+      if (field === "forma_pagamento") {
+        newData.cartao_id = "";
+        newData.parcelas = "1";
+      }
+      
+      return newData;
+    });
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  // Função para obter ícone do tipo
+  const getTypeIcon = (tipo: string) => {
+    switch (tipo) {
+      case "entrada_manual":
+        return <TrendingUp className="h-4 w-4" />;
+      case "registro_manual":
+        return <CreditCard className="h-4 w-4" />;
+      case "comprovante_pagamento":
+        return <ArrowLeftRight className="h-4 w-4" />;
+      default:
+        return null;
+    }
+  };
+
+  // Função para obter cor do tipo
+  const getTypeColor = (tipo: string) => {
+    switch (tipo) {
+      case "entrada_manual":
+        return "text-green-600 bg-green-50 border-green-200";
+      case "registro_manual":
+        return "text-red-600 bg-red-50 border-red-200";
+      case "comprovante_pagamento":
+        return "text-blue-600 bg-blue-50 border-blue-200";
+      default:
+        return "";
     }
   };
 
@@ -163,186 +245,295 @@ export const TransactionForm = ({
         </DialogHeader>
 
         <form onSubmit={onSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Tipo */}
-            <div className="space-y-2">
-              <Label htmlFor="tipo">Tipo *</Label>
-              <Select 
-                value={formData.tipo} 
-                onValueChange={(value) => updateFormData("tipo", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="entrada_manual">Entrada</SelectItem>
-                  <SelectItem value="registro_manual">Saída</SelectItem>
-                  <SelectItem value="comprovante_pagamento">Transferência</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.tipo && (
-                <p className="text-sm text-red-500">{errors.tipo}</p>
-              )}
+          {/* Seleção de Tipo - Destacada */}
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Tipo de Transação *</Label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {[
+                { value: "entrada_manual", label: "Entrada", desc: "Receitas e recebimentos" },
+                { value: "registro_manual", label: "Saída", desc: "Gastos e despesas" },
+                { value: "comprovante_pagamento", label: "Transferência", desc: "Transferências e investimentos" }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => updateFormData("tipo", option.value)}
+                  className={cn(
+                    "flex flex-col items-center p-4 rounded-lg border-2 transition-all hover:scale-[1.02]",
+                    formData.tipo === option.value 
+                      ? getTypeColor(option.value)
+                      : "border-border bg-background hover:bg-accent"
+                  )}
+                >
+                  {getTypeIcon(option.value)}
+                  <span className="font-medium mt-2">{option.label}</span>
+                  <span className="text-xs text-muted-foreground text-center">{option.desc}</span>
+                </button>
+              ))}
             </div>
+            {errors.tipo && (
+              <p className="text-sm text-red-500">{errors.tipo}</p>
+            )}
+          </div>
 
-            {/* Valor */}
-            <div className="space-y-2">
-              <Label htmlFor="valor">Valor (R$) *</Label>
-              <Input
-                value={formData.valor}
-                onChange={(e) => updateFormData("valor", e.target.value)}
-                type="number"
-                step="0.01"
-                placeholder="0,00"
-              />
-              {errors.valor && (
-                <p className="text-sm text-red-500">{errors.valor}</p>
-              )}
-            </div>
+          {formData.tipo && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{/* Conteúdo continuará... */}
 
-            {/* Data */}
-            <div className="space-y-2">
-              <Label>Data *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.data && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.data ? format(formData.data, "dd/MM/yyyy") : "Selecione uma data"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.data}
-                    onSelect={(date) => date && updateFormData("data", date)}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+              {/* Valor */}
+              <div className="space-y-2">
+                <Label htmlFor="valor">Valor (R$) *</Label>
+                <Input
+                  value={formData.valor}
+                  onChange={(e) => updateFormData("valor", e.target.value)}
+                  type="number"
+                  step="0.01"
+                  placeholder="0,00"
+                  className="text-lg"
+                />
+                {errors.valor && (
+                  <p className="text-sm text-red-500">{errors.valor}</p>
+                )}
+              </div>
 
-            {/* Categoria */}
-            <div className="space-y-2">
-              <Label htmlFor="categoria">Categoria *</Label>
-              <Select 
-                value={formData.categoria} 
-                onValueChange={(value) => updateFormData("categoria", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(FINANCIAL_CATEGORIES).map(([group, categories]) => (
-                    <div key={group}>
-                      <div className="px-2 py-1 text-sm font-semibold text-gray-500 bg-gray-50">
-                        {group}
+              {/* Data */}
+              <div className="space-y-2">
+                <Label>Data *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.data && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.data ? format(formData.data, "dd/MM/yyyy") : "Selecione uma data"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-background border shadow-lg z-50" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.data}
+                      onSelect={(date) => date && updateFormData("data", date)}
+                      initialFocus
+                      className="p-3"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Categoria */}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="categoria">Categoria *</Label>
+                <Select 
+                  value={formData.categoria} 
+                  onValueChange={(value) => updateFormData("categoria", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a categoria" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    {Object.entries(availableCategories).map(([group, categories]) => (
+                      <div key={group}>
+                        <div className="px-2 py-1 text-sm font-semibold text-muted-foreground bg-muted/50">
+                          {group}
+                        </div>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
                       </div>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.categoria && (
+                  <p className="text-sm text-red-500">{errors.categoria}</p>
+                )}
+              </div>
+
+              {/* Nome/Descrição */}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="nome">
+                  {formData.tipo === "entrada_manual" ? "Descrição da Receita" : 
+                   formData.tipo === "comprovante_pagamento" ? "Descrição da Transferência" : 
+                   "Descrição da Despesa"} *
+                </Label>
+                <Input
+                  value={formData.nome}
+                  onChange={(e) => updateFormData("nome", e.target.value)}
+                  placeholder={
+                    formData.tipo === "entrada_manual" ? "Ex: Salário de Janeiro" :
+                    formData.tipo === "comprovante_pagamento" ? "Ex: Transferência para poupança" :
+                    "Ex: Compra no supermercado"
+                  }
+                />
+                {errors.nome && (
+                  <p className="text-sm text-red-500">{errors.nome}</p>
+                )}
+              </div>
+
+              {/* Fonte de Renda - Apenas para Entradas */}
+              {showField.fonteRenda && (
+                <div className="space-y-2 md:col-span-2">
+                  <Label>Fonte de Renda</Label>
+                  <Select 
+                    value={formData.origem || ""} 
+                    onValueChange={(value) => updateFormData("origem", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a fonte" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      {fontes.filter(fonte => fonte.ativa).map((fonte) => (
+                        <SelectItem key={fonte.id} value={fonte.descricao || fonte.tipo}>
+                          {fonte.descricao || fonte.tipo} - R$ {fonte.valor.toFixed(2)}
                         </SelectItem>
                       ))}
-                    </div>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.categoria && (
-                <p className="text-sm text-red-500">{errors.categoria}</p>
+                      <SelectItem value="Outra fonte">Outra fonte</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
-            </div>
 
-            {/* Nome/Descrição */}
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="nome">Nome/Descrição *</Label>
-              <Input
-                value={formData.nome}
-                onChange={(e) => updateFormData("nome", e.target.value)}
-                placeholder="Ex: Compra no supermercado"
-              />
-              {errors.nome && (
-                <p className="text-sm text-red-500">{errors.nome}</p>
+              {/* Forma de Pagamento - Apenas para Saídas */}
+              {showField.formaPagamento && (
+                <div className="space-y-2">
+                  <Label htmlFor="forma_pagamento">Forma de Pagamento *</Label>
+                  <Select 
+                    value={formData.forma_pagamento || ""} 
+                    onValueChange={(value) => updateFormData("forma_pagamento", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Como você pagou?" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      {PAYMENT_METHODS.map((method) => (
+                        <SelectItem key={method} value={method}>
+                          {method}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
-            </div>
 
-            {/* Forma de Pagamento */}
-            <div className="space-y-2">
-              <Label htmlFor="forma_pagamento">Forma de Pagamento</Label>
-              <Select 
-                value={formData.forma_pagamento || ""} 
-                onValueChange={(value) => updateFormData("forma_pagamento", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a forma" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PAYMENT_METHODS.map((method) => (
-                    <SelectItem key={method} value={method}>
-                      {method}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              {/* Cartão - Condicional */}
+              {showField.cartao && cartoes.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Cartão</Label>
+                  <Select 
+                    value={formData.cartao_id || ""} 
+                    onValueChange={(value) => updateFormData("cartao_id", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o cartão" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      {cartoes.filter(cartao => cartao.ativo).map((cartao) => (
+                        <SelectItem key={cartao.id} value={cartao.id}>
+                          {cartao.apelido} ****{cartao.ultimos_digitos}
+                          <span className="text-xs text-muted-foreground ml-2">
+                            Limite: R$ {cartao.limite.toFixed(2)}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-            {/* Estabelecimento */}
-            <div className="space-y-2">
-              <Label htmlFor="estabelecimento">Estabelecimento</Label>
-              <Input
-                value={formData.estabelecimento}
-                onChange={(e) => updateFormData("estabelecimento", e.target.value)}
-                placeholder="Ex: Supermercado ABC"
-              />
-            </div>
+              {/* Parcelas - Apenas para Cartão de Crédito */}
+              {showField.parcelas && (
+                <div className="space-y-2">
+                  <Label>Parcelas</Label>
+                  <Select 
+                    value={formData.parcelas} 
+                    onValueChange={(value) => updateFormData("parcelas", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border shadow-lg z-50">
+                      {Array.from({ length: 12 }, (_, i) => i + 1).map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          {num}x de R$ {formData.valor ? (parseFloat(formData.valor) / num).toFixed(2) : "0,00"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-            {/* Instituição */}
-            <div className="space-y-2">
-              <Label htmlFor="instituicao">Instituição</Label>
-              <Input
-                value={formData.instituicao}
-                onChange={(e) => updateFormData("instituicao", e.target.value)}
-                placeholder="Ex: Banco do Brasil"
-              />
-            </div>
+              {/* Estabelecimento - Apenas para Saídas */}
+              {showField.estabelecimento && (
+                <div className="space-y-2">
+                  <Label htmlFor="estabelecimento">Estabelecimento</Label>
+                  <Input
+                    value={formData.estabelecimento}
+                    onChange={(e) => updateFormData("estabelecimento", e.target.value)}
+                    placeholder="Ex: Supermercado ABC"
+                  />
+                </div>
+              )}
 
-            {/* Origem */}
-            <div className="space-y-2">
-              <Label htmlFor="origem">Origem</Label>
-              <Input
-                value={formData.origem}
-                onChange={(e) => updateFormData("origem", e.target.value)}
-                placeholder="Ex: Conta corrente"
-              />
-            </div>
+              {/* Instituição - Apenas para Transferências */}
+              {showField.instituicao && (
+                <div className="space-y-2">
+                  <Label htmlFor="instituicao">Instituição Financeira</Label>
+                  <Input
+                    value={formData.instituicao}
+                    onChange={(e) => updateFormData("instituicao", e.target.value)}
+                    placeholder="Ex: Banco do Brasil"
+                  />
+                </div>
+              )}
 
-            {/* Recorrente */}
-            <div className="space-y-2 md:col-span-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  checked={formData.recorrente}
-                  onCheckedChange={(checked) => updateFormData("recorrente", !!checked)}
+              {/* Origem/Destino */}
+              {showField.origem && (
+                <div className="space-y-2">
+                  <Label htmlFor="origem">
+                    {formData.tipo === "comprovante_pagamento" ? "Conta Origem" : "Origem"}
+                  </Label>
+                  <Input
+                    value={formData.origem}
+                    onChange={(e) => updateFormData("origem", e.target.value)}
+                    placeholder={
+                      formData.tipo === "comprovante_pagamento" 
+                        ? "Ex: Conta corrente" 
+                        : "Ex: Conta corrente"
+                    }
+                  />
+                </div>
+              )}
+
+              {/* Recorrente */}
+              <div className="space-y-2 md:col-span-2">
+                <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                  <Checkbox
+                    checked={formData.recorrente}
+                    onCheckedChange={(checked) => updateFormData("recorrente", !!checked)}
+                  />
+                  <div>
+                    <Label htmlFor="recorrente" className="font-medium">Transação recorrente</Label>
+                    <p className="text-xs text-muted-foreground">Esta transação se repete mensalmente</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Observação */}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="observacao">Observação</Label>
+                <Textarea
+                  value={formData.observacao}
+                  onChange={(e) => updateFormData("observacao", e.target.value)}
+                  placeholder="Observações adicionais..."
+                  rows={3}
                 />
-                <Label htmlFor="recorrente">Transação recorrente</Label>
               </div>
             </div>
-
-            {/* Observação */}
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="observacao">Observação</Label>
-              <Textarea
-                value={formData.observacao}
-                onChange={(e) => updateFormData("observacao", e.target.value)}
-                placeholder="Observações adicionais..."
-                rows={3}
-              />
-            </div>
-          </div>
+          )}
 
           <div className="flex justify-end gap-3">
             <Button

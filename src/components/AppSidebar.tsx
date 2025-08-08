@@ -49,23 +49,32 @@ export function AppSidebar() {
     : navigationItems.filter(item => item.url === '/assinaturas');
 
   return (
-    <Sidebar className={state === "collapsed" ? "w-14" : "w-64"} collapsible="icon">
-      <SidebarContent>
+    <Sidebar 
+      className={state === "collapsed" ? "w-14" : "w-64 sm:w-64"} 
+      collapsible="icon"
+    >
+      <SidebarContent className="overflow-y-auto">
         <SidebarGroup>
-          <SidebarGroupLabel className={state === "collapsed" ? "sr-only" : ""}>
+          <SidebarGroupLabel className={state === "collapsed" ? "sr-only" : "px-4 py-2"}>
             LucraAI
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {availableItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
-                      className={({ isActive }) => getNavCls({ isActive })}
+                      className={({ isActive }) => `${getNavCls({ isActive })} 
+                        flex items-center gap-3 rounded-lg px-3 py-3 sm:py-2 
+                        text-sm font-medium transition-all duration-200 
+                        touch-manipulation min-h-[44px] sm:min-h-[36px]
+                        hover:bg-accent/80 active:bg-accent/90`}
                     >
-                      <item.icon className="h-4 w-4" />
-                      {state !== "collapsed" && <span className="ml-2">{item.title}</span>}
+                      <item.icon className="h-5 w-5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      {state !== "collapsed" && (
+                        <span className="truncate">{item.title}</span>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

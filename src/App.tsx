@@ -44,13 +44,13 @@ const App = () => {
             <div className="min-h-screen flex w-full bg-background">
               <AppSidebar />
               <div className="flex-1 flex flex-col">
-                <header className="h-12 flex items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                  <SidebarTrigger className="ml-4" />
-                  <div className="ml-4">
-                    <h1 className="text-lg font-semibold">LucraAI - Gestão Financeira</h1>
+                <header className="h-14 sm:h-12 flex items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-2 sm:px-0">
+                  <SidebarTrigger className="ml-2 sm:ml-4 p-2 touch-manipulation" />
+                  <div className="ml-2 sm:ml-4 flex-1 min-w-0">
+                    <h1 className="text-base sm:text-lg font-semibold truncate">LucraAI - Gestão Financeira</h1>
                   </div>
                 </header>
-                <main className="flex-1 overflow-auto">
+                <main className="flex-1 overflow-auto overscroll-contain">
                   <SubscriptionRedirect>
                     <Routes>
                       <Route path="/" element={<Navigate to="/dashboard" replace />} />

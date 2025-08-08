@@ -159,18 +159,18 @@ export const Dashboard = ({ user }: { user: User }) => {
       
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-40 shadow-sm border-gray-200">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Heart className="h-10 w-10 text-blue-500 animate-pulse-glow" />
-                <div className="absolute inset-0 h-10 w-10 text-blue-500/20 animate-ping"></div>
+            <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+              <div className="relative flex-shrink-0">
+                <Heart className="h-8 w-8 sm:h-10 sm:w-10 text-blue-500 animate-pulse-glow" />
+                <div className="absolute inset-0 h-8 w-8 sm:h-10 sm:w-10 text-blue-500/20 animate-ping"></div>
               </div>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 bg-clip-text text-transparent">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 bg-clip-text text-transparent">
                   LucraAI
                 </h1>
-                <p className="text-sm text-gray-600 font-medium">
+                <p className="text-xs sm:text-sm text-gray-600 font-medium truncate">
                   Olá, {profile?.nome || user.email}! 👋
                 </p>
               </div>
@@ -179,36 +179,41 @@ export const Dashboard = ({ user }: { user: User }) => {
               variant="outline"
               size="sm" 
               onClick={handleSignOut}
-              className="gap-2 hover:scale-105 transition-spring border-gray-300 hover:bg-gray-50"
+              className="gap-1 sm:gap-2 hover:scale-105 transition-spring border-gray-300 hover:bg-gray-50 
+                         min-h-[40px] px-2 sm:px-3 touch-manipulation flex-shrink-0"
             >
               <LogOut className="h-4 w-4" />
-              Sair
+              <span className="hidden sm:inline">Sair</span>
             </Button>
           </div>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Enhanced Hero Section */}
-        <div className="relative overflow-hidden rounded-2xl mb-8 group">
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl mb-6 sm:mb-8 group">
           <div 
-            className="h-72 bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 relative"
+            className="h-48 sm:h-72 bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 relative"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 via-purple-600/70 to-green-600/80 flex items-center transition-smooth group-hover:from-blue-600/95 group-hover:via-purple-600/75 group-hover:to-green-600/85">
-              <div className="container mx-auto px-6">
+              <div className="container mx-auto px-4 sm:px-6">
                 <div className="max-w-2xl animate-fade-in">
-                  <h2 className="text-5xl font-bold text-white mb-4 leading-tight">
+                  <h2 className="text-2xl sm:text-5xl font-bold text-white mb-2 sm:mb-4 leading-tight">
                     Bem-vindo ao seu
-                    <br />
+                    <br className="hidden sm:block" />
                     <span className="bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">
                       Assistente Pessoal
                     </span>
                   </h2>
-                  <p className="text-xl text-white/90 mb-6">
+                  <p className="text-sm sm:text-xl text-white/90 mb-4 sm:mb-6">
                     Gerencie suas finanças, tarefas e agenda em um só lugar com inteligência e simplicidade
                   </p>
-                  <div className="flex gap-4">
-                    <Button size="lg" className="bg-white/20 text-white border border-white/30 hover:bg-white/30 backdrop-blur-sm">
+                  <div className="flex gap-2 sm:gap-4">
+                    <Button 
+                      size="sm" 
+                      className="bg-white/20 text-white border border-white/30 hover:bg-white/30 backdrop-blur-sm 
+                                 min-h-[40px] px-3 sm:px-4 touch-manipulation text-sm sm:text-base"
+                    >
                       Explorar recursos
                     </Button>
                   </div>
@@ -219,18 +224,18 @@ export const Dashboard = ({ user }: { user: User }) => {
         </div>
 
         {/* Enhanced Financial Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="group hover:scale-[1.02] transition-spring overflow-hidden bg-white shadow-lg hover:shadow-xl border border-gray-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
-              <CardTitle className="text-sm font-medium text-gray-600">Entradas</CardTitle>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
+          <Card className="group hover:scale-[1.02] transition-spring overflow-hidden bg-white shadow-lg hover:shadow-xl border border-gray-200 touch-manipulation">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative p-4 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Entradas</CardTitle>
               <div className="relative">
-                <TrendingUp className="h-5 w-5 text-green-500" />
-                <div className="absolute inset-0 h-5 w-5 text-green-500/30 animate-ping group-hover:animate-pulse"></div>
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+                <div className="absolute inset-0 h-4 w-4 sm:h-5 sm:w-5 text-green-500/30 animate-ping group-hover:animate-pulse"></div>
               </div>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-xl"></div>
+              <div className="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 bg-green-500/10 rounded-full blur-xl"></div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-green-600 mb-1">
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="text-xl sm:text-3xl font-bold text-green-600 mb-1">
                 {formatCurrency(dashboardData.totalIncome)}
               </div>
               <p className="text-xs text-gray-500 flex items-center gap-1">
@@ -240,17 +245,17 @@ export const Dashboard = ({ user }: { user: User }) => {
             </CardContent>
           </Card>
 
-          <Card className="group hover:scale-[1.02] transition-spring overflow-hidden bg-white shadow-lg hover:shadow-xl border border-gray-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
-              <CardTitle className="text-sm font-medium text-gray-600">Saídas</CardTitle>
+          <Card className="group hover:scale-[1.02] transition-spring overflow-hidden bg-white shadow-lg hover:shadow-xl border border-gray-200 touch-manipulation">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative p-4 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Saídas</CardTitle>
               <div className="relative">
-                <TrendingDown className="h-5 w-5 text-red-500" />
-                <div className="absolute inset-0 h-5 w-5 text-red-500/30 animate-ping group-hover:animate-pulse"></div>
+                <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
+                <div className="absolute inset-0 h-4 w-4 sm:h-5 sm:w-5 text-red-500/30 animate-ping group-hover:animate-pulse"></div>
               </div>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/10 rounded-full blur-xl"></div>
+              <div className="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 bg-red-500/10 rounded-full blur-xl"></div>
             </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-red-600 mb-1">
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="text-xl sm:text-3xl font-bold text-red-600 mb-1">
                 {formatCurrency(dashboardData.totalExpenses)}
               </div>
               <p className="text-xs text-gray-500 flex items-center gap-1">
@@ -260,17 +265,17 @@ export const Dashboard = ({ user }: { user: User }) => {
             </CardContent>
           </Card>
 
-          <Card className="group hover:scale-[1.02] transition-spring overflow-hidden bg-white shadow-lg hover:shadow-xl border border-gray-200">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative">
-              <CardTitle className="text-sm font-medium text-gray-600">Saldo</CardTitle>
+          <Card className="group hover:scale-[1.02] transition-spring overflow-hidden bg-white shadow-lg hover:shadow-xl border border-gray-200 touch-manipulation sm:col-span-2 lg:col-span-1">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative p-4 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium text-gray-600">Saldo</CardTitle>
               <div className="relative">
-                <DollarSign className="h-5 w-5 text-blue-500" />
-                <div className="absolute inset-0 h-5 w-5 text-blue-500/30 animate-ping group-hover:animate-pulse"></div>
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500" />
+                <div className="absolute inset-0 h-4 w-4 sm:h-5 sm:w-5 text-blue-500/30 animate-ping group-hover:animate-pulse"></div>
               </div>
-              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full blur-xl"></div>
+              <div className="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 bg-blue-500/10 rounded-full blur-xl"></div>
             </CardHeader>
-            <CardContent>
-              <div className={`text-3xl font-bold mb-1 ${dashboardData.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className={`text-xl sm:text-3xl font-bold mb-1 ${dashboardData.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {formatCurrency(dashboardData.balance)}
               </div>
               <p className="text-xs text-gray-500 flex items-center gap-1">
@@ -282,39 +287,61 @@ export const Dashboard = ({ user }: { user: User }) => {
         </div>
 
         {/* Enhanced Main Content Tabs */}
-        <Tabs defaultValue="financial" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm shadow-md p-1 border border-gray-200">
-            <TabsTrigger value="financial" className="gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth">
-              <CreditCard className="h-4 w-4" />
-              Financeiro
+        <Tabs defaultValue="financial" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm shadow-md p-1 border border-gray-200 h-12 sm:h-auto">
+            <TabsTrigger 
+              value="financial" 
+              className="gap-1 sm:gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth 
+                         min-h-[40px] text-xs sm:text-sm touch-manipulation"
+            >
+              <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Financeiro</span>
+              <span className="xs:hidden">$</span>
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth">
-              <CheckSquare className="h-4 w-4" />
-              Tarefas
+            <TabsTrigger 
+              value="tasks" 
+              className="gap-1 sm:gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth 
+                         min-h-[40px] text-xs sm:text-sm touch-manipulation"
+            >
+              <CheckSquare className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Tarefas</span>
+              <span className="xs:hidden">✓</span>
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth">
-              <Calendar className="h-4 w-4" />
-              Agenda
+            <TabsTrigger 
+              value="calendar" 
+              className="gap-1 sm:gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth 
+                         min-h-[40px] text-xs sm:text-sm touch-manipulation"
+            >
+              <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden xs:inline">Agenda</span>
+              <span className="xs:hidden">📅</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="financial" className="space-y-6 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <TabsContent value="financial" className="space-y-4 sm:space-y-6 animate-fade-in">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+              <h3 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Gestão Financeira
               </h3>
-              <div className="flex gap-3">
-                <Button variant="outline" size="sm" className="shadow-md hover:shadow-lg border-gray-300">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtros
+              <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="shadow-md hover:shadow-lg border-gray-300 flex-1 sm:flex-none min-h-[40px] touch-manipulation"
+                >
+                  <Filter className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Filtros</span>
+                  <span className="sm:hidden">⚡</span>
                 </Button>
                 <Button 
                   size="sm" 
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg 
+                           flex-1 sm:flex-none min-h-[40px] touch-manipulation"
                   onClick={() => setShowTransactionForm(true)}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova Transação
+                  <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Nova Transação</span>
+                  <span className="sm:hidden">Novo</span>
                 </Button>
               </div>
             </div>

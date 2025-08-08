@@ -182,20 +182,22 @@ export const OnboardingWizard = () => {
   };
 
   return (
-    <div className="w-full">
-      <div className="mb-8">
+    <div className="w-full max-w-2xl mx-auto px-4 sm:px-6">
+      <div className="mb-6 sm:mb-8">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-xs sm:text-sm text-muted-foreground">
             Etapa {currentStep} de {totalSteps}
           </span>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-xs sm:text-sm text-muted-foreground font-medium">
             {Math.round(progress)}%
           </span>
         </div>
-        <Progress value={progress} className="w-full" />
+        <Progress value={progress} className="w-full h-2 sm:h-3" />
       </div>
       
-      {renderStep()}
+      <div className="overflow-hidden">
+        {renderStep()}
+      </div>
     </div>
   );
 };

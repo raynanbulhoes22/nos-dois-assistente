@@ -1,6 +1,6 @@
 import { useState } from "react";
+import type { Movimentacao as MovType } from "@/hooks/useMovimentacoes";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
-import { MovimentacaoCard } from "@/components/MovimentacaoCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,12 +9,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, TrendingUp, TrendingDown, RefreshCw, AlertCircle } from "lucide-react";
 import { TransactionForm } from "@/components/TransactionForm";
 import { useAuth } from "@/hooks/useAuth";
-
+import { MovimentacoesList } from "@/components/MovimentacoesList";
+import { MovimentacaoDetailsDialog } from "@/components/MovimentacaoDetailsDialog";
 export const Movimentacoes = () => {
   const { user } = useAuth();
   const { movimentacoes, entradas, saidas, isLoading, error, refetch } = useMovimentacoes();
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState<'entrada' | 'saida'>('entrada');
+  const [selected, setSelected] = useState<MovType | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const handleSuccess = () => {
     setShowForm(false);
@@ -168,20 +171,18 @@ export const Movimentacoes = () => {
           {movimentacoes.length === 0 ? (
             <Card>
               <CardContent className="py-16 text-center">
-                <p className="text-muted-foreground">
-                  Nenhuma movimentação encontrada.
-                </p>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Adicione uma nova transação para começar.
-                </p>
+                <p className="text-muted-foreground">Nenhuma movimentação encontrada.</p>
+                <p className="text-sm text-muted-foreground mt-2">Adicione uma nova transação para começar.</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4">
-              {movimentacoes.map((movimentacao) => (
-                <MovimentacaoCard key={movimentacao.id} movimentacao={movimentacao} />
-              ))}
-            </div>
+            <MovimentacoesList
+              items={movimentacoes}
+              onItemClick={(m) => {
+                setSelected(m);
+                setDetailsOpen(true);
+              }}
+            />
           )}
         </TabsContent>
 
@@ -189,17 +190,17 @@ export const Movimentacoes = () => {
           {entradas.length === 0 ? (
             <Card>
               <CardContent className="py-16 text-center">
-                <p className="text-muted-foreground">
-                  Nenhuma entrada registrada ainda.
-                </p>
+                <p className="text-muted-foreground">Nenhuma entrada registrada ainda.</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4">
-              {entradas.map((movimentacao) => (
-                <MovimentacaoCard key={movimentacao.id} movimentacao={movimentacao} />
-              ))}
-            </div>
+            <MovimentacoesList
+              items={entradas}
+              onItemClick={(m) => {
+                setSelected(m);
+                setDetailsOpen(true);
+              }}
+            />
           )}
         </TabsContent>
 
@@ -207,17 +208,17 @@ export const Movimentacoes = () => {
           {saidas.length === 0 ? (
             <Card>
               <CardContent className="py-16 text-center">
-                <p className="text-muted-foreground">
-                  Nenhuma saída registrada ainda.
-                </p>
+                <p className="text-muted-foreground">Nenhuma saída registrada ainda.</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid gap-4">
-              {saidas.map((movimentacao) => (
-                <MovimentacaoCard key={movimentacao.id} movimentacao={movimentacao} />
-              ))}
-            </div>
+            <MovimentacoesList
+              items={saidas}
+              onItemClick={(m) => {
+                setSelected(m);
+                setDetailsOpen(true);
+              }}
+            />
           )}
         </TabsContent>
       </Tabs>

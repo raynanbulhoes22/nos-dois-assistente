@@ -9,6 +9,7 @@ import {
   Settings 
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 import {
   Sidebar,
@@ -35,11 +36,17 @@ const navigationItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const { subscriptionStatus } = useAuth();
   const currentPath = location.pathname;
 
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-accent text-accent-foreground" : "hover:bg-accent/50";
+
+  // Filter navigation items based on subscription status
+  const availableItems = subscriptionStatus?.subscribed 
+    ? navigationItems 
+    : navigationItems.filter(item => item.url === '/assinaturas');
 
   return (
     <Sidebar className={state === "collapsed" ? "w-14" : "w-64"} collapsible="icon">
@@ -50,7 +57,7 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationItems.map((item) => (
+              {availableItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink

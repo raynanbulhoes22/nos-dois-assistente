@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AuthForm } from "@/components/AuthForm";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SubscriptionRedirect } from "@/components/SubscriptionRedirect";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import { Movimentacoes } from "./pages/Movimentacoes";
 import { Assinaturas } from "./pages/Assinaturas";
@@ -62,13 +63,37 @@ const App = () => {
                   <SubscriptionRedirect>
                     <Routes>
                       <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                      <Route path="/dashboard" element={<Index />} />
-                      <Route path="/movimentacoes" element={<Movimentacoes />} />
+                      <Route path="/dashboard" element={
+                        <ProtectedRoute>
+                          <Index />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/movimentacoes" element={
+                        <ProtectedRoute>
+                          <Movimentacoes />
+                        </ProtectedRoute>
+                      } />
                       <Route path="/assinaturas" element={<Assinaturas />} />
-                      <Route path="/orcamento" element={<Orcamento />} />
-                      <Route path="/dividas" element={<Dividas />} />
-                      <Route path="/relatorios" element={<Relatorios />} />
-                      <Route path="/configuracoes" element={<Configuracoes />} />
+                      <Route path="/orcamento" element={
+                        <ProtectedRoute>
+                          <Orcamento />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dividas" element={
+                        <ProtectedRoute>
+                          <Dividas />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/relatorios" element={
+                        <ProtectedRoute>
+                          <Relatorios />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/configuracoes" element={
+                        <ProtectedRoute>
+                          <Configuracoes />
+                        </ProtectedRoute>
+                      } />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </SubscriptionRedirect>

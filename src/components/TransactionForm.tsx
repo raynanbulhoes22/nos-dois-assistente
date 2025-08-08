@@ -84,12 +84,12 @@ export const TransactionForm = ({
     try {
       // Determinar tipo_movimento baseado no tipo
       let tipo_movimento = "";
-      if (formData.tipo === "Receita") {
+      if (formData.tipo === "entrada_manual" || formData.tipo === "entrada_comprovada") {
         tipo_movimento = "entrada";
-      } else if (formData.tipo === "Despesa") {
+      } else if (formData.tipo === "registro_manual" || formData.tipo === "comprovante_pagamento") {
         tipo_movimento = "saida";
       } else {
-        tipo_movimento = "transferencia";
+        tipo_movimento = "saida"; // default para saída
       }
 
       const transactionData = {
@@ -175,9 +175,9 @@ export const TransactionForm = ({
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Receita">Entrada</SelectItem>
-                  <SelectItem value="Despesa">Saída</SelectItem>
-                  <SelectItem value="Transferencia">Transferência</SelectItem>
+                  <SelectItem value="entrada_manual">Entrada</SelectItem>
+                  <SelectItem value="registro_manual">Saída</SelectItem>
+                  <SelectItem value="comprovante_pagamento">Transferência</SelectItem>
                 </SelectContent>
               </Select>
               {errors.tipo && (

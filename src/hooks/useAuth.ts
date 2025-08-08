@@ -9,9 +9,10 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
   const { checkSubscription } = useSubscription();
 
-  const verifySubscription = async (userEmail: string) => {
+  const verifySubscription = async (userEmail: string, userId: string) => {
     setSubscriptionLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
@@ -26,6 +27,15 @@ export const useAuth = () => {
         }
         localStorage.setItem(`user_accessed_${userEmail}`, 'true');
       }
+
+      // Check onboarding completion
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', userId)
+        .single();
+
+      setOnboardingCompleted(profileData?.onboarding_completed || false);
     } catch (error) {
       console.error('Erro ao verificar assinatura:', error);
     } finally {
@@ -43,13 +53,14 @@ export const useAuth = () => {
         if (event === 'SIGNED_IN' && session?.user?.email) {
           // Defer subscription check to avoid blocking auth flow
           setTimeout(() => {
-            verifySubscription(session.user.email!);
+            verifySubscription(session.user.email!, session.user.id);
           }, 100);
         }
         
         if (event === 'SIGNED_OUT') {
           setLoading(false);
           setSubscriptionStatus(null);
+          setOnboardingCompleted(null);
           localStorage.removeItem('redirect_to_subscription');
         }
       }
@@ -61,7 +72,7 @@ export const useAuth = () => {
       setUser(session?.user ?? null);
       
       if (session?.user?.email) {
-        verifySubscription(session.user.email);
+        verifySubscription(session.user.email, session.user.id);
       }
       
       setLoading(false);
@@ -75,6 +86,7 @@ export const useAuth = () => {
     session,
     loading: loading || subscriptionLoading,
     subscriptionStatus,
-    verifySubscription: () => user?.email ? verifySubscription(user.email) : Promise.resolve()
+    onboardingCompleted,
+    verifySubscription: () => user?.email && user?.id ? verifySubscription(user.email, user.id) : Promise.resolve()
   };
 };

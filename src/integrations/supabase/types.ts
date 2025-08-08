@@ -35,6 +35,69 @@ export type Database = {
         }
         Relationships: []
       }
+      cartoes_credito: {
+        Row: {
+          apelido: string
+          ativo: boolean
+          created_at: string
+          dia_vencimento: number | null
+          id: string
+          limite: number | null
+          ultimos_digitos: string
+          user_id: string
+        }
+        Insert: {
+          apelido: string
+          ativo?: boolean
+          created_at?: string
+          dia_vencimento?: number | null
+          id?: string
+          limite?: number | null
+          ultimos_digitos: string
+          user_id: string
+        }
+        Update: {
+          apelido?: string
+          ativo?: boolean
+          created_at?: string
+          dia_vencimento?: number | null
+          id?: string
+          limite?: number | null
+          ultimos_digitos?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      fontes_renda: {
+        Row: {
+          ativa: boolean
+          created_at: string
+          descricao: string | null
+          id: string
+          tipo: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          ativa?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          tipo: string
+          user_id: string
+          valor: number
+        }
+        Update: {
+          ativa?: boolean
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          tipo?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       historico_de_interacoes: {
         Row: {
           acao: string
@@ -100,25 +163,52 @@ export type Database = {
       }
       profiles: {
         Row: {
+          cpf: string | null
           created_at: string | null
+          data_nascimento: string | null
           email: string | null
           id: string
+          meta_economia_mensal: number | null
           nome: string | null
+          nome_conjuge: string | null
           numero_wpp: string | null
+          objetivo_principal: string | null
+          onboarding_completed: boolean
+          preferencia_notificacao: string | null
+          telefone: string | null
+          telefone_conjuge: string | null
         }
         Insert: {
+          cpf?: string | null
           created_at?: string | null
+          data_nascimento?: string | null
           email?: string | null
           id: string
+          meta_economia_mensal?: number | null
           nome?: string | null
+          nome_conjuge?: string | null
           numero_wpp?: string | null
+          objetivo_principal?: string | null
+          onboarding_completed?: boolean
+          preferencia_notificacao?: string | null
+          telefone?: string | null
+          telefone_conjuge?: string | null
         }
         Update: {
+          cpf?: string | null
           created_at?: string | null
+          data_nascimento?: string | null
           email?: string | null
           id?: string
+          meta_economia_mensal?: number | null
           nome?: string | null
+          nome_conjuge?: string | null
           numero_wpp?: string | null
+          objetivo_principal?: string | null
+          onboarding_completed?: boolean
+          preferencia_notificacao?: string | null
+          telefone?: string | null
+          telefone_conjuge?: string | null
         }
         Relationships: []
       }

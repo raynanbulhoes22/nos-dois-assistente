@@ -16,6 +16,7 @@ import { Orcamento } from "./pages/Orcamento";
 import { Dividas } from "./pages/Dividas";
 import { Relatorios } from "./pages/Relatorios";
 import { Configuracoes } from "./pages/Configuracoes";
+import PrimeirosPasos from "./pages/PrimeirosPasos";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -74,6 +75,7 @@ const App = () => {
                         </ProtectedRoute>
                       } />
                       <Route path="/assinaturas" element={<Assinaturas />} />
+                      <Route path="/primeiros-passos" element={<PrimeirosPasos />} />
                       <Route path="/orcamento" element={
                         <ProtectedRoute>
                           <Orcamento />

@@ -156,204 +156,202 @@ export const Movimentacoes = () => {
   }
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Movimentações Financeiras</h1>
-          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-            Gerencie suas entradas e saídas financeiras
-          </p>
-        </div>
-        <Button onClick={refetch} variant="outline" size="sm" className="self-start sm:self-auto">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Atualizar
-        </Button>
-      </div>
-
-      {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Entradas</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {formatCurrency(totalEntradas)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {filteredEntradas.length} de {entradas.length} transações
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Saídas</CardTitle>
-            <TrendingDown className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {formatCurrency(totalSaidas)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {filteredSaidas.length} de {saidas.length} transações
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Saldo</CardTitle>
-            <div className={`h-4 w-4 ${saldo >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {saldo >= 0 ? <TrendingUp /> : <TrendingDown />}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${
-              saldo >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {formatCurrency(saldo)}
-            </div>
-            <p className="text-xs text-muted-foreground">
+    <div className="flex flex-col h-full">
+      {/* Compact Header */}
+      <div className="p-3 sm:p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold">Movimentações</h1>
+            <p className="text-muted-foreground text-sm">
               {filteredMovimentacoes.length} de {movimentacoes.length} transações
             </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <MovimentacoesFilters
-        filters={filters}
-        availableCategories={availableCategories}
-        availablePaymentMethods={availablePaymentMethods}
-        valueRange={valueRange}
-        onFilterChange={updateFilter}
-        onPeriodPresetChange={setPeriodPreset}
-        onClearFilters={clearFilters}
-        hasActiveFilters={hasActiveFilters}
-        resultCount={filteredMovimentacoes.length}
-      />
-
-      {/* Tabs de Movimentações */}
-      <Tabs 
-        defaultValue="todas" 
-        className="space-y-4 sm:space-y-6"
-        value={filters.transactionType === 'all' ? 'todas' : filters.transactionType}
-        onValueChange={(value) => {
-          const type = value === 'todas' ? 'all' : value as 'entradas' | 'saidas';
-          updateFilter('transactionType', type);
-        }}
-      >
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
-            <TabsTrigger value="todas" className="text-xs sm:text-sm">Todas</TabsTrigger>
-            <TabsTrigger value="entradas" className="text-xs sm:text-sm">Entradas</TabsTrigger>
-            <TabsTrigger value="saidas" className="text-xs sm:text-sm">Saídas</TabsTrigger>
-          </TabsList>
-          
+          </div>
           <div className="flex gap-2">
-            <Button 
-              onClick={() => setShowForm(true)} 
-              className="flex items-center gap-2 w-full sm:w-auto min-h-[44px] touch-manipulation"
-            >
+            <Button onClick={refetch} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button onClick={() => setShowForm(true)} size="sm" className="gap-2">
               <Plus className="h-4 w-4" />
-              <span className="hidden xs:inline">Nova Transação</span>
-              <span className="xs:hidden">Nova</span>
+              <span className="hidden xs:inline">Nova</span>
             </Button>
           </div>
         </div>
+      </div>
 
-        <TabsContent value="todas" className="space-y-4">
-          {filteredMovimentacoes.length === 0 ? (
-            <Card>
-              <CardContent className="py-16 text-center">
-                <p className="text-muted-foreground">
-                  {hasActiveFilters ? 'Nenhuma transação encontrada com os filtros aplicados.' : 'Nenhuma movimentação encontrada.'}
-                </p>
-                {!hasActiveFilters && (
-                  <p className="text-sm text-muted-foreground mt-2">Adicione uma nova transação para começar.</p>
-                )}
-                {hasActiveFilters && (
-                  <Button variant="outline" onClick={clearFilters} className="mt-3">
-                    Limpar Filtros
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <MovimentacoesList
-              items={filteredMovimentacoes}
-              onItemClick={(m) => {
-                setSelected(m);
-                setDetailsOpen(true);
-              }}
-              onEdit={handleEdit}
-              onDelete={handleDeleteClick}
-              onDuplicate={handleDuplicate}
-            />
-          )}
-        </TabsContent>
+      {/* Compact Summary Cards */}
+      <div className="px-3 sm:px-4 py-3">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
+          <div className="bg-card rounded-lg p-3 border">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="h-2 w-2 rounded-full bg-green-500"></div>
+              <span className="text-xs text-muted-foreground">Entradas</span>
+            </div>
+            <div className="text-sm sm:text-lg font-bold text-green-600">
+              {formatCurrency(totalEntradas)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {filteredEntradas.length} de {entradas.length}
+            </p>
+          </div>
 
-        <TabsContent value="entradas" className="space-y-4">
-          {filteredEntradas.length === 0 ? (
-            <Card>
-              <CardContent className="py-16 text-center">
-                <p className="text-muted-foreground">
-                  {hasActiveFilters ? 'Nenhuma entrada encontrada com os filtros aplicados.' : 'Nenhuma entrada registrada ainda.'}
-                </p>
-                {hasActiveFilters && (
-                  <Button variant="outline" onClick={clearFilters} className="mt-3">
-                    Limpar Filtros
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <MovimentacoesList
-              items={filteredEntradas}
-              onItemClick={(m) => {
-                setSelected(m);
-                setDetailsOpen(true);
-              }}
-              onEdit={handleEdit}
-              onDelete={handleDeleteClick}
-              onDuplicate={handleDuplicate}
-            />
-          )}
-        </TabsContent>
+          <div className="bg-card rounded-lg p-3 border">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="h-2 w-2 rounded-full bg-red-500"></div>
+              <span className="text-xs text-muted-foreground">Saídas</span>
+            </div>
+            <div className="text-sm sm:text-lg font-bold text-red-600">
+              {formatCurrency(totalSaidas)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {filteredSaidas.length} de {saidas.length}
+            </p>
+          </div>
 
-        <TabsContent value="saidas" className="space-y-4">
-          {filteredSaidas.length === 0 ? (
-            <Card>
-              <CardContent className="py-16 text-center">
-                <p className="text-muted-foreground">
-                  {hasActiveFilters ? 'Nenhuma saída encontrada com os filtros aplicados.' : 'Nenhuma saída registrada ainda.'}
-                </p>
-                {hasActiveFilters && (
-                  <Button variant="outline" onClick={clearFilters} className="mt-3">
-                    Limpar Filtros
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <MovimentacoesList
-              items={filteredSaidas}
-              onItemClick={(m) => {
-                setSelected(m);
-                setDetailsOpen(true);
-              }}
-              onEdit={handleEdit}
-              onDelete={handleDeleteClick}
-              onDuplicate={handleDuplicate}
-            />
-          )}
-        </TabsContent>
-      </Tabs>
+          <div className="bg-card rounded-lg p-3 border">
+            <div className="flex items-center gap-2 mb-1">
+              <div className={`h-2 w-2 rounded-full ${saldo >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span className="text-xs text-muted-foreground">Saldo</span>
+            </div>
+            <div className={`text-sm sm:text-lg font-bold ${saldo >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {formatCurrency(saldo)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total geral
+            </p>
+          </div>
+        </div>
+      </div>
 
-      {/* Form Modal */}
+      {/* Filters */}
+      <div className="px-3 sm:px-4">
+        <MovimentacoesFilters
+          filters={filters}
+          availableCategories={availableCategories}
+          availablePaymentMethods={availablePaymentMethods}
+          valueRange={valueRange}
+          onFilterChange={updateFilter}
+          onPeriodPresetChange={setPeriodPreset}
+          onClearFilters={clearFilters}
+          hasActiveFilters={hasActiveFilters}
+          resultCount={filteredMovimentacoes.length}
+        />
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-hidden">
+        <Tabs 
+          defaultValue="todas" 
+          className="flex flex-col h-full"
+          value={filters.transactionType === 'all' ? 'todas' : filters.transactionType}
+          onValueChange={(value) => {
+            const type = value === 'todas' ? 'all' : value as 'entradas' | 'saidas';
+            updateFilter('transactionType', type);
+          }}
+        >
+          <div className="px-3 sm:px-4 pb-3">
+            <TabsList className="grid w-full max-w-md grid-cols-3 h-9">
+              <TabsTrigger value="todas" className="text-xs">Todas</TabsTrigger>
+              <TabsTrigger value="entradas" className="text-xs">Entradas</TabsTrigger>
+              <TabsTrigger value="saidas" className="text-xs">Saídas</TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="todas" className="flex-1 px-3 sm:px-4 pb-4 overflow-hidden">
+            {filteredMovimentacoes.length === 0 ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <p className="text-muted-foreground">
+                    {hasActiveFilters ? 'Nenhuma transação encontrada' : 'Nenhuma movimentação encontrada'}
+                  </p>
+                  {!hasActiveFilters && (
+                    <p className="text-sm text-muted-foreground mt-1">Adicione uma nova transação</p>
+                  )}
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={clearFilters} className="mt-2" size="sm">
+                      Limpar Filtros
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="h-full overflow-hidden">
+                <MovimentacoesList
+                  items={filteredMovimentacoes}
+                  onItemClick={(m) => {
+                    setSelected(m);
+                    setDetailsOpen(true);
+                  }}
+                  onEdit={handleEdit}
+                  onDelete={handleDeleteClick}
+                  onDuplicate={handleDuplicate}
+                />
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="entradas" className="flex-1 px-3 sm:px-4 pb-4 overflow-hidden">
+            {filteredEntradas.length === 0 ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <p className="text-muted-foreground">
+                    {hasActiveFilters ? 'Nenhuma entrada encontrada' : 'Nenhuma entrada registrada'}
+                  </p>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={clearFilters} className="mt-2" size="sm">
+                      Limpar Filtros
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="h-full overflow-hidden">
+                <MovimentacoesList
+                  items={filteredEntradas}
+                  onItemClick={(m) => {
+                    setSelected(m);
+                    setDetailsOpen(true);
+                  }}
+                  onEdit={handleEdit}
+                  onDelete={handleDeleteClick}
+                  onDuplicate={handleDuplicate}
+                />
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="saidas" className="flex-1 px-3 sm:px-4 pb-4 overflow-hidden">
+            {filteredSaidas.length === 0 ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <p className="text-muted-foreground">
+                    {hasActiveFilters ? 'Nenhuma saída encontrada' : 'Nenhuma saída registrada'}
+                  </p>
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={clearFilters} className="mt-2" size="sm">
+                      Limpar Filtros
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="h-full overflow-hidden">
+                <MovimentacoesList
+                  items={filteredSaidas}
+                  onItemClick={(m) => {
+                    setSelected(m);
+                    setDetailsOpen(true);
+                  }}
+                  onEdit={handleEdit}
+                  onDelete={handleDeleteClick}
+                  onDuplicate={handleDuplicate}
+                />
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Modals */}
       {showForm && (
         <TransactionForm
           open={showForm}
@@ -380,7 +378,6 @@ export const Movimentacoes = () => {
         />
       )}
 
-      {/* Details Modal */}
       {selected && (
         <MovimentacaoDetailsDialog
           movimentacao={selected}
@@ -389,14 +386,12 @@ export const Movimentacoes = () => {
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir esta movimentação? Esta ação não pode ser desfeita.
-              <br />
+              Tem certeza que deseja excluir esta movimentação?
               <br />
               <strong>{movimentacaoToDelete?.nome}</strong>
               <br />

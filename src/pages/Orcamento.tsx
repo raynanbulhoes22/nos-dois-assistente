@@ -275,14 +275,6 @@ export const Orcamento = () => {
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
-              
-              <Button 
-                onClick={() => setShowOrcamentoModal(true)}
-                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                {orcamentoAtual ? "Editar" : "Criar"} Orçamento
-              </Button>
             </div>
           </div>
         </div>

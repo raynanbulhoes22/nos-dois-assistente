@@ -175,11 +175,9 @@ export const TransactionForm = ({
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {TRANSACTION_TYPES.map((type) => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="Receita">Entrada</SelectItem>
+                  <SelectItem value="Despesa">Saída</SelectItem>
+                  <SelectItem value="Transferencia">Transferência</SelectItem>
                 </SelectContent>
               </Select>
               {errors.tipo && (

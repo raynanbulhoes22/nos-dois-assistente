@@ -156,13 +156,9 @@ export const Movimentacoes = () => {
           </TabsList>
           
           <div className="flex gap-2">
-            <Button onClick={() => openForm('entrada')} className="flex items-center gap-2">
+            <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
-              Nova Entrada
-            </Button>
-            <Button onClick={() => openForm('saida')} variant="outline" className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Nova Saída
+              Nova Transação
             </Button>
           </div>
         </div>

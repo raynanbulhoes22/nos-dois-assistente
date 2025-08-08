@@ -54,7 +54,7 @@ const App = () => {
                 <header className="h-12 flex items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                   <SidebarTrigger className="ml-4" />
                   <div className="ml-4">
-                    <h1 className="text-lg font-semibold">Nós Dois - Gestão Financeira</h1>
+                    <h1 className="text-lg font-semibold">LucraAI - Gestão Financeira</h1>
                   </div>
                 </header>
                 <main className="flex-1 overflow-auto">

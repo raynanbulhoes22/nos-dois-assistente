@@ -46,7 +46,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className={state === "collapsed" ? "sr-only" : ""}>
-            Nós Dois
+            LucraAI
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>

@@ -247,7 +247,7 @@ export const AuthForm = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 bg-clip-text text-transparent">
-                Nós Dois
+                LucraAI
               </h1>
               <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 rounded-full mt-2"></div>
             </div>

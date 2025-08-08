@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Plus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-
+import { toast } from "@/hooks/use-toast";
 interface Assinatura {
   id: string;
   nome: string;
@@ -23,6 +23,46 @@ export const Assinaturas = () => {
   const { user } = useAuth();
   const [assinaturas, setAssinaturas] = useState<Assinatura[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [status, setStatus] = useState<{ subscribed: boolean; subscription_tier?: string | null; subscription_end?: string | null } | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const handleCheckout = async (plan: "solo" | "casal") => {
+    try {
+      setBusy(true);
+      const { data, error } = await supabase.functions.invoke("create-checkout", { body: { plan } });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, "_blank");
+      }
+    } catch (e: any) {
+      toast({ title: "Erro ao iniciar pagamento", description: e.message || "Tente novamente", variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handlePortal = async () => {
+    try {
+      setBusy(true);
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (e: any) {
+      toast({ title: "Erro ao abrir portal", description: e.message || "Tente novamente", variant: "destructive" });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("check-subscription");
+      if (error) throw error;
+      setStatus(data as any);
+    } catch (e: any) {
+      toast({ title: "Erro ao verificar assinatura", description: e.message || "Tente novamente", variant: "destructive" });
+    }
+  };
 
   const fetchAssinaturas = async () => {
     if (!user) return;
@@ -52,6 +92,7 @@ export const Assinaturas = () => {
 
   useEffect(() => {
     fetchAssinaturas();
+    handleRefresh();
   }, [user]);
 
   const formatCurrency = (value: number) => {
@@ -81,10 +122,37 @@ export const Assinaturas = () => {
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Assinaturas</h1>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Nova Assinatura
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleRefresh} disabled={busy}>Atualizar status</Button>
+          <Button onClick={handlePortal} disabled={busy}>Gerenciar assinatura</Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Plano Solo</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <div>
+              <p className="text-3xl font-bold">R$ 16,97</p>
+              <p className="text-sm text-muted-foreground">mensal</p>
+            </div>
+            <Button onClick={() => handleCheckout("solo")} disabled={busy}>Assinar</Button>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle>Plano Casal</CardTitle>
+          </CardHeader>
+          <CardContent className="flex items-center justify-between">
+            <div>
+              <p className="text-3xl font-bold">R$ 21,97</p>
+              <p className="text-sm text-muted-foreground">mensal</p>
+            </div>
+            <Button onClick={() => handleCheckout("casal")} disabled={busy}>Assinar</Button>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">

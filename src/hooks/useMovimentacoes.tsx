@@ -138,12 +138,47 @@ export const useMovimentacoes = () => {
       const movimentacoesProcessadas: Movimentacao[] = registros.map((item: any) => {
         const isEntrada = categorizarMovimentacao(item);
         
+        // Lógica inteligente para definir o título da transação
+        const getTransactionTitle = (item: any): string => {
+          // 1. Se tem observação específica, usa ela
+          if (item.observacao && item.observacao.trim() && item.observacao.length > 3) {
+            return item.observacao.trim();
+          }
+          
+          // 2. Se tem categoria definida e é diferente de "Sem categoria", usa ela
+          if (item.categoria && item.categoria !== 'Sem categoria' && item.categoria.trim()) {
+            return item.categoria.trim();
+          }
+          
+          // 3. Se tem estabelecimento, usa ele
+          if (item.estabelecimento && item.estabelecimento.trim()) {
+            return item.estabelecimento.trim();
+          }
+          
+          // 4. Se tem nome mas não é um nome de pessoa (contém espaço + sobrenome), usa ele
+          if (item.nome && item.nome.trim()) {
+            const nome = item.nome.trim();
+            // Verifica se não é um nome de pessoa (heurística simples)
+            const isProbablyPersonName = /^[A-Z][a-z]+ [A-Z][a-z]+/.test(nome);
+            if (!isProbablyPersonName) {
+              return nome;
+            }
+          }
+          
+          // 5. Fallback baseado no tipo de movimento
+          if (isEntrada) {
+            return 'Entrada de valor';
+          } else {
+            return 'Gasto registrado';
+          }
+        };
+        
         return {
           id: item.id,
           valor: Math.abs(item.valor), // Sempre trabalhar com valores positivos
           data: item.data,
           categoria: item.categoria || 'Sem categoria',
-          nome: item.nome || 'Sem descrição',
+          nome: getTransactionTitle(item),
           forma_pagamento: item.forma_pagamento,
           estabelecimento: item.estabelecimento,
           observacao: item.observacao,

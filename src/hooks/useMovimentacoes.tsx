@@ -13,6 +13,11 @@ export interface Movimentacao {
   observacao?: string;
   tipo_movimento?: string;
   numero_wpp?: string;
+  instituicao?: string;
+  cartao_final?: string;
+  origem?: string;
+  recorrente?: boolean;
+  id_transacao?: string;
   isEntrada: boolean;
 }
 
@@ -144,6 +149,11 @@ export const useMovimentacoes = () => {
           observacao: item.observacao,
           tipo_movimento: item.tipo_movimento,
           numero_wpp: item.numero_wpp,
+          instituicao: item.instituicao,
+          cartao_final: item.cartao_final,
+          origem: item.origem,
+          recorrente: item.recorrente,
+          id_transacao: item.id_transacao,
           isEntrada
         };
       });

@@ -128,6 +128,39 @@ export const Assinaturas = () => {
         </div>
       </div>
 
+      {/* Status da Assinatura em Destaque */}
+      {status && (
+        <Card className={`mb-6 ${status.subscribed ? 'border-green-500 bg-green-50/50' : 'border-orange-500 bg-orange-50/50'}`}>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2">
+              <Badge variant={status.subscribed ? "default" : "secondary"} className={status.subscribed ? "bg-green-500" : ""}>
+                {status.subscribed ? "Assinatura Ativa" : "Sem Assinatura"}
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {status.subscribed ? (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-lg font-semibold">Plano {status.subscription_tier}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Válido até: {status.subscription_end ? new Date(status.subscription_end).toLocaleDateString('pt-BR') : 'N/A'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground">Renovação automática ativa</p>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p className="text-lg font-semibold">Nenhuma assinatura ativa</p>
+                <p className="text-sm text-muted-foreground">Escolha um plano abaixo para começar</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader className="pb-2">

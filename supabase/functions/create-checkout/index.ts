@@ -32,7 +32,26 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
     const { plan } = await req.json().catch(() => ({ plan: "solo" }));
-    const selected = plan === "casal" ? { name: "LucraAI Casal", amount: 2197 } : { name: "LucraAI Solo", amount: 1697 };
+    
+    // Product IDs do Stripe
+    const productIds = {
+      solo: "prod_SpcIOvFRzJ5jGq",
+      casal: "prod_SpcIUtrNw95jCH"
+    };
+
+    // Get all prices for the product
+    const productId = productIds[plan as keyof typeof productIds] || productIds.solo;
+    const prices = await stripe.prices.list({
+      product: productId,
+      active: true,
+      limit: 1
+    });
+
+    if (prices.data.length === 0) {
+      throw new Error(`No active price found for ${plan} plan`);
+    }
+
+    const priceId = prices.data[0].id;
 
     // Check if a Stripe customer record exists for this user
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -45,12 +64,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price_data: {
-            currency: "brl",
-            product_data: { name: selected.name },
-            unit_amount: selected.amount,
-            recurring: { interval: "month" },
-          },
+          price: priceId,
           quantity: 1,
         },
       ],

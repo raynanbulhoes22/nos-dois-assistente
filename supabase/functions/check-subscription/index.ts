@@ -86,8 +86,18 @@ serve(async (req) => {
       const sub = subscriptions.data[0];
       endISO = new Date(sub.current_period_end * 1000).toISOString();
       const price = sub.items.data[0].price;
-      const amount = price.unit_amount ?? 0;
-      if (amount <= 999) tier = "Basic"; else if (amount <= 1999) tier = "Premium"; else tier = "Enterprise";
+      const productId = price.product as string;
+      
+      // Map product IDs to tiers
+      if (productId === "prod_SpcIOvFRzJ5jGq") {
+        tier = "Solo";
+      } else if (productId === "prod_SpcIUtrNw95jCH") {
+        tier = "Casal";
+      } else {
+        tier = "Desconhecido";
+      }
+      
+      log("Determined subscription tier", { productId, tier });
     }
 
     if (supabaseServiceClient) {

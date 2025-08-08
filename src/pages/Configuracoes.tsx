@@ -6,17 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Plus, CreditCard, User, Heart } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, CreditCard, User, Heart, DollarSign, Trash2, Edit3, TrendingUp, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-interface Cartao {
-  id: string;
-  nome: string;
-  final: string;
-  limite: number;
-}
+import { useFontesRenda } from "@/hooks/useFontesRenda";
+import { useCartoes } from "@/hooks/useCartoes";
+import { useFinancialStats } from "@/hooks/useFinancialStats";
 
 interface Profile {
   id: string;
@@ -24,33 +22,47 @@ interface Profile {
   email?: string;
   grupo_id?: string;
   numero_wpp?: string;
+  meta_economia_mensal?: number;
 }
 
 export const Configuracoes = () => {
   const { user } = useAuth();
-  const [cartoes, setCartoes] = useState<Cartao[]>([]);
+  const { fontes, addFonte, updateFonte, deleteFonte, isLoading: fontesLoading } = useFontesRenda();
+  const { cartoes, addCartao, updateCartao, deleteCartao, isLoading: cartoesLoading } = useCartoes();
+  const stats = useFinancialStats();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [isConnectingWhatsapp, setIsConnectingWhatsapp] = useState(false);
   const [isRemovingWhatsapp, setIsRemovingWhatsapp] = useState(false);
+  
+  // Modais
+  const [showFonteModal, setShowFonteModal] = useState(false);
+  const [showCartaoModal, setShowCartaoModal] = useState(false);
+  const [editingFonte, setEditingFonte] = useState<any>(null);
+  const [editingCartao, setEditingCartao] = useState<any>(null);
+  
+  // Formulários
+  const [fonteForm, setFonteForm] = useState({
+    tipo: '',
+    valor: '',
+    descricao: '',
+    ativa: true
+  });
+  const [cartaoForm, setCartaoForm] = useState({
+    apelido: '',
+    ultimos_digitos: '',
+    limite: '',
+    dia_vencimento: '',
+    ativo: true
+  });
+  
   const { toast } = useToast();
 
   const fetchData = async () => {
     if (!user) return;
     
     try {
-      // Por enquanto, vamos simular dados até que as tabelas sejam criadas
-      const mockCartoes: Cartao[] = [
-        {
-          id: '1',
-          nome: 'Cartão Principal',
-          final: '4567',
-          limite: 5000
-        }
-      ];
-      setCartoes(mockCartoes);
-
       // Buscar perfil
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
@@ -161,6 +173,126 @@ export const Configuracoes = () => {
     }
   };
 
+  // Funções para fontes de renda
+  const handleAddFonte = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await addFonte({
+      tipo: fonteForm.tipo,
+      valor: parseFloat(fonteForm.valor),
+      descricao: fonteForm.descricao,
+      ativa: fonteForm.ativa
+    });
+    
+    if (success) {
+      setShowFonteModal(false);
+      setFonteForm({ tipo: '', valor: '', descricao: '', ativa: true });
+    }
+  };
+
+  const handleEditFonte = (fonte: any) => {
+    setEditingFonte(fonte);
+    setFonteForm({
+      tipo: fonte.tipo,
+      valor: fonte.valor.toString(),
+      descricao: fonte.descricao || '',
+      ativa: fonte.ativa
+    });
+    setShowFonteModal(true);
+  };
+
+  const handleUpdateFonte = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingFonte) return;
+    
+    const success = await updateFonte(editingFonte.id, {
+      tipo: fonteForm.tipo,
+      valor: parseFloat(fonteForm.valor),
+      descricao: fonteForm.descricao,
+      ativa: fonteForm.ativa
+    });
+    
+    if (success) {
+      setShowFonteModal(false);
+      setEditingFonte(null);
+      setFonteForm({ tipo: '', valor: '', descricao: '', ativa: true });
+    }
+  };
+
+  // Funções para cartões
+  const handleAddCartao = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await addCartao({
+      apelido: cartaoForm.apelido,
+      ultimos_digitos: cartaoForm.ultimos_digitos,
+      limite: cartaoForm.limite ? parseFloat(cartaoForm.limite) : undefined,
+      dia_vencimento: cartaoForm.dia_vencimento ? parseInt(cartaoForm.dia_vencimento) : undefined,
+      ativo: cartaoForm.ativo
+    });
+    
+    if (success) {
+      setShowCartaoModal(false);
+      setCartaoForm({ apelido: '', ultimos_digitos: '', limite: '', dia_vencimento: '', ativo: true });
+    }
+  };
+
+  const handleEditCartao = (cartao: any) => {
+    setEditingCartao(cartao);
+    setCartaoForm({
+      apelido: cartao.apelido,
+      ultimos_digitos: cartao.ultimos_digitos,
+      limite: cartao.limite?.toString() || '',
+      dia_vencimento: cartao.dia_vencimento?.toString() || '',
+      ativo: cartao.ativo
+    });
+    setShowCartaoModal(true);
+  };
+
+  const handleUpdateCartao = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCartao) return;
+    
+    const success = await updateCartao(editingCartao.id, {
+      apelido: cartaoForm.apelido,
+      ultimos_digitos: cartaoForm.ultimos_digitos,
+      limite: cartaoForm.limite ? parseFloat(cartaoForm.limite) : undefined,
+      dia_vencimento: cartaoForm.dia_vencimento ? parseInt(cartaoForm.dia_vencimento) : undefined,
+      ativo: cartaoForm.ativo
+    });
+    
+    if (success) {
+      setShowCartaoModal(false);
+      setEditingCartao(null);
+      setCartaoForm({ apelido: '', ultimos_digitos: '', limite: '', dia_vencimento: '', ativo: true });
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user || !profile) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          nome: profile.nome,
+          meta_economia_mensal: profile.meta_economia_mensal 
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Sucesso!",
+        description: "Perfil atualizado com sucesso!"
+      });
+    } catch (error) {
+      toast({
+        title: "❌ Erro",
+        description: "Não foi possível atualizar o perfil.",
+        variant: "destructive"
+      });
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [user]);
@@ -172,19 +304,52 @@ export const Configuracoes = () => {
     }).format(value);
   };
 
-  if (isLoading) {
+  if (isLoading || fontesLoading || cartoesLoading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-3 sm:p-6">
         <p className="text-center">Carregando configurações...</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6">Configurações</h1>
+    <div className="container mx-auto p-3 sm:p-6 max-w-6xl">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Configurações</h1>
 
-      <div className="space-y-6">
+      {/* Estatísticas Financeiras */}
+      {stats.alertas.length > 0 && (
+        <div className="mb-6 space-y-3">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5" />
+            Alertas Inteligentes
+          </h2>
+          <div className="grid gap-3">
+            {stats.alertas.map((alerta) => (
+              <Card key={alerta.id} className={`border-l-4 ${
+                alerta.tipo === 'sucesso' ? 'border-l-green-500 bg-green-50' :
+                alerta.tipo === 'alerta' ? 'border-l-yellow-500 bg-yellow-50' :
+                'border-l-red-500 bg-red-50'
+              }`}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-sm">{alerta.titulo}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">{alerta.mensagem}</p>
+                    </div>
+                    {alerta.acao && (
+                      <Button variant="outline" size="sm" className="text-xs">
+                        {alerta.acao}
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-4 sm:space-y-6">
         {/* Perfil do Usuário */}
         <Card>
           <CardHeader>
@@ -200,6 +365,7 @@ export const Configuracoes = () => {
                 <Input
                   id="nome"
                   value={profile?.nome || ""}
+                  onChange={(e) => setProfile(prev => prev ? {...prev, nome: e.target.value} : null)}
                   placeholder="Seu nome"
                 />
               </div>
@@ -214,7 +380,17 @@ export const Configuracoes = () => {
               </div>
             </div>
             <div className="mt-4">
-              <Button>Salvar Alterações</Button>
+              <Label htmlFor="meta-economia">Meta de Economia Mensal</Label>
+              <Input
+                id="meta-economia"
+                type="number"
+                value={profile?.meta_economia_mensal || ""}
+                onChange={(e) => setProfile(prev => prev ? {...prev, meta_economia_mensal: parseFloat(e.target.value) || 0} : null)}
+                placeholder="1000"
+              />
+            </div>
+            <div className="mt-4">
+              <Button onClick={handleSaveProfile}>Salvar Alterações</Button>
             </div>
           </CardContent>
         </Card>
@@ -258,6 +434,58 @@ export const Configuracoes = () => {
           </CardContent>
         </Card>
 
+        {/* Fontes de Renda */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Fontes de Renda
+              </div>
+              <Button size="sm" onClick={() => setShowFonteModal(true)}>
+                <Plus className="h-4 w-4 mr-1" />
+                Nova Fonte
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {fontes.length > 0 ? (
+              <div className="space-y-3">
+                {fontes.map((fonte) => (
+                  <div key={fonte.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <h3 className="font-medium">{fonte.tipo}</h3>
+                      {fonte.descricao && (
+                        <p className="text-sm text-muted-foreground">{fonte.descricao}</p>
+                      )}
+                    </div>
+                    <div className="text-right flex items-center gap-3">
+                      <div>
+                        <p className="font-medium">{formatCurrency(fonte.valor)}</p>
+                        <Badge variant={fonte.ativa ? "default" : "secondary"}>
+                          {fonte.ativa ? "Ativa" : "Inativa"}
+                        </Badge>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="outline" onClick={() => handleEditFonte(fonte)}>
+                          <Edit3 className="h-3 w-3" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => deleteFonte(fonte.id)}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground py-4">
+                Nenhuma fonte de renda cadastrada
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Cartões de Crédito */}
         <Card>
           <CardHeader>
@@ -266,7 +494,7 @@ export const Configuracoes = () => {
                 <CreditCard className="h-5 w-5" />
                 Cartões de Crédito
               </div>
-              <Button size="sm">
+              <Button size="sm" onClick={() => setShowCartaoModal(true)}>
                 <Plus className="h-4 w-4 mr-1" />
                 Novo Cartão
               </Button>
@@ -277,15 +505,34 @@ export const Configuracoes = () => {
               <div className="space-y-3">
                 {cartoes.map((cartao) => (
                   <div key={cartao.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <h3 className="font-medium">{cartao.nome}</h3>
+                    <div className="flex-1">
+                      <h3 className="font-medium">{cartao.apelido}</h3>
                       <p className="text-sm text-muted-foreground">
-                        •••• •••• •••• {cartao.final}
+                        •••• •••• •••• {cartao.ultimos_digitos}
                       </p>
+                      {cartao.dia_vencimento && (
+                        <p className="text-xs text-muted-foreground">
+                          Vencimento: dia {cartao.dia_vencimento}
+                        </p>
+                      )}
                     </div>
-                    <div className="text-right">
-                      <p className="font-medium">Limite: {formatCurrency(cartao.limite)}</p>
-                      <Badge variant="outline">Ativo</Badge>
+                    <div className="text-right flex items-center gap-3">
+                      <div>
+                        {cartao.limite && (
+                          <p className="font-medium">Limite: {formatCurrency(cartao.limite)}</p>
+                        )}
+                        <Badge variant={cartao.ativo ? "default" : "secondary"}>
+                          {cartao.ativo ? "Ativo" : "Inativo"}
+                        </Badge>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="outline" onClick={() => handleEditCartao(cartao)}>
+                          <Edit3 className="h-3 w-3" />
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => deleteCartao(cartao.id)}>
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -402,36 +649,203 @@ export const Configuracoes = () => {
           </CardContent>
         </Card>
 
-        {/* Metas Financeiras */}
+        {/* Resumo Financeiro */}
         <Card>
           <CardHeader>
-            <CardTitle>Metas Financeiras</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Resumo Financeiro
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="meta-economia">Meta de Economia Mensal</Label>
-                <Input
-                  id="meta-economia"
-                  type="number"
-                  placeholder="1000"
-                />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <p className="text-xs text-muted-foreground">Renda Registrada</p>
+                <p className="text-lg font-bold text-green-600">
+                  {formatCurrency(stats.rendaRegistrada)}
+                </p>
               </div>
-              <div>
-                <Label htmlFor="limite-gastos">Limite de Gastos Mensais</Label>
-                <Input
-                  id="limite-gastos"
-                  type="number"
-                  placeholder="3000"
-                />
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
+                <p className="text-xs text-muted-foreground">Renda Real</p>
+                <p className="text-lg font-bold text-blue-600">
+                  {formatCurrency(stats.rendaReal)}
+                </p>
+              </div>
+              <div className="text-center p-3 bg-purple-50 rounded-lg">
+                <p className="text-xs text-muted-foreground">Gastos Este Mês</p>
+                <p className="text-lg font-bold text-purple-600">
+                  {formatCurrency(stats.gastosEsteMes)}
+                </p>
+              </div>
+              <div className="text-center p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs text-muted-foreground">Saldo Atual</p>
+                <p className={`text-lg font-bold ${stats.saldoAtual >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatCurrency(stats.saldoAtual)}
+                </p>
               </div>
             </div>
-            <div className="mt-4">
-              <Button>Salvar Metas</Button>
+            
+            <Separator className="my-4" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-muted-foreground">Meta de Economia: {stats.percentualMetaEconomia.toFixed(1)}%</p>
+                <p className="text-muted-foreground">Transações WhatsApp: {stats.transacoesWhatsApp}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground">Limite Cartão Total: {formatCurrency(stats.limiteCartaoTotal)}</p>
+                <p className="text-muted-foreground">Transações Manuais: {stats.transacoesManuais}</p>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal Fonte de Renda */}
+      <Dialog open={showFonteModal} onOpenChange={setShowFonteModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingFonte ? 'Editar' : 'Nova'} Fonte de Renda</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={editingFonte ? handleUpdateFonte : handleAddFonte} className="space-y-4">
+            <div>
+              <Label htmlFor="fonte-tipo">Tipo</Label>
+              <Select value={fonteForm.tipo} onValueChange={(value) => setFonteForm(prev => ({...prev, tipo: value}))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Salário">Salário</SelectItem>
+                  <SelectItem value="Freelance">Freelance</SelectItem>
+                  <SelectItem value="Negócio Próprio">Negócio Próprio</SelectItem>
+                  <SelectItem value="Investimentos">Investimentos</SelectItem>
+                  <SelectItem value="Outros">Outros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="fonte-valor">Valor Mensal</Label>
+              <Input
+                id="fonte-valor"
+                type="number"
+                value={fonteForm.valor}
+                onChange={(e) => setFonteForm(prev => ({...prev, valor: e.target.value}))}
+                placeholder="0,00"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="fonte-descricao">Descrição (opcional)</Label>
+              <Input
+                id="fonte-descricao"
+                value={fonteForm.descricao}
+                onChange={(e) => setFonteForm(prev => ({...prev, descricao: e.target.value}))}
+                placeholder="Ex: Empresa XYZ, Projeto ABC..."
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={fonteForm.ativa}
+                onCheckedChange={(checked) => setFonteForm(prev => ({...prev, ativa: checked}))}
+              />
+              <Label>Fonte ativa</Label>
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1">
+                {editingFonte ? 'Atualizar' : 'Adicionar'}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setShowFonteModal(false);
+                  setEditingFonte(null);
+                  setFonteForm({ tipo: '', valor: '', descricao: '', ativa: true });
+                }}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Cartão */}
+      <Dialog open={showCartaoModal} onOpenChange={setShowCartaoModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingCartao ? 'Editar' : 'Novo'} Cartão de Crédito</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={editingCartao ? handleUpdateCartao : handleAddCartao} className="space-y-4">
+            <div>
+              <Label htmlFor="cartao-apelido">Apelido do Cartão</Label>
+              <Input
+                id="cartao-apelido"
+                value={cartaoForm.apelido}
+                onChange={(e) => setCartaoForm(prev => ({...prev, apelido: e.target.value}))}
+                placeholder="Ex: Cartão Principal, Nubank..."
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="cartao-digitos">Últimos 4 Dígitos</Label>
+              <Input
+                id="cartao-digitos"
+                value={cartaoForm.ultimos_digitos}
+                onChange={(e) => setCartaoForm(prev => ({...prev, ultimos_digitos: e.target.value}))}
+                placeholder="1234"
+                maxLength={4}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="cartao-limite">Limite (opcional)</Label>
+              <Input
+                id="cartao-limite"
+                type="number"
+                value={cartaoForm.limite}
+                onChange={(e) => setCartaoForm(prev => ({...prev, limite: e.target.value}))}
+                placeholder="0,00"
+              />
+            </div>
+            <div>
+              <Label htmlFor="cartao-vencimento">Dia do Vencimento (opcional)</Label>
+              <Input
+                id="cartao-vencimento"
+                type="number"
+                min="1"
+                max="31"
+                value={cartaoForm.dia_vencimento}
+                onChange={(e) => setCartaoForm(prev => ({...prev, dia_vencimento: e.target.value}))}
+                placeholder="Ex: 15"
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={cartaoForm.ativo}
+                onCheckedChange={(checked) => setCartaoForm(prev => ({...prev, ativo: checked}))}
+              />
+              <Label>Cartão ativo</Label>
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1">
+                {editingCartao ? 'Atualizar' : 'Adicionar'}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setShowCartaoModal(false);
+                  setEditingCartao(null);
+                  setCartaoForm({ apelido: '', ultimos_digitos: '', limite: '', dia_vencimento: '', ativo: true });
+                }}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

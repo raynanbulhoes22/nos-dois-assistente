@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -15,12 +16,17 @@ import {
   Heart,
   LogOut,
   Plus,
-  Filter
+  Filter,
+  Target,
+  AlertCircle,
+  Smartphone,
+  Edit3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TransactionForm } from "./TransactionForm";
 import { TransactionsList } from "./TransactionsList";
 import { FinancialChart } from "./FinancialChart";
+import { useFinancialStats } from "@/hooks/useFinancialStats";
 
 interface DashboardData {
   totalIncome: number;
@@ -51,6 +57,7 @@ export const Dashboard = ({ user }: { user: User }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const stats = useFinancialStats();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -221,6 +228,94 @@ export const Dashboard = ({ user }: { user: User }) => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Alertas Inteligentes */}
+        {stats.alertas.length > 0 && (
+          <div className="mb-6 space-y-3">
+            <div className="grid gap-3">
+              {stats.alertas.slice(0, 2).map((alerta) => (
+                <Card key={alerta.id} className={`border-l-4 ${
+                  alerta.tipo === 'sucesso' ? 'border-l-green-500 bg-green-50' :
+                  alerta.tipo === 'alerta' ? 'border-l-yellow-500 bg-yellow-50' :
+                  'border-l-red-500 bg-red-50'
+                } shadow-md touch-manipulation`}>
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <h3 className="font-medium text-sm">{alerta.titulo}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">{alerta.mensagem}</p>
+                      </div>
+                      {alerta.acao && (
+                        <Button variant="outline" size="sm" className="text-xs min-h-[32px] touch-manipulation">
+                          {alerta.acao}
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Smart Stats Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+          <Card className="group hover:scale-[1.02] transition-spring bg-white shadow-lg hover:shadow-xl border border-gray-200 touch-manipulation">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="h-4 w-4 text-green-500" />
+                <p className="text-xs font-medium text-gray-600">Meta Economia</p>
+              </div>
+              <div className="space-y-2">
+                <div className="text-lg sm:text-xl font-bold text-green-600">
+                  {stats.percentualMetaEconomia.toFixed(1)}%
+                </div>
+                <Progress value={Math.min(stats.percentualMetaEconomia, 100)} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="group hover:scale-[1.02] transition-spring bg-white shadow-lg hover:shadow-xl border border-gray-200 touch-manipulation">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <CreditCard className="h-4 w-4 text-purple-500" />
+                <p className="text-xs font-medium text-gray-600">Cartões</p>
+              </div>
+              <div className="text-lg sm:text-xl font-bold text-purple-600">
+                {formatCurrency(stats.limiteCartaoUsado)}
+              </div>
+              <p className="text-xs text-gray-500">
+                de {formatCurrency(stats.limiteCartaoTotal)}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="group hover:scale-[1.02] transition-spring bg-white shadow-lg hover:shadow-xl border border-gray-200 touch-manipulation">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Smartphone className="h-4 w-4 text-blue-500" />
+                <p className="text-xs font-medium text-gray-600">WhatsApp</p>
+              </div>
+              <div className="text-lg sm:text-xl font-bold text-blue-600">
+                {stats.transacoesWhatsApp}
+              </div>
+              <p className="text-xs text-gray-500">transações IA</p>
+            </CardContent>
+          </Card>
+
+          <Card className="group hover:scale-[1.02] transition-spring bg-white shadow-lg hover:shadow-xl border border-gray-200 touch-manipulation">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Edit3 className="h-4 w-4 text-orange-500" />
+                <p className="text-xs font-medium text-gray-600">Manuais</p>
+              </div>
+              <div className="text-lg sm:text-xl font-bold text-orange-600">
+                {stats.transacoesManuais}
+              </div>
+              <p className="text-xs text-gray-500">transações</p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Enhanced Financial Overview Cards */}

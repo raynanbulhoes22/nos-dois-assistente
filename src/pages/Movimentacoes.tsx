@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Movimentacao as MovType } from "@/hooks/useMovimentacoes";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
+import { useMovimentacoesFilters } from "@/hooks/useMovimentacoesFilters";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,11 +13,25 @@ import { TransactionForm } from "@/components/TransactionForm";
 import { useAuth } from "@/hooks/useAuth";
 import { MovimentacoesList } from "@/components/MovimentacoesList";
 import { MovimentacaoDetailsDialog } from "@/components/MovimentacaoDetailsDialog";
+import { MovimentacoesFilters } from "@/components/MovimentacoesFilters";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 export const Movimentacoes = () => {
   const { user } = useAuth();
   const { movimentacoes, entradas, saidas, isLoading, error, refetch } = useMovimentacoes();
+  const { 
+    filters,
+    filteredMovimentacoes,
+    filteredEntradas,
+    filteredSaidas,
+    availableCategories,
+    availablePaymentMethods,
+    valueRange,
+    updateFilter,
+    setPeriodPreset,
+    clearFilters,
+    hasActiveFilters
+  } = useMovimentacoesFilters(movimentacoes);
   const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState<'entrada' | 'saida'>('entrada');
@@ -97,8 +112,9 @@ export const Movimentacoes = () => {
     }).format(value);
   };
 
-  const totalEntradas = entradas.reduce((sum, item) => sum + item.valor, 0);
-  const totalSaidas = saidas.reduce((sum, item) => sum + item.valor, 0);
+  // Calculate totals based on filtered data
+  const totalEntradas = filteredEntradas.reduce((sum, item) => sum + item.valor, 0);
+  const totalSaidas = filteredSaidas.reduce((sum, item) => sum + item.valor, 0);
   const saldo = totalEntradas - totalSaidas;
 
   if (isLoading) {
@@ -167,7 +183,7 @@ export const Movimentacoes = () => {
               {formatCurrency(totalEntradas)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {entradas.length} transações
+              {filteredEntradas.length} de {entradas.length} transações
             </p>
           </CardContent>
         </Card>
@@ -182,7 +198,7 @@ export const Movimentacoes = () => {
               {formatCurrency(totalSaidas)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {saidas.length} transações
+              {filteredSaidas.length} de {saidas.length} transações
             </p>
           </CardContent>
         </Card>
@@ -201,14 +217,35 @@ export const Movimentacoes = () => {
               {formatCurrency(saldo)}
             </div>
             <p className="text-xs text-muted-foreground">
-              {movimentacoes.length} transações totais
+              {filteredMovimentacoes.length} de {movimentacoes.length} transações
             </p>
           </CardContent>
         </Card>
       </div>
 
+      {/* Filters */}
+      <MovimentacoesFilters
+        filters={filters}
+        availableCategories={availableCategories}
+        availablePaymentMethods={availablePaymentMethods}
+        valueRange={valueRange}
+        onFilterChange={updateFilter}
+        onPeriodPresetChange={setPeriodPreset}
+        onClearFilters={clearFilters}
+        hasActiveFilters={hasActiveFilters}
+        resultCount={filteredMovimentacoes.length}
+      />
+
       {/* Tabs de Movimentações */}
-      <Tabs defaultValue="todas" className="space-y-4 sm:space-y-6">
+      <Tabs 
+        defaultValue="todas" 
+        className="space-y-4 sm:space-y-6"
+        value={filters.transactionType === 'all' ? 'todas' : filters.transactionType}
+        onValueChange={(value) => {
+          const type = value === 'todas' ? 'all' : value as 'entradas' | 'saidas';
+          updateFilter('transactionType', type);
+        }}
+      >
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <TabsList className="grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="todas" className="text-xs sm:text-sm">Todas</TabsTrigger>
@@ -229,16 +266,25 @@ export const Movimentacoes = () => {
         </div>
 
         <TabsContent value="todas" className="space-y-4">
-          {movimentacoes.length === 0 ? (
+          {filteredMovimentacoes.length === 0 ? (
             <Card>
               <CardContent className="py-16 text-center">
-                <p className="text-muted-foreground">Nenhuma movimentação encontrada.</p>
-                <p className="text-sm text-muted-foreground mt-2">Adicione uma nova transação para começar.</p>
+                <p className="text-muted-foreground">
+                  {hasActiveFilters ? 'Nenhuma transação encontrada com os filtros aplicados.' : 'Nenhuma movimentação encontrada.'}
+                </p>
+                {!hasActiveFilters && (
+                  <p className="text-sm text-muted-foreground mt-2">Adicione uma nova transação para começar.</p>
+                )}
+                {hasActiveFilters && (
+                  <Button variant="outline" onClick={clearFilters} className="mt-3">
+                    Limpar Filtros
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ) : (
             <MovimentacoesList
-              items={movimentacoes}
+              items={filteredMovimentacoes}
               onItemClick={(m) => {
                 setSelected(m);
                 setDetailsOpen(true);
@@ -251,15 +297,22 @@ export const Movimentacoes = () => {
         </TabsContent>
 
         <TabsContent value="entradas" className="space-y-4">
-          {entradas.length === 0 ? (
+          {filteredEntradas.length === 0 ? (
             <Card>
               <CardContent className="py-16 text-center">
-                <p className="text-muted-foreground">Nenhuma entrada registrada ainda.</p>
+                <p className="text-muted-foreground">
+                  {hasActiveFilters ? 'Nenhuma entrada encontrada com os filtros aplicados.' : 'Nenhuma entrada registrada ainda.'}
+                </p>
+                {hasActiveFilters && (
+                  <Button variant="outline" onClick={clearFilters} className="mt-3">
+                    Limpar Filtros
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ) : (
             <MovimentacoesList
-              items={entradas}
+              items={filteredEntradas}
               onItemClick={(m) => {
                 setSelected(m);
                 setDetailsOpen(true);
@@ -272,15 +325,22 @@ export const Movimentacoes = () => {
         </TabsContent>
 
         <TabsContent value="saidas" className="space-y-4">
-          {saidas.length === 0 ? (
+          {filteredSaidas.length === 0 ? (
             <Card>
               <CardContent className="py-16 text-center">
-                <p className="text-muted-foreground">Nenhuma saída registrada ainda.</p>
+                <p className="text-muted-foreground">
+                  {hasActiveFilters ? 'Nenhuma saída encontrada com os filtros aplicados.' : 'Nenhuma saída registrada ainda.'}
+                </p>
+                {hasActiveFilters && (
+                  <Button variant="outline" onClick={clearFilters} className="mt-3">
+                    Limpar Filtros
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ) : (
             <MovimentacoesList
-              items={saidas}
+              items={filteredSaidas}
               onItemClick={(m) => {
                 setSelected(m);
                 setDetailsOpen(true);

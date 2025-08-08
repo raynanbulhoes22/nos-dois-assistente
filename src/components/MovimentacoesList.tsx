@@ -2,16 +2,22 @@ import React, { useRef, useMemo } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { Movimentacao } from "@/hooks/useMovimentacoes";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MoreVertical, Edit3, Trash2, Copy } from "lucide-react";
 
 interface MovimentacoesListProps {
   items: Movimentacao[];
   onItemClick?: (item: Movimentacao) => void;
+  onEdit?: (item: Movimentacao) => void;
+  onDelete?: (item: Movimentacao) => void;
+  onDuplicate?: (item: Movimentacao) => void;
 }
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
 
-export function MovimentacoesList({ items, onItemClick }: MovimentacoesListProps) {
+export function MovimentacoesList({ items, onItemClick, onEdit, onDelete, onDuplicate }: MovimentacoesListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
 
   const estimate = useMemo(() => 72, []);
@@ -42,13 +48,15 @@ export function MovimentacoesList({ items, onItemClick }: MovimentacoesListProps
                 width: "100%",
                 transform: `translateY(${virtualRow.start}px)`,
               }}
-              className="cursor-pointer focus-ring hover:bg-muted/50"
-              onClick={() => onItemClick?.(item)}
+              className="cursor-pointer focus-ring hover:bg-muted/50 group"
             >
               <div className="flex items-center justify-between px-4 py-3">
-                <div className="min-w-0">
+                <div 
+                  className="min-w-0 flex-1 cursor-pointer" 
+                  onClick={() => onItemClick?.(item)}
+                >
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="font-medium truncate max-w-[52vw] sm:max-w-[60vw]">
+                    <span className="font-medium truncate max-w-[45vw] sm:max-w-[55vw]">
                       {item.nome || "Sem descrição"}
                     </span>
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -67,10 +75,60 @@ export function MovimentacoesList({ items, onItemClick }: MovimentacoesListProps
                     )}
                   </div>
                 </div>
-                <div
-                  className={`font-semibold whitespace-nowrap ${item.isEntrada ? "text-income" : "text-expense"}`}
-                >
-                  {item.isEntrada ? "+" : "-"} {formatCurrency(item.valor)}
+                
+                <div className="flex items-center gap-2 ml-2">
+                  <div
+                    className={`font-semibold whitespace-nowrap ${item.isEntrada ? "text-income" : "text-expense"}`}
+                  >
+                    {item.isEntrada ? "+" : "-"} {formatCurrency(item.valor)}
+                  </div>
+                  
+                  {(onEdit || onDelete || onDuplicate) && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40">
+                        {onEdit && (
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit(item);
+                          }}>
+                            <Edit3 className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                        )}
+                        {onDuplicate && (
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            onDuplicate(item);
+                          }}>
+                            <Copy className="h-4 w-4 mr-2" />
+                            Duplicar
+                          </DropdownMenuItem>
+                        )}
+                        {onDelete && (
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onDelete(item);
+                            }}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Excluir
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
                 </div>
               </div>
               <div className="h-px bg-border" />

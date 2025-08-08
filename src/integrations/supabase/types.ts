@@ -161,6 +161,74 @@ export type Database = {
         }
         Relationships: []
       }
+      orcamentos_categorias: {
+        Row: {
+          categoria_nome: string
+          created_at: string
+          id: string
+          orcamento_id: string
+          updated_at: string
+          valor_orcado: number
+        }
+        Insert: {
+          categoria_nome: string
+          created_at?: string
+          id?: string
+          orcamento_id: string
+          updated_at?: string
+          valor_orcado?: number
+        }
+        Update: {
+          categoria_nome?: string
+          created_at?: string
+          id?: string
+          orcamento_id?: string
+          updated_at?: string
+          valor_orcado?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orcamentos_categorias_orcamento_id_fkey"
+            columns: ["orcamento_id"]
+            isOneToOne: false
+            referencedRelation: "orcamentos_mensais"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orcamentos_mensais: {
+        Row: {
+          ano: number
+          created_at: string
+          id: string
+          mes: number
+          meta_economia: number | null
+          saldo_inicial: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ano: number
+          created_at?: string
+          id?: string
+          mes: number
+          meta_economia?: number | null
+          saldo_inicial?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ano?: number
+          created_at?: string
+          id?: string
+          mes?: number
+          meta_economia?: number | null
+          saldo_inicial?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           cpf: string | null
@@ -230,6 +298,7 @@ export type Database = {
           recorrente: boolean | null
           tipo: string | null
           tipo_movimento: string | null
+          title: string | null
           user_id: string | null
           valor: number
         }
@@ -250,6 +319,7 @@ export type Database = {
           recorrente?: boolean | null
           tipo?: string | null
           tipo_movimento?: string | null
+          title?: string | null
           user_id?: string | null
           valor: number
         }
@@ -270,6 +340,7 @@ export type Database = {
           recorrente?: boolean | null
           tipo?: string | null
           tipo_movimento?: string | null
+          title?: string | null
           user_id?: string | null
           valor?: number
         }

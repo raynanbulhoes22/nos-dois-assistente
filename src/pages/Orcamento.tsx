@@ -1,10 +1,31 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Plus, 
+  CreditCard, 
+  TrendingUp, 
+  Edit3, 
+  Trash2, 
+  Target,
+  DollarSign,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useFontesRenda } from "@/hooks/useFontesRenda";
+import { useCartoes } from "@/hooks/useCartoes";
+import { useOrcamentos } from "@/hooks/useOrcamentos";
+import { useOrcamentoCategorias } from "@/hooks/useOrcamentoCategorias";
+import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 
 interface OrcamentoCategoria {
   categoria_nome: string;
@@ -13,73 +34,51 @@ interface OrcamentoCategoria {
   percentual: number;
 }
 
-interface OrcamentoMensal {
-  id: string;
-  mes: number;
-  ano: number;
-  saldo_inicial?: number;
-  meta_economia?: number;
-}
-
 export const Orcamento = () => {
   const { user } = useAuth();
-  const [orcamentoAtual, setOrcamentoAtual] = useState<OrcamentoMensal | null>(null);
-  const [categorias, setCategorias] = useState<OrcamentoCategoria[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+  
+  // Hooks para dados
+  const { fontes, addFonte, updateFonte, deleteFonte, isLoading: fontesLoading, getTotalRendaAtiva } = useFontesRenda();
+  const { cartoes, addCartao, updateCartao, deleteCartao, isLoading: cartoesLoading, getTotalLimite } = useCartoes();
+  const { getOrcamentoAtual, createOrcamento, updateOrcamento, isLoading: orcamentosLoading } = useOrcamentos();
+  const { movimentacoes } = useMovimentacoes();
+  
+  // Estados para navegação de mês/ano
+  const [mesAtual, setMesAtual] = useState(new Date().getMonth() + 1);
+  const [anoAtual, setAnoAtual] = useState(new Date().getFullYear());
+  
+  // Estados para modais
+  const [showFonteModal, setShowFonteModal] = useState(false);
+  const [showCartaoModal, setShowCartaoModal] = useState(false);
+  const [showOrcamentoModal, setShowOrcamentoModal] = useState(false);
+  const [editingFonte, setEditingFonte] = useState<any>(null);
+  const [editingCartao, setEditingCartao] = useState<any>(null);
+  
+  // Estados para formulários
+  const [fonteForm, setFonteForm] = useState({
+    tipo: '',
+    valor: '',
+    descricao: '',
+    ativa: true
+  });
+  const [cartaoForm, setCartaoForm] = useState({
+    apelido: '',
+    ultimos_digitos: '',
+    limite: '',
+    dia_vencimento: '',
+    ativo: true
+  });
+  const [orcamentoForm, setOrcamentoForm] = useState({
+    saldo_inicial: '',
+    meta_economia: ''
+  });
+  
+  const orcamentoAtual = getOrcamentoAtual();
+  
+  const isLoading = fontesLoading || cartoesLoading || orcamentosLoading;
 
-  const mesAtual = new Date().getMonth() + 1;
-  const anoAtual = new Date().getFullYear();
-
-  const fetchOrcamento = async () => {
-    if (!user) return;
-    
-    try {
-      // Por enquanto, vamos simular dados até que as tabelas sejam criadas
-      const orcamento: OrcamentoMensal = {
-        id: '1',
-        mes: mesAtual,
-        ano: anoAtual,
-        saldo_inicial: 5000,
-        meta_economia: 1000
-      };
-
-      setOrcamentoAtual(orcamento);
-
-      if (orcamento) {
-        // Simular categorias com gastos
-        const categoriasComGastos: OrcamentoCategoria[] = [
-          {
-            categoria_nome: 'Alimentação',
-            valor_orcado: 800,
-            valor_gasto: 650,
-            percentual: 81.25
-          },
-          {
-            categoria_nome: 'Transporte',
-            valor_orcado: 400,
-            valor_gasto: 450,
-            percentual: 112.5
-          },
-          {
-            categoria_nome: 'Lazer',
-            valor_orcado: 300,
-            valor_gasto: 180,
-            percentual: 60
-          }
-        ];
-        setCategorias(categoriasComGastos);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar orçamento:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchOrcamento();
-  }, [user]);
-
+  // Funções auxiliares
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -87,9 +86,154 @@ export const Orcamento = () => {
     }).format(value);
   };
 
-  const totalOrcado = categorias.reduce((total, cat) => total + cat.valor_orcado, 0);
-  const totalGasto = categorias.reduce((total, cat) => total + cat.valor_gasto, 0);
-  const percentualGeral = totalOrcado > 0 ? (totalGasto / totalOrcado) * 100 : 0;
+  const getMesNome = (mes: number) => {
+    const meses = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    return meses[mes - 1];
+  };
+
+  const navegarMes = (direcao: 'anterior' | 'proximo') => {
+    if (direcao === 'anterior') {
+      if (mesAtual === 1) {
+        setMesAtual(12);
+        setAnoAtual(anoAtual - 1);
+      } else {
+        setMesAtual(mesAtual - 1);
+      }
+    } else {
+      if (mesAtual === 12) {
+        setMesAtual(1);
+        setAnoAtual(anoAtual + 1);
+      } else {
+        setMesAtual(mesAtual + 1);
+      }
+    }
+  };
+
+  // Cálculos do orçamento
+  const totalRendaAtiva = getTotalRendaAtiva();
+  const totalLimiteCartoes = getTotalLimite();
+  
+  // Calcular gastos do mês atual baseado em movimentações
+  const gastosDoMes = movimentacoes
+    .filter(mov => {
+      const dataMovimento = new Date(mov.data);
+      return dataMovimento.getMonth() + 1 === mesAtual && 
+             dataMovimento.getFullYear() === anoAtual &&
+             mov.tipo_movimento === 'saida';
+    })
+    .reduce((total, mov) => total + mov.valor, 0);
+
+  // Funções para fontes de renda
+  const handleAddFonte = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await addFonte({
+      tipo: fonteForm.tipo,
+      valor: parseFloat(fonteForm.valor),
+      descricao: fonteForm.descricao,
+      ativa: fonteForm.ativa
+    });
+    
+    if (success) {
+      setShowFonteModal(false);
+      setFonteForm({ tipo: '', valor: '', descricao: '', ativa: true });
+    }
+  };
+
+  const handleEditFonte = (fonte: any) => {
+    setEditingFonte(fonte);
+    setFonteForm({
+      tipo: fonte.tipo,
+      valor: fonte.valor.toString(),
+      descricao: fonte.descricao || '',
+      ativa: fonte.ativa
+    });
+    setShowFonteModal(true);
+  };
+
+  const handleUpdateFonte = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingFonte) return;
+    
+    const success = await updateFonte(editingFonte.id, {
+      tipo: fonteForm.tipo,
+      valor: parseFloat(fonteForm.valor),
+      descricao: fonteForm.descricao,
+      ativa: fonteForm.ativa
+    });
+    
+    if (success) {
+      setShowFonteModal(false);
+      setEditingFonte(null);
+      setFonteForm({ tipo: '', valor: '', descricao: '', ativa: true });
+    }
+  };
+
+  // Funções para cartões
+  const handleAddCartao = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await addCartao({
+      apelido: cartaoForm.apelido,
+      ultimos_digitos: cartaoForm.ultimos_digitos,
+      limite: cartaoForm.limite ? parseFloat(cartaoForm.limite) : undefined,
+      dia_vencimento: cartaoForm.dia_vencimento ? parseInt(cartaoForm.dia_vencimento) : undefined,
+      ativo: cartaoForm.ativo
+    });
+    
+    if (success) {
+      setShowCartaoModal(false);
+      setCartaoForm({ apelido: '', ultimos_digitos: '', limite: '', dia_vencimento: '', ativo: true });
+    }
+  };
+
+  const handleEditCartao = (cartao: any) => {
+    setEditingCartao(cartao);
+    setCartaoForm({
+      apelido: cartao.apelido,
+      ultimos_digitos: cartao.ultimos_digitos,
+      limite: cartao.limite?.toString() || '',
+      dia_vencimento: cartao.dia_vencimento?.toString() || '',
+      ativo: cartao.ativo
+    });
+    setShowCartaoModal(true);
+  };
+
+  const handleUpdateCartao = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCartao) return;
+    
+    const success = await updateCartao(editingCartao.id, {
+      apelido: cartaoForm.apelido,
+      ultimos_digitos: cartaoForm.ultimos_digitos,
+      limite: cartaoForm.limite ? parseFloat(cartaoForm.limite) : undefined,
+      dia_vencimento: cartaoForm.dia_vencimento ? parseInt(cartaoForm.dia_vencimento) : undefined,
+      ativo: cartaoForm.ativo
+    });
+    
+    if (success) {
+      setShowCartaoModal(false);
+      setEditingCartao(null);
+      setCartaoForm({ apelido: '', ultimos_digitos: '', limite: '', dia_vencimento: '', ativo: true });
+    }
+  };
+
+  // Função para criar orçamento
+  const handleCreateOrcamento = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await createOrcamento({
+      mes: mesAtual,
+      ano: anoAtual,
+      saldo_inicial: parseFloat(orcamentoForm.saldo_inicial) || 0,
+      meta_economia: parseFloat(orcamentoForm.meta_economia) || 0
+    });
+    
+    if (success) {
+      setShowOrcamentoModal(false);
+      setOrcamentoForm({ saldo_inicial: '', meta_economia: '' });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -100,31 +244,186 @@ export const Orcamento = () => {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Orçamento</h1>
-        <Button>
+    <div className="container mx-auto p-3 sm:p-6 max-w-6xl">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold">Orçamento</h1>
+          <div className="flex items-center gap-3 mt-2">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => navegarMes('anterior')}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-lg font-medium min-w-[180px] text-center">
+              {getMesNome(mesAtual)} {anoAtual}
+            </span>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => navegarMes('proximo')}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        <Button onClick={() => setShowOrcamentoModal(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          {orcamentoAtual ? "Editar Orçamento" : "Novo Orçamento"}
+          {orcamentoAtual ? "Editar Orçamento" : "Criar Orçamento"}
         </Button>
       </div>
 
-      {!orcamentoAtual ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <h3 className="text-lg font-semibold mb-2">Nenhum orçamento encontrado</h3>
-            <p className="text-muted-foreground mb-4">
-              Crie seu primeiro orçamento mensal para começar a controlar seus gastos
-            </p>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Criar Orçamento
-            </Button>
-          </CardContent>
-        </Card>
+      {isLoading ? (
+        <div className="text-center py-12">
+          <p>Carregando dados...</p>
+        </div>
       ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="space-y-6">
+          {/* Seção 1: Fontes de Renda */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Fontes de Renda
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-lg font-bold text-green-600">
+                    {formatCurrency(totalRendaAtiva)}
+                  </span>
+                  <Button size="sm" onClick={() => setShowFonteModal(true)}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Nova Fonte
+                  </Button>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {fontes.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {fontes.filter(fonte => fonte.ativa).map((fonte) => (
+                    <div key={fonte.id} className="p-4 border rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-medium">{fonte.tipo}</h3>
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="outline" onClick={() => handleEditFonte(fonte)}>
+                            <Edit3 className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => deleteFonte(fonte.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      {fonte.descricao && (
+                        <p className="text-sm text-muted-foreground mb-2">{fonte.descricao}</p>
+                      )}
+                      <p className="text-lg font-bold text-green-600">{formatCurrency(fonte.valor)}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">Nenhuma fonte de renda cadastrada</p>
+                  <Button onClick={() => setShowFonteModal(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Primeira Fonte
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Seção 2: Cartões de Crédito */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Cartões de Crédito
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-lg font-bold text-blue-600">
+                    Limite: {formatCurrency(totalLimiteCartoes)}
+                  </span>
+                  <Button size="sm" onClick={() => setShowCartaoModal(true)}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Novo Cartão
+                  </Button>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {cartoes.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {cartoes.filter(cartao => cartao.ativo).map((cartao) => (
+                    <div key={cartao.id} className="p-4 border rounded-lg">
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-medium">{cartao.apelido}</h3>
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="outline" onClick={() => handleEditCartao(cartao)}>
+                            <Edit3 className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => deleteCartao(cartao.id)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        •••• •••• •••• {cartao.ultimos_digitos}
+                      </p>
+                      {cartao.limite && (
+                        <p className="text-lg font-bold text-blue-600">{formatCurrency(cartao.limite)}</p>
+                      )}
+                      {cartao.dia_vencimento && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Vencimento: dia {cartao.dia_vencimento}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">Nenhum cartão cadastrado</p>
+                  <Button onClick={() => setShowCartaoModal(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Primeiro Cartão
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Seção 3: Métricas do Orçamento */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Renda Total
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-green-600">
+                  {formatCurrency(totalRendaAtiva)}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Gastos do Mês
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-red-600">
+                  {formatCurrency(gastosDoMes)}
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -133,31 +432,7 @@ export const Orcamento = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {formatCurrency(orcamentoAtual.saldo_inicial || 0)}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Orçado
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(totalOrcado)}</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Total Gasto
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600">
-                  {formatCurrency(totalGasto)}
+                  {formatCurrency(orcamentoAtual?.saldo_inicial || 0)}
                 </div>
               </CardContent>
             </Card>
@@ -169,63 +444,266 @@ export const Orcamento = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {formatCurrency(orcamentoAtual.meta_economia || 0)}
+                <div className="text-2xl font-bold text-blue-600">
+                  {formatCurrency(orcamentoAtual?.meta_economia || 0)}
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Seção 4: Análise de Orçamento */}
+          {orcamentoAtual && (
             <Card>
               <CardHeader>
-                <CardTitle>Progresso Geral</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Gastos vs Orçamento</span>
-                    <span>{percentualGeral.toFixed(1)}%</span>
-                  </div>
-                  <Progress value={Math.min(percentualGeral, 100)} className="h-3" />
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>{formatCurrency(totalGasto)}</span>
-                    <span>{formatCurrency(totalOrcado)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Categorias</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Análise do Orçamento
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {categorias.map((categoria) => (
-                    <div key={categoria.categoria_nome} className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="font-medium">{categoria.categoria_nome}</span>
-                        <span className={categoria.percentual > 100 ? "text-red-600" : ""}>
-                          {categoria.percentual.toFixed(1)}%
-                        </span>
-                      </div>
-                      <Progress 
-                        value={Math.min(categoria.percentual, 100)} 
-                        className="h-2"
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>{formatCurrency(categoria.valor_gasto)}</span>
-                        <span>{formatCurrency(categoria.valor_orcado)}</span>
-                      </div>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <div className="flex justify-between text-sm mb-2">
+                      <span>Progresso dos Gastos</span>
+                      <span>{totalRendaAtiva > 0 ? ((gastosDoMes / totalRendaAtiva) * 100).toFixed(1) : 0}%</span>
                     </div>
-                  ))}
+                    <Progress 
+                      value={totalRendaAtiva > 0 ? Math.min((gastosDoMes / totalRendaAtiva) * 100, 100) : 0} 
+                      className="h-3" 
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                      <span>Gasto: {formatCurrency(gastosDoMes)}</span>
+                      <span>Renda: {formatCurrency(totalRendaAtiva)}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <p className="text-muted-foreground">Sobra Estimada</p>
+                      <p className="text-lg font-bold text-green-600">
+                        {formatCurrency(Math.max(0, totalRendaAtiva - gastosDoMes))}
+                      </p>
+                    </div>
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <p className="text-muted-foreground">Meta de Economia</p>
+                      <p className="text-lg font-bold text-blue-600">
+                        {orcamentoAtual.meta_economia ? 
+                          `${((Math.max(0, totalRendaAtiva - gastosDoMes) / orcamentoAtual.meta_economia) * 100).toFixed(1)}%` : 
+                          'Não definida'
+                        }
+                      </p>
+                    </div>
+                    <div className="text-center p-3 bg-purple-50 rounded-lg">
+                      <p className="text-muted-foreground">Limite de Crédito</p>
+                      <p className="text-lg font-bold text-purple-600">
+                        {formatCurrency(totalLimiteCartoes)}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </>
+          )}
+        </div>
       )}
+
+      {/* Modal Fonte de Renda */}
+      <Dialog open={showFonteModal} onOpenChange={setShowFonteModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingFonte ? 'Editar' : 'Nova'} Fonte de Renda</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={editingFonte ? handleUpdateFonte : handleAddFonte} className="space-y-4">
+            <div>
+              <Label htmlFor="fonte-tipo">Tipo</Label>
+              <Select value={fonteForm.tipo} onValueChange={(value) => setFonteForm(prev => ({...prev, tipo: value}))}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Salário">Salário</SelectItem>
+                  <SelectItem value="Freelance">Freelance</SelectItem>
+                  <SelectItem value="Negócio Próprio">Negócio Próprio</SelectItem>
+                  <SelectItem value="Investimentos">Investimentos</SelectItem>
+                  <SelectItem value="Outros">Outros</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="fonte-valor">Valor Mensal</Label>
+              <Input
+                id="fonte-valor"
+                type="number"
+                value={fonteForm.valor}
+                onChange={(e) => setFonteForm(prev => ({...prev, valor: e.target.value}))}
+                placeholder="0,00"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="fonte-descricao">Descrição (opcional)</Label>
+              <Input
+                id="fonte-descricao"
+                value={fonteForm.descricao}
+                onChange={(e) => setFonteForm(prev => ({...prev, descricao: e.target.value}))}
+                placeholder="Ex: Empresa XYZ, Projeto ABC..."
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={fonteForm.ativa}
+                onCheckedChange={(checked) => setFonteForm(prev => ({...prev, ativa: checked}))}
+              />
+              <Label>Fonte ativa</Label>
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1">
+                {editingFonte ? 'Atualizar' : 'Adicionar'}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setShowFonteModal(false);
+                  setEditingFonte(null);
+                  setFonteForm({ tipo: '', valor: '', descricao: '', ativa: true });
+                }}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Cartão */}
+      <Dialog open={showCartaoModal} onOpenChange={setShowCartaoModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingCartao ? 'Editar' : 'Novo'} Cartão de Crédito</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={editingCartao ? handleUpdateCartao : handleAddCartao} className="space-y-4">
+            <div>
+              <Label htmlFor="cartao-apelido">Apelido do Cartão</Label>
+              <Input
+                id="cartao-apelido"
+                value={cartaoForm.apelido}
+                onChange={(e) => setCartaoForm(prev => ({...prev, apelido: e.target.value}))}
+                placeholder="Ex: Cartão Principal, Nubank..."
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="cartao-digitos">Últimos 4 Dígitos</Label>
+              <Input
+                id="cartao-digitos"
+                value={cartaoForm.ultimos_digitos}
+                onChange={(e) => setCartaoForm(prev => ({...prev, ultimos_digitos: e.target.value}))}
+                placeholder="1234"
+                maxLength={4}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="cartao-limite">Limite (opcional)</Label>
+              <Input
+                id="cartao-limite"
+                type="number"
+                value={cartaoForm.limite}
+                onChange={(e) => setCartaoForm(prev => ({...prev, limite: e.target.value}))}
+                placeholder="0,00"
+              />
+            </div>
+            <div>
+              <Label htmlFor="cartao-vencimento">Dia do Vencimento (opcional)</Label>
+              <Input
+                id="cartao-vencimento"
+                type="number"
+                min="1"
+                max="31"
+                value={cartaoForm.dia_vencimento}
+                onChange={(e) => setCartaoForm(prev => ({...prev, dia_vencimento: e.target.value}))}
+                placeholder="Ex: 15"
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={cartaoForm.ativo}
+                onCheckedChange={(checked) => setCartaoForm(prev => ({...prev, ativo: checked}))}
+              />
+              <Label>Cartão ativo</Label>
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1">
+                {editingCartao ? 'Atualizar' : 'Adicionar'}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setShowCartaoModal(false);
+                  setEditingCartao(null);
+                  setCartaoForm({ apelido: '', ultimos_digitos: '', limite: '', dia_vencimento: '', ativo: true });
+                }}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Orçamento */}
+      <Dialog open={showOrcamentoModal} onOpenChange={setShowOrcamentoModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {orcamentoAtual ? 'Editar' : 'Criar'} Orçamento - {getMesNome(mesAtual)} {anoAtual}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreateOrcamento} className="space-y-4">
+            <div>
+              <Label htmlFor="saldo-inicial">Saldo Inicial</Label>
+              <Input
+                id="saldo-inicial"
+                type="number"
+                value={orcamentoForm.saldo_inicial}
+                onChange={(e) => setOrcamentoForm(prev => ({...prev, saldo_inicial: e.target.value}))}
+                placeholder="0,00"
+              />
+            </div>
+            <div>
+              <Label htmlFor="meta-economia">Meta de Economia</Label>
+              <Input
+                id="meta-economia"
+                type="number"
+                value={orcamentoForm.meta_economia}
+                onChange={(e) => setOrcamentoForm(prev => ({...prev, meta_economia: e.target.value}))}
+                placeholder="0,00"
+              />
+            </div>
+            <div className="p-3 bg-muted/50 rounded-lg text-sm">
+              <p><strong>Renda Ativa:</strong> {formatCurrency(totalRendaAtiva)}</p>
+              <p><strong>Limite Total:</strong> {formatCurrency(totalLimiteCartoes)}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" className="flex-1">
+                {orcamentoAtual ? 'Atualizar' : 'Criar'}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setShowOrcamentoModal(false);
+                  setOrcamentoForm({ saldo_inicial: '', meta_economia: '' });
+                }}
+              >
+                Cancelar
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

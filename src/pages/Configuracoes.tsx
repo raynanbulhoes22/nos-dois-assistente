@@ -4,16 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, CreditCard, User, Heart, DollarSign, Trash2, Edit3, TrendingUp, AlertTriangle } from "lucide-react";
+import { User, Heart, DollarSign, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useFontesRenda } from "@/hooks/useFontesRenda";
-import { useCartoes } from "@/hooks/useCartoes";
 import { useFinancialStats } from "@/hooks/useFinancialStats";
 
 interface Profile {
@@ -27,35 +22,12 @@ interface Profile {
 
 export const Configuracoes = () => {
   const { user } = useAuth();
-  const { fontes, addFonte, updateFonte, deleteFonte, isLoading: fontesLoading } = useFontesRenda();
-  const { cartoes, addCartao, updateCartao, deleteCartao, isLoading: cartoesLoading } = useCartoes();
   const stats = useFinancialStats();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [isConnectingWhatsapp, setIsConnectingWhatsapp] = useState(false);
   const [isRemovingWhatsapp, setIsRemovingWhatsapp] = useState(false);
-  
-  // Modais
-  const [showFonteModal, setShowFonteModal] = useState(false);
-  const [showCartaoModal, setShowCartaoModal] = useState(false);
-  const [editingFonte, setEditingFonte] = useState<any>(null);
-  const [editingCartao, setEditingCartao] = useState<any>(null);
-  
-  // Formulários
-  const [fonteForm, setFonteForm] = useState({
-    tipo: '',
-    valor: '',
-    descricao: '',
-    ativa: true
-  });
-  const [cartaoForm, setCartaoForm] = useState({
-    apelido: '',
-    ultimos_digitos: '',
-    limite: '',
-    dia_vencimento: '',
-    ativo: true
-  });
   
   const { toast } = useToast();
 
@@ -173,98 +145,6 @@ export const Configuracoes = () => {
     }
   };
 
-  // Funções para fontes de renda
-  const handleAddFonte = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const success = await addFonte({
-      tipo: fonteForm.tipo,
-      valor: parseFloat(fonteForm.valor),
-      descricao: fonteForm.descricao,
-      ativa: fonteForm.ativa
-    });
-    
-    if (success) {
-      setShowFonteModal(false);
-      setFonteForm({ tipo: '', valor: '', descricao: '', ativa: true });
-    }
-  };
-
-  const handleEditFonte = (fonte: any) => {
-    setEditingFonte(fonte);
-    setFonteForm({
-      tipo: fonte.tipo,
-      valor: fonte.valor.toString(),
-      descricao: fonte.descricao || '',
-      ativa: fonte.ativa
-    });
-    setShowFonteModal(true);
-  };
-
-  const handleUpdateFonte = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingFonte) return;
-    
-    const success = await updateFonte(editingFonte.id, {
-      tipo: fonteForm.tipo,
-      valor: parseFloat(fonteForm.valor),
-      descricao: fonteForm.descricao,
-      ativa: fonteForm.ativa
-    });
-    
-    if (success) {
-      setShowFonteModal(false);
-      setEditingFonte(null);
-      setFonteForm({ tipo: '', valor: '', descricao: '', ativa: true });
-    }
-  };
-
-  // Funções para cartões
-  const handleAddCartao = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const success = await addCartao({
-      apelido: cartaoForm.apelido,
-      ultimos_digitos: cartaoForm.ultimos_digitos,
-      limite: cartaoForm.limite ? parseFloat(cartaoForm.limite) : undefined,
-      dia_vencimento: cartaoForm.dia_vencimento ? parseInt(cartaoForm.dia_vencimento) : undefined,
-      ativo: cartaoForm.ativo
-    });
-    
-    if (success) {
-      setShowCartaoModal(false);
-      setCartaoForm({ apelido: '', ultimos_digitos: '', limite: '', dia_vencimento: '', ativo: true });
-    }
-  };
-
-  const handleEditCartao = (cartao: any) => {
-    setEditingCartao(cartao);
-    setCartaoForm({
-      apelido: cartao.apelido,
-      ultimos_digitos: cartao.ultimos_digitos,
-      limite: cartao.limite?.toString() || '',
-      dia_vencimento: cartao.dia_vencimento?.toString() || '',
-      ativo: cartao.ativo
-    });
-    setShowCartaoModal(true);
-  };
-
-  const handleUpdateCartao = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingCartao) return;
-    
-    const success = await updateCartao(editingCartao.id, {
-      apelido: cartaoForm.apelido,
-      ultimos_digitos: cartaoForm.ultimos_digitos,
-      limite: cartaoForm.limite ? parseFloat(cartaoForm.limite) : undefined,
-      dia_vencimento: cartaoForm.dia_vencimento ? parseInt(cartaoForm.dia_vencimento) : undefined,
-      ativo: cartaoForm.ativo
-    });
-    
-    if (success) {
-      setShowCartaoModal(false);
-      setEditingCartao(null);
-      setCartaoForm({ apelido: '', ultimos_digitos: '', limite: '', dia_vencimento: '', ativo: true });
-    }
-  };
 
   const handleSaveProfile = async () => {
     if (!user || !profile) return;
@@ -304,7 +184,7 @@ export const Configuracoes = () => {
     }).format(value);
   };
 
-  if (isLoading || fontesLoading || cartoesLoading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto p-3 sm:p-6">
         <p className="text-center">Carregando configurações...</p>
@@ -434,116 +314,6 @@ export const Configuracoes = () => {
           </CardContent>
         </Card>
 
-        {/* Fontes de Renda */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Fontes de Renda
-              </div>
-              <Button size="sm" onClick={() => setShowFonteModal(true)}>
-                <Plus className="h-4 w-4 mr-1" />
-                Nova Fonte
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {fontes.length > 0 ? (
-              <div className="space-y-3">
-                {fontes.map((fonte) => (
-                  <div key={fonte.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="font-medium">{fonte.tipo}</h3>
-                      {fonte.descricao && (
-                        <p className="text-sm text-muted-foreground">{fonte.descricao}</p>
-                      )}
-                    </div>
-                    <div className="text-right flex items-center gap-3">
-                      <div>
-                        <p className="font-medium">{formatCurrency(fonte.valor)}</p>
-                        <Badge variant={fonte.ativa ? "default" : "secondary"}>
-                          {fonte.ativa ? "Ativa" : "Inativa"}
-                        </Badge>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="outline" onClick={() => handleEditFonte(fonte)}>
-                          <Edit3 className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => deleteFonte(fonte.id)}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-muted-foreground py-4">
-                Nenhuma fonte de renda cadastrada
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Cartões de Crédito */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5" />
-                Cartões de Crédito
-              </div>
-              <Button size="sm" onClick={() => setShowCartaoModal(true)}>
-                <Plus className="h-4 w-4 mr-1" />
-                Novo Cartão
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {cartoes.length > 0 ? (
-              <div className="space-y-3">
-                {cartoes.map((cartao) => (
-                  <div key={cartao.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="font-medium">{cartao.apelido}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        •••• •••• •••• {cartao.ultimos_digitos}
-                      </p>
-                      {cartao.dia_vencimento && (
-                        <p className="text-xs text-muted-foreground">
-                          Vencimento: dia {cartao.dia_vencimento}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right flex items-center gap-3">
-                      <div>
-                        {cartao.limite && (
-                          <p className="font-medium">Limite: {formatCurrency(cartao.limite)}</p>
-                        )}
-                        <Badge variant={cartao.ativo ? "default" : "secondary"}>
-                          {cartao.ativo ? "Ativo" : "Inativo"}
-                        </Badge>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="outline" onClick={() => handleEditCartao(cartao)}>
-                          <Edit3 className="h-3 w-3" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => deleteCartao(cartao.id)}>
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-center text-muted-foreground py-4">
-                Nenhum cartão cadastrado
-              </p>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Notificações */}
         <Card>
@@ -701,151 +471,6 @@ export const Configuracoes = () => {
         </Card>
       </div>
 
-      {/* Modal Fonte de Renda */}
-      <Dialog open={showFonteModal} onOpenChange={setShowFonteModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingFonte ? 'Editar' : 'Nova'} Fonte de Renda</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={editingFonte ? handleUpdateFonte : handleAddFonte} className="space-y-4">
-            <div>
-              <Label htmlFor="fonte-tipo">Tipo</Label>
-              <Select value={fonteForm.tipo} onValueChange={(value) => setFonteForm(prev => ({...prev, tipo: value}))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Salário">Salário</SelectItem>
-                  <SelectItem value="Freelance">Freelance</SelectItem>
-                  <SelectItem value="Negócio Próprio">Negócio Próprio</SelectItem>
-                  <SelectItem value="Investimentos">Investimentos</SelectItem>
-                  <SelectItem value="Outros">Outros</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="fonte-valor">Valor Mensal</Label>
-              <Input
-                id="fonte-valor"
-                type="number"
-                value={fonteForm.valor}
-                onChange={(e) => setFonteForm(prev => ({...prev, valor: e.target.value}))}
-                placeholder="0,00"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="fonte-descricao">Descrição (opcional)</Label>
-              <Input
-                id="fonte-descricao"
-                value={fonteForm.descricao}
-                onChange={(e) => setFonteForm(prev => ({...prev, descricao: e.target.value}))}
-                placeholder="Ex: Empresa XYZ, Projeto ABC..."
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={fonteForm.ativa}
-                onCheckedChange={(checked) => setFonteForm(prev => ({...prev, ativa: checked}))}
-              />
-              <Label>Fonte ativa</Label>
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" className="flex-1">
-                {editingFonte ? 'Atualizar' : 'Adicionar'}
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => {
-                  setShowFonteModal(false);
-                  setEditingFonte(null);
-                  setFonteForm({ tipo: '', valor: '', descricao: '', ativa: true });
-                }}
-              >
-                Cancelar
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal Cartão */}
-      <Dialog open={showCartaoModal} onOpenChange={setShowCartaoModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingCartao ? 'Editar' : 'Novo'} Cartão de Crédito</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={editingCartao ? handleUpdateCartao : handleAddCartao} className="space-y-4">
-            <div>
-              <Label htmlFor="cartao-apelido">Apelido do Cartão</Label>
-              <Input
-                id="cartao-apelido"
-                value={cartaoForm.apelido}
-                onChange={(e) => setCartaoForm(prev => ({...prev, apelido: e.target.value}))}
-                placeholder="Ex: Cartão Principal, Nubank..."
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="cartao-digitos">Últimos 4 Dígitos</Label>
-              <Input
-                id="cartao-digitos"
-                value={cartaoForm.ultimos_digitos}
-                onChange={(e) => setCartaoForm(prev => ({...prev, ultimos_digitos: e.target.value}))}
-                placeholder="1234"
-                maxLength={4}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="cartao-limite">Limite (opcional)</Label>
-              <Input
-                id="cartao-limite"
-                type="number"
-                value={cartaoForm.limite}
-                onChange={(e) => setCartaoForm(prev => ({...prev, limite: e.target.value}))}
-                placeholder="0,00"
-              />
-            </div>
-            <div>
-              <Label htmlFor="cartao-vencimento">Dia do Vencimento (opcional)</Label>
-              <Input
-                id="cartao-vencimento"
-                type="number"
-                min="1"
-                max="31"
-                value={cartaoForm.dia_vencimento}
-                onChange={(e) => setCartaoForm(prev => ({...prev, dia_vencimento: e.target.value}))}
-                placeholder="Ex: 15"
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                checked={cartaoForm.ativo}
-                onCheckedChange={(checked) => setCartaoForm(prev => ({...prev, ativo: checked}))}
-              />
-              <Label>Cartão ativo</Label>
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" className="flex-1">
-                {editingCartao ? 'Atualizar' : 'Adicionar'}
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => {
-                  setShowCartaoModal(false);
-                  setEditingCartao(null);
-                  setCartaoForm({ apelido: '', ultimos_digitos: '', limite: '', dia_vencimento: '', ativo: true });
-                }}
-              >
-                Cancelar
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

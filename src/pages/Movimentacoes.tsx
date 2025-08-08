@@ -156,123 +156,145 @@ export const Movimentacoes = () => {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Compact Header */}
-      <div className="p-3 sm:p-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold">Movimentações</h1>
-            <p className="text-muted-foreground text-sm">
-              {filteredMovimentacoes.length} de {movimentacoes.length} transações
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={refetch} variant="outline" size="sm">
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-            <Button onClick={() => setShowForm(true)} size="sm" className="gap-2">
-              <Plus className="h-4 w-4" />
-              <span className="hidden xs:inline">Nova</span>
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Compact Summary Cards */}
-      <div className="px-3 sm:px-4 py-3">
-        <div className="grid grid-cols-3 gap-2 sm:gap-4">
-          <div className="bg-card rounded-lg p-3 border">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="h-2 w-2 rounded-full bg-green-500"></div>
-              <span className="text-xs text-muted-foreground">Entradas</span>
+    <div className="page-container">
+      <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className="p-4 sm:p-6 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div className="page-header">
+              <h1 className="page-title">Movimentações</h1>
+              <p className="page-subtitle">
+                {filteredMovimentacoes.length} de {movimentacoes.length} transações
+              </p>
             </div>
-            <div className="text-sm sm:text-lg font-bold text-green-600">
-              {formatCurrency(totalEntradas)}
+            <div className="flex gap-2">
+              <Button onClick={refetch} variant="outline" size="sm" className="hover-lift">
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              <Button onClick={() => setShowForm(true)} size="sm" className="button-gradient gap-2">
+                <Plus className="h-4 w-4" />
+                <span className="hidden xs:inline">Nova</span>
+              </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {filteredEntradas.length} de {entradas.length}
-            </p>
-          </div>
-
-          <div className="bg-card rounded-lg p-3 border">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="h-2 w-2 rounded-full bg-red-500"></div>
-              <span className="text-xs text-muted-foreground">Saídas</span>
-            </div>
-            <div className="text-sm sm:text-lg font-bold text-red-600">
-              {formatCurrency(totalSaidas)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {filteredSaidas.length} de {saidas.length}
-            </p>
-          </div>
-
-          <div className="bg-card rounded-lg p-3 border">
-            <div className="flex items-center gap-2 mb-1">
-              <div className={`h-2 w-2 rounded-full ${saldo >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
-              <span className="text-xs text-muted-foreground">Saldo</span>
-            </div>
-            <div className={`text-sm sm:text-lg font-bold ${saldo >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {formatCurrency(saldo)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Total geral
-            </p>
           </div>
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="px-3 sm:px-4">
-        <MovimentacoesFilters
-          filters={filters}
-          availableCategories={availableCategories}
-          availablePaymentMethods={availablePaymentMethods}
-          valueRange={valueRange}
-          onFilterChange={updateFilter}
-          onPeriodPresetChange={setPeriodPreset}
-          onClearFilters={clearFilters}
-          hasActiveFilters={hasActiveFilters}
-          resultCount={filteredMovimentacoes.length}
-        />
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 overflow-hidden">
-        <Tabs 
-          defaultValue="todas" 
-          className="flex flex-col h-full"
-          value={filters.transactionType === 'all' ? 'todas' : filters.transactionType}
-          onValueChange={(value) => {
-            const type = value === 'todas' ? 'all' : value as 'entradas' | 'saidas';
-            updateFilter('transactionType', type);
-          }}
-        >
-          <div className="px-3 sm:px-4 pb-3">
-            <TabsList className="grid w-full max-w-md grid-cols-3 h-9">
-              <TabsTrigger value="todas" className="text-xs">Todas</TabsTrigger>
-              <TabsTrigger value="entradas" className="text-xs">Entradas</TabsTrigger>
-              <TabsTrigger value="saidas" className="text-xs">Saídas</TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent value="todas" className="flex-1 px-3 sm:px-4 pb-4 overflow-hidden">
-            {filteredMovimentacoes.length === 0 ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <p className="text-muted-foreground">
-                    {hasActiveFilters ? 'Nenhuma transação encontrada' : 'Nenhuma movimentação encontrada'}
-                  </p>
-                  {!hasActiveFilters && (
-                    <p className="text-sm text-muted-foreground mt-1">Adicione uma nova transação</p>
-                  )}
-                  {hasActiveFilters && (
-                    <Button variant="outline" onClick={clearFilters} className="mt-2" size="sm">
-                      Limpar Filtros
-                    </Button>
-                  )}
+        {/* Summary Cards */}
+        <div className="px-4 sm:px-6 py-4">
+          <div className="metric-grid max-w-3xl">
+            <Card className="metric-card metric-card-success">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="icon-container icon-success">
+                    <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-success">Entradas</p>
+                    <p className="text-xl font-bold text-success">
+                      {formatCurrency(totalEntradas)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {filteredEntradas.length} de {entradas.length}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+
+            <Card className="metric-card metric-card-error">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="icon-container icon-error">
+                    <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-error">Saídas</p>
+                    <p className="text-xl font-bold text-error">
+                      {formatCurrency(totalSaidas)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {filteredSaidas.length} de {saidas.length}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="metric-card">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className={`icon-container ${saldo >= 0 ? 'icon-success' : 'icon-error'}`}>
+                    <div className={`h-3 w-3 rounded-full ${saldo >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-muted-foreground">Saldo</p>
+                    <p className={`text-xl font-bold ${saldo >= 0 ? 'text-success' : 'text-error'}`}>
+                      {formatCurrency(saldo)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Total geral
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="px-4 sm:px-6">
+          <MovimentacoesFilters
+            filters={filters}
+            availableCategories={availableCategories}
+            availablePaymentMethods={availablePaymentMethods}
+            valueRange={valueRange}
+            onFilterChange={updateFilter}
+            onPeriodPresetChange={setPeriodPreset}
+            onClearFilters={clearFilters}
+            hasActiveFilters={hasActiveFilters}
+            resultCount={filteredMovimentacoes.length}
+          />
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-hidden">
+          <Tabs 
+            defaultValue="todas" 
+            className="flex flex-col h-full"
+            value={filters.transactionType === 'all' ? 'todas' : filters.transactionType}
+            onValueChange={(value) => {
+              const type = value === 'todas' ? 'all' : value as 'entradas' | 'saidas';
+              updateFilter('transactionType', type);
+            }}
+          >
+            <div className="px-4 sm:px-6 pb-3">
+              <TabsList className="grid w-full max-w-md grid-cols-3 h-10">
+                <TabsTrigger value="todas" className="text-sm">Todas</TabsTrigger>
+                <TabsTrigger value="entradas" className="text-sm">Entradas</TabsTrigger>
+                <TabsTrigger value="saidas" className="text-sm">Saídas</TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="todas" className="flex-1 px-4 sm:px-6 pb-4 overflow-hidden">
+              {filteredMovimentacoes.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-state-icon bg-muted">
+                    <Plus className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">
+                      {hasActiveFilters ? 'Nenhuma transação encontrada' : 'Nenhuma movimentação encontrada'}
+                    </h3>
+                    {!hasActiveFilters && (
+                      <p className="text-muted-foreground mt-1">Adicione uma nova transação</p>
+                    )}
+                    {hasActiveFilters && (
+                      <Button variant="outline" onClick={clearFilters} className="mt-4" size="sm">
+                        Limpar Filtros
+                      </Button>
+                    )}
+                  </div>
+                </div>
             ) : (
               <div className="h-full overflow-hidden">
                 <MovimentacoesList
@@ -409,6 +431,7 @@ export const Movimentacoes = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      </div>
     </div>
   );
 };

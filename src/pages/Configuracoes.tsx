@@ -193,51 +193,59 @@ export const Configuracoes = () => {
   }
 
   return (
-    <div className="container mx-auto p-3 sm:p-6 max-w-6xl">
-      <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Configurações</h1>
-
-      {/* Estatísticas Financeiras */}
-      {stats.alertas.length > 0 && (
-        <div className="mb-6 space-y-3">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
-            Alertas Inteligentes
-          </h2>
-          <div className="grid gap-3">
-            {stats.alertas.map((alerta) => (
-              <Card key={alerta.id} className={`border-l-4 ${
-                alerta.tipo === 'sucesso' ? 'border-l-green-500 bg-green-50' :
-                alerta.tipo === 'alerta' ? 'border-l-yellow-500 bg-yellow-50' :
-                'border-l-red-500 bg-red-50'
-              }`}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-sm">{alerta.titulo}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">{alerta.mensagem}</p>
-                    </div>
-                    {alerta.acao && (
-                      <Button variant="outline" size="sm" className="text-xs">
-                        {alerta.acao}
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+    <div className="page-container">
+      <div className="page-content">
+        <div className="page-header">
+          <h1 className="page-title">Configurações</h1>
+          <p className="page-subtitle">Gerencie suas preferências e configurações do sistema</p>
         </div>
-      )}
 
-      <div className="space-y-4 sm:space-y-6">
-        {/* Perfil do Usuário */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Perfil do Usuário
-            </CardTitle>
-          </CardHeader>
+        {/* Estatísticas Financeiras */}
+        {stats.alertas.length > 0 && (
+          <div className="mb-8 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="icon-container icon-warning">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <h2 className="text-xl font-semibold">Alertas Inteligentes</h2>
+            </div>
+            <div className="grid gap-4">
+              {stats.alertas.map((alerta) => (
+                <Card key={alerta.id} className={`card-modern border-l-4 ${
+                  alerta.tipo === 'sucesso' ? 'border-l-green-500 bg-success-muted' :
+                  alerta.tipo === 'alerta' ? 'border-l-yellow-500 bg-warning-muted' :
+                  'border-l-red-500 bg-error-muted'
+                }`}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{alerta.titulo}</h3>
+                        <p className="text-muted-foreground mt-1">{alerta.mensagem}</p>
+                      </div>
+                      {alerta.acao && (
+                        <Button variant="outline" size="sm">
+                          {alerta.acao}
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-8">
+          {/* Perfil do Usuário */}
+          <Card className="section-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <div className="icon-container icon-primary">
+                  <User className="h-5 w-5" />
+                </div>
+                Perfil do Usuário
+              </CardTitle>
+            </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -273,109 +281,118 @@ export const Configuracoes = () => {
               <Button onClick={handleSaveProfile}>Salvar Alterações</Button>
             </div>
           </CardContent>
-        </Card>
+          </Card>
 
-        {/* Sistema de Casal */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Heart className="h-5 w-5" />
-              Sistema de Casal
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
+          {/* Sistema de Casal */}
+          <Card className="section-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <div className="icon-container bg-pink-100 dark:bg-pink-900/20 text-pink-600">
+                  <Heart className="h-5 w-5" />
+                </div>
+                Sistema de Casal
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold">Modo Individual</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Visualizar apenas suas próprias transações
+                    </p>
+                  </div>
+                  <Switch />
+                </div>
+                
+                <Separator />
+                
                 <div>
-                  <h3 className="font-medium">Modo Individual</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Visualizar apenas suas próprias transações
+                  <Label className="text-base font-semibold">Código do Grupo</Label>
+                  <div className="flex gap-2 mt-2">
+                    <Input
+                      placeholder="Digite o código do seu parceiro"
+                      value={profile?.grupo_id || ""}
+                    />
+                    <Button variant="outline">Conectar</Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Seu código: <code className="bg-muted px-2 py-1 rounded text-xs">{user?.id.slice(0, 8)}</code>
                   </p>
                 </div>
-                <Switch />
               </div>
-              
-              <Separator />
-              
-              <div>
-                <Label>Código do Grupo</Label>
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    placeholder="Digite o código do seu parceiro"
-                    value={profile?.grupo_id || ""}
-                  />
-                  <Button variant="outline">Conectar</Button>
+            </CardContent>
+          </Card>
+
+          {/* Notificações */}
+          <Card className="section-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <div className="icon-container bg-orange-100 dark:bg-orange-900/20 text-orange-600">
+                  <AlertTriangle className="h-5 w-5" />
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Seu código: <code className="bg-muted px-1 rounded">{user?.id.slice(0, 8)}</code>
+                Notificações
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold">E-mail</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Receber relatórios mensais por e-mail
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold">Lembretes de Pagamento</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Alertas sobre vencimentos próximos
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold">Alertas de Orçamento</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Notificar quando ultrapassar 80% do orçamento
+                    </p>
+                  </div>
+                  <Switch defaultChecked />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Integração WhatsApp */}
+          <Card className="section-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <div className="icon-container bg-green-100 dark:bg-green-900/20 text-green-600">
+                  <DollarSign className="h-5 w-5" />
+                </div>
+                Integração WhatsApp
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <p className="text-muted-foreground">
+                  Conecte seu WhatsApp para registrar gastos por mensagem ou áudio
                 </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-
-        {/* Notificações */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Notificações</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">E-mail</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Receber relatórios mensais por e-mail
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">Lembretes de Pagamento</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Alertas sobre vencimentos próximos
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">Alertas de Orçamento</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Notificar quando ultrapassar 80% do orçamento
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Integração WhatsApp */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Integração WhatsApp</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Conecte seu WhatsApp para registrar gastos por mensagem ou áudio
-              </p>
-              
-              {(profile as any)?.numero_wpp ? (
-                // Número já conectado - mostrar info e opção de remover
-                <div className="space-y-3">
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                
+                {(profile as any)?.numero_wpp ? (
+                  <div className="p-4 bg-success-muted border border-green-200 dark:border-green-800 rounded-xl">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-green-800">
+                        <p className="font-semibold text-success">
                           ✅ WhatsApp Conectado
                         </p>
-                        <p className="text-sm text-green-600">
+                        <p className="text-sm text-success">
                           Número: +{(profile as any).numero_wpp}
                         </p>
                       </div>
@@ -390,87 +407,99 @@ export const Configuracoes = () => {
                       </Button>
                     </div>
                   </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="+55 (11) 99999-9999" 
+                      value={whatsappNumber}
+                      onChange={(e) => setWhatsappNumber(e.target.value)}
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={handleConnectWhatsapp}
+                      disabled={isConnectingWhatsapp}
+                    >
+                      {isConnectingWhatsapp ? "Conectando..." : "Conectar"}
+                    </Button>
+                  </div>
+                )}
+                
+                <div className="p-4 bg-muted/50 rounded-xl">
+                  <p className="text-sm">
+                    <strong>Como usar:</strong> Envie mensagens como "Gastei R$ 50 no supermercado" 
+                    para registrar automaticamente suas despesas.
+                  </p>
                 </div>
-              ) : (
-                // Nenhum número conectado - mostrar formulário
-                <div className="flex gap-2">
-                  <Input 
-                    placeholder="+55 (11) 99999-9999" 
-                    value={whatsappNumber}
-                    onChange={(e) => setWhatsappNumber(e.target.value)}
-                  />
-                  <Button 
-                    variant="outline" 
-                    onClick={handleConnectWhatsapp}
-                    disabled={isConnectingWhatsapp}
-                  >
-                    {isConnectingWhatsapp ? "Conectando..." : "Conectar"}
-                  </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Resumo Financeiro */}
+          <Card className="section-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <div className="icon-container icon-success">
+                  <DollarSign className="h-5 w-5" />
                 </div>
-              )}
+                Resumo Financeiro
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="metric-grid">
+                <div className="text-center p-6 bg-success-muted rounded-xl border">
+                  <div className="icon-container icon-success mx-auto mb-3">
+                    <DollarSign className="h-6 w-6" />
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-1">Renda Registrada</p>
+                  <p className="text-xl font-bold text-success">
+                    {formatCurrency(stats.rendaRegistrada)}
+                  </p>
+                </div>
+                <div className="text-center p-6 bg-blue-50 dark:bg-blue-950/20 rounded-xl border">
+                  <div className="icon-container icon-primary mx-auto mb-3">
+                    <DollarSign className="h-6 w-6" />
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-1">Renda Real</p>
+                  <p className="text-xl font-bold text-blue-600">
+                    {formatCurrency(stats.rendaReal)}
+                  </p>
+                </div>
+                <div className="text-center p-6 bg-error-muted rounded-xl border">
+                  <div className="icon-container icon-error mx-auto mb-3">
+                    <DollarSign className="h-6 w-6" />
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-1">Gastos Este Mês</p>
+                  <p className="text-xl font-bold text-error">
+                    {formatCurrency(stats.gastosEsteMes)}
+                  </p>
+                </div>
+                <div className="text-center p-6 bg-purple-50 dark:bg-purple-950/20 rounded-xl border">
+                  <div className="icon-container icon-purple mx-auto mb-3">
+                    <DollarSign className="h-6 w-6" />
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-1">Saldo Atual</p>
+                  <p className={`text-xl font-bold ${stats.saldoAtual >= 0 ? 'text-success' : 'text-error'}`}>
+                    {formatCurrency(stats.saldoAtual)}
+                  </p>
+                </div>
+              </div>
               
-              <div className="p-3 bg-accent/50 rounded-lg">
-                <p className="text-sm">
-                  <strong>Como usar:</strong> Envie mensagens como "Gastei R$ 50 no supermercado" 
-                  para registrar automaticamente suas despesas.
-                </p>
+              <Separator className="my-6" />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                <div className="space-y-2">
+                  <p className="text-muted-foreground">Meta de Economia: <span className="font-semibold">{stats.percentualMetaEconomia.toFixed(1)}%</span></p>
+                  <p className="text-muted-foreground">Transações WhatsApp: <span className="font-semibold">{stats.transacoesWhatsApp}</span></p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-muted-foreground">Limite Cartão Total: <span className="font-semibold">{formatCurrency(stats.limiteCartaoTotal)}</span></p>
+                  <p className="text-muted-foreground">Transações Manuais: <span className="font-semibold">{stats.transacoesManuais}</span></p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Resumo Financeiro */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              Resumo Financeiro
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <p className="text-xs text-muted-foreground">Renda Registrada</p>
-                <p className="text-lg font-bold text-green-600">
-                  {formatCurrency(stats.rendaRegistrada)}
-                </p>
-              </div>
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <p className="text-xs text-muted-foreground">Renda Real</p>
-                <p className="text-lg font-bold text-blue-600">
-                  {formatCurrency(stats.rendaReal)}
-                </p>
-              </div>
-              <div className="text-center p-3 bg-purple-50 rounded-lg">
-                <p className="text-xs text-muted-foreground">Gastos Este Mês</p>
-                <p className="text-lg font-bold text-purple-600">
-                  {formatCurrency(stats.gastosEsteMes)}
-                </p>
-              </div>
-              <div className="text-center p-3 bg-gray-50 rounded-lg">
-                <p className="text-xs text-muted-foreground">Saldo Atual</p>
-                <p className={`text-lg font-bold ${stats.saldoAtual >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatCurrency(stats.saldoAtual)}
-                </p>
-              </div>
-            </div>
-            
-            <Separator className="my-4" />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="text-muted-foreground">Meta de Economia: {stats.percentualMetaEconomia.toFixed(1)}%</p>
-                <p className="text-muted-foreground">Transações WhatsApp: {stats.transacoesWhatsApp}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Limite Cartão Total: {formatCurrency(stats.limiteCartaoTotal)}</p>
-                <p className="text-muted-foreground">Transações Manuais: {stats.transacoesManuais}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
     </div>
   );
 };

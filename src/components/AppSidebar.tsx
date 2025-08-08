@@ -2,7 +2,7 @@ import {
   Home, 
   TrendingUp, 
   TrendingDown, 
-  CreditCard, 
+  Crown, 
   Target, 
   AlertTriangle, 
   FileText, 
@@ -32,7 +32,7 @@ const mainNavigationItems = [
 ];
 
 const bottomNavigationItems = [
-  { title: "Meu Plano", url: "/assinaturas", icon: CreditCard },
+  { title: "Meu Plano", url: "/assinaturas", icon: Crown },
   { title: "Configurações", url: "/configuracoes", icon: Settings },
 ];
 

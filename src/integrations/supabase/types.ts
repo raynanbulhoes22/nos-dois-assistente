@@ -104,18 +104,21 @@ export type Database = {
           email: string | null
           id: string
           nome: string | null
+          numero_wpp: string | null
         }
         Insert: {
           created_at?: string | null
           email?: string | null
           id: string
           nome?: string | null
+          numero_wpp?: string | null
         }
         Update: {
           created_at?: string | null
           email?: string | null
           id?: string
           nome?: string | null
+          numero_wpp?: string | null
         }
         Relationships: []
       }
@@ -131,6 +134,7 @@ export type Database = {
           id_transacao: string | null
           instituicao: string | null
           nome: string | null
+          numero_wpp: string | null
           observacao: string | null
           origem: string | null
           recorrente: boolean | null
@@ -150,6 +154,7 @@ export type Database = {
           id_transacao?: string | null
           instituicao?: string | null
           nome?: string | null
+          numero_wpp?: string | null
           observacao?: string | null
           origem?: string | null
           recorrente?: boolean | null
@@ -169,6 +174,7 @@ export type Database = {
           id_transacao?: string | null
           instituicao?: string | null
           nome?: string | null
+          numero_wpp?: string | null
           observacao?: string | null
           origem?: string | null
           recorrente?: boolean | null

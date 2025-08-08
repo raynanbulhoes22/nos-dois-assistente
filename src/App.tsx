@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthForm } from "@/components/AuthForm";
 import { AppSidebar } from "@/components/AppSidebar";
+import { SubscriptionRedirect } from "@/components/SubscriptionRedirect";
 import Index from "./pages/Index";
 import { Movimentacoes } from "./pages/Movimentacoes";
 import { Assinaturas } from "./pages/Assinaturas";
@@ -58,17 +59,19 @@ const App = () => {
                   </div>
                 </header>
                 <main className="flex-1 overflow-auto">
-                  <Routes>
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="/dashboard" element={<Index />} />
-                    <Route path="/movimentacoes" element={<Movimentacoes />} />
-                    <Route path="/assinaturas" element={<Assinaturas />} />
-                    <Route path="/orcamento" element={<Orcamento />} />
-                    <Route path="/dividas" element={<Dividas />} />
-                    <Route path="/relatorios" element={<Relatorios />} />
-                    <Route path="/configuracoes" element={<Configuracoes />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  <SubscriptionRedirect>
+                    <Routes>
+                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                      <Route path="/dashboard" element={<Index />} />
+                      <Route path="/movimentacoes" element={<Movimentacoes />} />
+                      <Route path="/assinaturas" element={<Assinaturas />} />
+                      <Route path="/orcamento" element={<Orcamento />} />
+                      <Route path="/dividas" element={<Dividas />} />
+                      <Route path="/relatorios" element={<Relatorios />} />
+                      <Route path="/configuracoes" element={<Configuracoes />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </SubscriptionRedirect>
                 </main>
               </div>
             </div>

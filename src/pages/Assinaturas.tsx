@@ -95,6 +95,10 @@ export const Assinaturas = () => {
     handleRefresh();
   }, [user]);
 
+  // Check if user was redirected here for first-time subscription
+  const isFirstTimeUser = localStorage.getItem('redirect_to_subscription') === 'true' || 
+                         (!status?.subscribed && localStorage.getItem(`user_accessed_${user?.email}`) === null);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -128,8 +132,29 @@ export const Assinaturas = () => {
         </div>
       </div>
 
+      {/* Welcome Message for New Users */}
+      {isFirstTimeUser && !status?.subscribed && (
+        <Card className="mb-6 border-blue-500 bg-blue-50/50">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2">
+              <Badge variant="secondary" className="bg-blue-500 text-white">
+                Bem-vindo ao LucraAI!
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div>
+              <p className="text-lg font-semibold">Primeiro acesso detectado</p>
+              <p className="text-sm text-muted-foreground">
+                Para começar a usar todas as funcionalidades, escolha um dos planos abaixo
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Status da Assinatura em Destaque */}
-      {status && (
+      {status && !isFirstTimeUser && (
         <Card className={`mb-6 ${status.subscribed ? 'border-green-500 bg-green-50/50' : 'border-orange-500 bg-orange-50/50'}`}>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">

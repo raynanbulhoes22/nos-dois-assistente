@@ -33,17 +33,7 @@ const App = () => {
   }
 
   if (!user) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5">
-            <AuthForm />
-          </div>
-          <Toaster />
-          <Sonner />
-        </TooltipProvider>
-      </QueryClientProvider>
-    );
+    return <AuthForm />;
   }
 
   return (

@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { MoreVertical, Edit3, Trash2, Copy } from "lucide-react";
+import { getCategoryColorClass } from "@/lib/categoryColors";
+import { cn } from "@/lib/utils";
 
 interface MovimentacoesListProps {
   items: Movimentacao[];
@@ -65,9 +67,14 @@ export function MovimentacoesList({ items, onItemClick, onEdit, onDelete, onDupl
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground flex items-center gap-2 min-w-0">
                     {item.categoria && (
-                      <Badge variant={item.isEntrada ? "default" : "secondary"}>
+                      <span 
+                        className={cn(
+                          "px-2 py-1 rounded-md text-xs font-medium border",
+                          getCategoryColorClass(item.categoria)
+                        )}
+                      >
                         {item.categoria}
-                      </Badge>
+                      </span>
                     )}
                     {item.forma_pagamento && <span>{item.forma_pagamento}</span>}
                     {item.estabelecimento && (

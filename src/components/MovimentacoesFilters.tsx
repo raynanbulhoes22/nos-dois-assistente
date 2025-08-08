@@ -18,6 +18,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getCategoryColorClass } from '@/lib/categoryColors';
 import type { MovimentacoesFilters as MovimentacoesFiltersType } from '@/hooks/useMovimentacoesFilters';
 
 interface MovimentacoesFiltersProps {
@@ -89,13 +90,19 @@ export const MovimentacoesFilters = ({
           </Badge>
         )}
         {filters.categories.slice(0, 2).map(category => (
-          <Badge key={category} variant="secondary" className="text-xs gap-1">
+          <span
+            key={category}
+            className={cn(
+              "inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border",
+              getCategoryColorClass(category)
+            )}
+          >
             {category}
             <X 
-              className="h-3 w-3 cursor-pointer hover:bg-background rounded" 
+              className="h-3 w-3 cursor-pointer hover:bg-background/20 rounded" 
               onClick={() => handleCategoryToggle(category)}
             />
-          </Badge>
+          </span>
         ))}
         {filters.categories.length > 2 && (
           <Badge variant="secondary" className="text-xs">
@@ -189,7 +196,10 @@ export const MovimentacoesFilters = ({
                       />
                       <label 
                         htmlFor={`cat-${category}`}
-                        className="text-xs cursor-pointer flex-1"
+                        className={cn(
+                          "text-xs cursor-pointer flex-1 px-2 py-1 rounded-md border",
+                          getCategoryColorClass(category)
+                        )}
                       >
                         {category}
                       </label>
@@ -285,7 +295,10 @@ export const MovimentacoesFilters = ({
                         />
                         <label 
                           htmlFor={`mobile-cat-${category}`}
-                          className="text-sm cursor-pointer flex-1"
+                          className={cn(
+                            "text-sm cursor-pointer flex-1 px-2 py-1 rounded-md border font-medium",
+                            getCategoryColorClass(category)
+                          )}
                         >
                           {category}
                         </label>

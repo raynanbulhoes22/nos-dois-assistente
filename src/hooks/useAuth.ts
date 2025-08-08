@@ -37,7 +37,7 @@ export const useAuth = () => {
 
       setOnboardingCompleted(profileData?.onboarding_completed || false);
     } catch (error) {
-      console.error('Erro ao verificar assinatura:', error);
+      console.error('Erro ao verificar plano:', error);
     } finally {
       setSubscriptionLoading(false);
     }

@@ -23,7 +23,7 @@ export const useSubscription = () => {
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
       if (error) {
-        console.error('Erro ao verificar assinatura:', error);
+        console.error('Erro ao verificar plano:', error);
         setStatus({ subscribed: false });
         return;
       }

@@ -45,7 +45,7 @@ export const Assinaturas = () => {
       if (error) throw error;
       setStatus(data as any);
     } catch (e: any) {
-      toast({ title: "Erro ao verificar assinatura", description: e.message || "Tente novamente", variant: "destructive" });
+      toast({ title: "Erro ao verificar plano", description: e.message || "Tente novamente", variant: "destructive" });
     }
   };
 
@@ -62,11 +62,11 @@ export const Assinaturas = () => {
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Planos LucraAI</h1>
+        <h1 className="text-3xl font-bold">Meu Plano</h1>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handleRefresh} disabled={busy}>Atualizar status</Button>
           {status?.subscribed && (
-            <Button onClick={handlePortal} disabled={busy}>Gerenciar assinatura</Button>
+            <Button onClick={handlePortal} disabled={busy}>Gerenciar plano</Button>
           )}
         </div>
       </div>
@@ -92,13 +92,13 @@ export const Assinaturas = () => {
         </Card>
       )}
 
-      {/* Status da Assinatura em Destaque */}
+      {/* Status do Plano em Destaque */}
       {status && !isFirstTimeUser && (
         <Card className={`mb-6 ${status.subscribed ? 'border-green-500 bg-green-50/50' : 'border-orange-500 bg-orange-50/50'}`}>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2">
               <Badge variant={status.subscribed ? "default" : "secondary"} className={status.subscribed ? "bg-green-500" : ""}>
-                {status.subscribed ? "Assinatura Ativa" : "Sem Assinatura"}
+                {status.subscribed ? "Plano Ativo" : "Sem Plano"}
               </Badge>
             </CardTitle>
           </CardHeader>
@@ -117,7 +117,7 @@ export const Assinaturas = () => {
               </div>
             ) : (
               <div>
-                <p className="text-lg font-semibold">Nenhuma assinatura ativa</p>
+                <p className="text-lg font-semibold">Nenhum plano ativo</p>
                 <p className="text-sm text-muted-foreground">Escolha um plano abaixo para começar</p>
               </div>
             )}
@@ -144,7 +144,7 @@ export const Assinaturas = () => {
             </div>
             {(!status?.subscribed || status.subscription_tier !== "Solo") && (
               <Button onClick={() => handleCheckout("solo")} disabled={busy}>
-                {status?.subscribed ? "Trocar" : "Assinar"}
+                {status?.subscribed ? "Trocar" : "Contratar"}
               </Button>
             )}
           </CardContent>
@@ -167,7 +167,7 @@ export const Assinaturas = () => {
             </div>
             {(!status?.subscribed || status.subscription_tier !== "Casal") && (
               <Button onClick={() => handleCheckout("casal")} disabled={busy}>
-                {status?.subscribed ? "Trocar" : "Assinar"}
+                {status?.subscribed ? "Trocar" : "Contratar"}
               </Button>
             )}
           </CardContent>

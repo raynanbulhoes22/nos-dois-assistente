@@ -13,7 +13,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   useEffect(() => {
     if (!loading && user && subscriptionStatus !== null && onboardingCompleted !== null) {
-      // If user has no active subscription and is not on the subscription page
+      // If user has no active subscription and is not on the plan page
       if (!subscriptionStatus.subscribed && location.pathname !== '/assinaturas') {
         navigate('/assinaturas', { replace: true });
         return;
@@ -26,7 +26,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     }
   }, [loading, user, subscriptionStatus, onboardingCompleted, location.pathname, navigate]);
 
-  // Show loading while checking subscription
+  // Show loading while checking plan
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -35,7 +35,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // If no subscription and not on subscription page, don't render content
+  // If no subscription and not on plan page, don't render content
   if (user && subscriptionStatus && !subscriptionStatus.subscribed && location.pathname !== '/assinaturas') {
     return null;
   }

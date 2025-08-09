@@ -132,19 +132,19 @@ const tiposFinanciamento = [
 
 export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ onSelect }) => {
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header Limpo */}
-      <div className="text-center space-y-3 px-6">
-        <h2 className="text-xl font-semibold text-foreground">
+    <div className="space-y-4 animate-fade-in">
+      {/* Header Mobile-First */}
+      <div className="text-center space-y-2 px-2">
+        <h2 className="text-lg font-semibold text-foreground">
           Selecione o tipo de conta
         </h2>
-        <p className="text-muted-foreground text-sm leading-relaxed">
-          Cada tipo possui campos específicos para melhor organização
+        <p className="text-muted-foreground text-xs leading-relaxed">
+          Cada tipo possui campos específicos para organização
         </p>
       </div>
       
-      {/* Grid Melhorado */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-6 max-h-[50vh] overflow-y-auto">
+      {/* Layout Mobile-First: Lista vertical no mobile, grid no desktop */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 px-2">
         {tiposFinanciamento.map((tipo, index) => {
           const Icone = tipo.icone;
           
@@ -152,7 +152,7 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
             <div 
               key={tipo.id}
               className="animate-scale-in hover-scale group"
-              style={{ animationDelay: `${index * 80}ms` }}
+              style={{ animationDelay: `${index * 60}ms` }}
             >
               <Button
                 variant="ghost"
@@ -160,35 +160,35 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
                   relative w-full h-auto p-0 overflow-hidden 
                   bg-gradient-to-br ${tipo.bgGradient} 
                   border-2 ${tipo.borderColor}
-                  hover:shadow-lg hover:shadow-primary/10
+                  hover:shadow-md hover:shadow-primary/10
                   hover:border-primary/30 hover:-translate-y-0.5
                   active:translate-y-0 active:scale-98
                   transition-all duration-300 ease-out
-                  min-h-[110px] focus-visible:ring-2 focus-visible:ring-primary
+                  min-h-[75px] focus-visible:ring-2 focus-visible:ring-primary
                 `}
                 onClick={() => onSelect(tipo.id)}
                 aria-label={`Selecionar ${tipo.nome} - ${tipo.descricao}`}
               >
                 {/* Badge Popular */}
                 {tipo.popular && (
-                  <div className="absolute top-2 right-2 z-10">
+                  <div className="absolute top-1.5 right-1.5 z-10">
                     <Badge 
                       variant="secondary" 
-                      className="bg-primary text-primary-foreground text-[10px] px-2 py-0.5 font-medium shadow-md"
+                      className="bg-primary text-primary-foreground text-[9px] px-1.5 py-0.5 font-medium shadow-md"
                     >
                       Popular
                     </Badge>
                   </div>
                 )}
                 
-                <div className="w-full p-4 space-y-3 text-left">
-                  {/* Header do Card */}
-                  <div className="flex items-center gap-3">
+                <div className="w-full p-3 space-y-2 text-left">
+                  {/* Header Compacto */}
+                  <div className="flex items-center gap-2.5">
                     <div className={`
-                      p-2 rounded-xl bg-gradient-to-br ${tipo.gradient}
-                      shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300
+                      p-1.5 rounded-lg bg-gradient-to-br ${tipo.gradient}
+                      shadow-sm group-hover:scale-105 transition-transform duration-300
                     `}>
-                      <Icone className="h-4 w-4 text-white" />
+                      <Icone className="h-3.5 w-3.5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className={`
@@ -197,19 +197,23 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
                       `}>
                         {tipo.nome}
                       </h3>
-                      <p className="text-xs text-muted-foreground/80 leading-relaxed mt-0.5">
+                      <p className="text-[10px] text-muted-foreground/80 leading-tight mt-0.5">
                         {tipo.descricao}
                       </p>
                     </div>
+                    <ChevronRight className={`
+                      h-3.5 w-3.5 ${tipo.textColor} 
+                      group-hover:translate-x-1 transition-transform duration-300 flex-shrink-0
+                    `} />
                   </div>
                   
-                  {/* Campos Essenciais */}
+                  {/* Campos Essenciais - Ultra Compacto */}
                   <div className="flex flex-wrap gap-1">
                     {tipo.campos.slice(0, 2).map((campo, index) => (
                       <Badge 
                         key={index}
                         variant="outline" 
-                        className="text-[10px] px-2 py-0.5 bg-white/70 border-white/50 text-muted-foreground font-medium"
+                        className="text-[9px] px-1.5 py-0.5 bg-white/70 border-white/50 text-muted-foreground font-medium"
                       >
                         {campo}
                       </Badge>
@@ -217,19 +221,11 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
                     {tipo.campos.length > 2 && (
                       <Badge 
                         variant="outline" 
-                        className="text-[10px] px-2 py-0.5 bg-white/70 border-white/50 text-muted-foreground font-medium"
+                        className="text-[9px] px-1.5 py-0.5 bg-white/70 border-white/50 text-muted-foreground font-medium"
                       >
                         +{tipo.campos.length - 2}
                       </Badge>
                     )}
-                  </div>
-                  
-                  {/* Call to Action */}
-                  <div className="flex items-center justify-end mt-auto">
-                    <ChevronRight className={`
-                      h-3.5 w-3.5 ${tipo.textColor} 
-                      group-hover:translate-x-1 transition-transform duration-300
-                    `} />
                   </div>
                 </div>
               </Button>
@@ -238,9 +234,9 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
         })}
       </div>
       
-      {/* Footer Simples */}
-      <div className="text-center px-4 pt-2">
-        <p className="text-xs text-muted-foreground">
+      {/* Footer Compacto */}
+      <div className="text-center px-2 pt-1">
+        <p className="text-[10px] text-muted-foreground">
           💡 Apenas os campos essenciais para organizar suas contas
         </p>
       </div>

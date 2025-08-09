@@ -62,15 +62,77 @@ export const TimelinePrevisao: React.FC<TimelinePrevisaoProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">Projeção dos Próximos 12 Meses</h3>
-        <Badge variant="outline" className="text-muted-foreground">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <h3 className="text-lg sm:text-xl font-semibold text-foreground">Projeção dos Próximos 12 Meses</h3>
+        <Badge variant="outline" className="text-muted-foreground w-fit">
           Timeline Financeira
         </Badge>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {/* Mobile: Scroll horizontal, Desktop: Grid */}
+      <div className="block sm:hidden">
+        <div className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory">
+          {previsoes.map((previsao, index) => (
+            <Card
+              key={`${previsao.mes}-${previsao.ano}`}
+              className={`flex-shrink-0 w-72 p-4 cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] snap-start ${getStatusColor(previsao.status)}`}
+              onClick={() => onMesClick?.(previsao)}
+            >
+              <div className="space-y-3">
+                {/* Header do Mês */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {getStatusIcon(previsao.status)}
+                    <h4 className="font-medium text-sm">
+                      {getMesNome(previsao.mes)} {previsao.ano}
+                    </h4>
+                  </div>
+                  {getStatusBadge(previsao.status)}
+                </div>
+
+                {/* Saldo Principal */}
+                <div className="text-center py-2">
+                  <p className="text-xs text-muted-foreground">Saldo Projetado</p>
+                  <p className={`text-xl font-bold ${
+                    previsao.saldoProjetado >= 0 ? 'text-success' : 'text-destructive'
+                  }`}>
+                    {formatCurrency(previsao.saldoProjetado)}
+                  </p>
+                </div>
+
+                {/* Métricas Compactas */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="text-center">
+                    <p className="text-muted-foreground">Receitas</p>
+                    <p className="font-medium text-success">
+                      {formatCurrency(previsao.receitas)}
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-muted-foreground">Gastos</p>
+                    <p className="font-medium text-destructive">
+                      {formatCurrency(previsao.gastosFixos)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Compromissos Preview */}
+                {previsao.compromissos.length > 0 && (
+                  <div className="pt-2 border-t border-border/30">
+                    <p className="text-xs text-muted-foreground text-center">
+                      {previsao.compromissos.length} compromisso(s) • Toque para detalhes
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop: Grid Layout */}
+      <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {previsoes.map((previsao, index) => (
           <Card
             key={`${previsao.mes}-${previsao.ano}`}
@@ -100,7 +162,7 @@ export const TimelinePrevisao: React.FC<TimelinePrevisaoProps> = ({
                 
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Gastos Fixos:</span>
-                  <span className="font-medium text-expense">
+                  <span className="font-medium text-destructive">
                     {formatCurrency(previsao.gastosFixos)}
                   </span>
                 </div>
@@ -109,7 +171,7 @@ export const TimelinePrevisao: React.FC<TimelinePrevisaoProps> = ({
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Saldo:</span>
                     <span className={`font-semibold ${
-                      previsao.saldoProjetado >= 0 ? 'text-success' : 'text-error'
+                      previsao.saldoProjetado >= 0 ? 'text-success' : 'text-destructive'
                     }`}>
                       {formatCurrency(previsao.saldoProjetado)}
                     </span>

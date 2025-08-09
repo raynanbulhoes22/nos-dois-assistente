@@ -134,24 +134,24 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header Moderno */}
-      <div className="text-center space-y-4 px-4">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Sparkles className="h-5 w-5 text-primary animate-pulse" />
-          <span className="text-sm font-medium text-primary">Qual tipo de financiamento?</span>
+      <div className="text-center space-y-3 px-4">
+        <div className="flex items-center justify-center gap-2 mb-1">
+          <Sparkles className="h-4 w-4 text-primary animate-pulse" />
+          <span className="text-xs font-medium text-primary">Organize suas contas</span>
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">
-          Selecione seu tipo de<br />
+        <h2 className="text-xl md:text-2xl font-bold text-foreground leading-tight">
+          Parcelamentos &<br />
           <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-            financiamento
+            Financiamentos
           </span>
         </h2>
-        <p className="text-muted-foreground max-w-md mx-auto text-sm leading-relaxed">
-          Cada tipo possui campos específicos para cálculos mais precisos da sua mensalidade
+        <p className="text-muted-foreground max-w-md mx-auto text-xs leading-relaxed">
+          Escolha o tipo para preencher apenas os campos essenciais
         </p>
       </div>
       
-      {/* Grid Responsivo */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 px-4">
+      {/* Grid Compacto */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 px-4 max-h-[50vh] overflow-y-auto">
         {tiposFinanciamento.map((tipo, index) => {
           const Icone = tipo.icone;
           
@@ -167,73 +167,73 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
                   relative w-full h-auto p-0 overflow-hidden 
                   bg-gradient-to-br ${tipo.bgGradient} 
                   border ${tipo.borderColor}
-                  hover:shadow-lg hover:shadow-primary/10
-                  transition-all duration-300 ease-out
+                  hover:shadow-md hover:shadow-primary/5
+                  transition-all duration-200 ease-out
                   active:scale-95
-                  min-h-[120px] sm:min-h-[140px]
+                  min-h-[90px] max-h-[90px]
                 `}
                 onClick={() => onSelect(tipo.id)}
               >
                 {/* Badge Popular */}
                 {tipo.popular && (
-                  <div className="absolute top-2 right-2 z-10">
+                  <div className="absolute top-1 right-1 z-10">
                     <Badge 
                       variant="secondary" 
-                      className="bg-primary text-primary-foreground text-[10px] px-2 py-0.5 font-medium shadow-sm"
+                      className="bg-primary text-primary-foreground text-[9px] px-1.5 py-0.5 font-medium shadow-sm"
                     >
                       Popular
                     </Badge>
                   </div>
                 )}
                 
-                <div className="w-full p-4 space-y-3 text-left">
+                <div className="w-full p-2.5 space-y-2 text-left">
                   {/* Header do Card */}
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-center gap-2">
                     <div className={`
-                      p-2.5 rounded-xl bg-gradient-to-br ${tipo.gradient}
-                      shadow-lg group-hover:scale-110 transition-transform duration-300
+                      p-1.5 rounded-lg bg-gradient-to-br ${tipo.gradient}
+                      shadow-sm group-hover:scale-105 transition-transform duration-200
                     `}>
-                      <Icone className="h-5 w-5 text-white" />
+                      <Icone className="h-3.5 w-3.5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className={`
-                        font-semibold text-sm sm:text-base leading-tight 
+                        font-semibold text-xs leading-tight 
                         ${tipo.textColor} group-hover:scale-105 transition-transform duration-200
                       `}>
                         {tipo.nome}
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                      <p className="text-[10px] text-muted-foreground leading-tight">
                         {tipo.descricao}
                       </p>
                     </div>
                   </div>
                   
-                  {/* Campos Essenciais */}
-                  <div className="space-y-2">
-                    <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                      Campos essenciais
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {tipo.campos.map((campo, index) => (
-                        <Badge 
-                          key={index}
-                          variant="outline" 
-                          className="text-[10px] px-1.5 py-0.5 bg-white/50 border-white/30 text-muted-foreground font-normal"
-                        >
-                          {campo}
-                        </Badge>
-                      ))}
-                    </div>
+                  {/* Campos Essenciais - Compacto */}
+                  <div className="flex flex-wrap gap-0.5">
+                    {tipo.campos.slice(0, 2).map((campo, index) => (
+                      <Badge 
+                        key={index}
+                        variant="outline" 
+                        className="text-[9px] px-1 py-0 bg-white/50 border-white/30 text-muted-foreground font-normal"
+                      >
+                        {campo}
+                      </Badge>
+                    ))}
+                    {tipo.campos.length > 2 && (
+                      <Badge 
+                        variant="outline" 
+                        className="text-[9px] px-1 py-0 bg-white/50 border-white/30 text-muted-foreground font-normal"
+                      >
+                        +{tipo.campos.length - 2}
+                      </Badge>
+                    )}
                   </div>
                   
                   {/* Call to Action */}
-                  <div className="flex items-center justify-between pt-1">
-                    <span className={`text-xs font-medium ${tipo.textColor}`}>
-                      Continuar
-                    </span>
+                  <div className="flex items-center justify-end">
                     <ChevronRight className={`
-                      h-4 w-4 ${tipo.textColor} 
-                      group-hover:translate-x-1 transition-transform duration-200
+                      h-3 w-3 ${tipo.textColor} 
+                      group-hover:translate-x-0.5 transition-transform duration-200
                     `} />
                   </div>
                 </div>
@@ -245,10 +245,10 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
       
       {/* Footer com Dica */}
       <div className="text-center px-4">
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full">
-          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-          <p className="text-xs text-muted-foreground">
-            Focamos apenas nos dados que impactam sua mensalidade
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full">
+          <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
+          <p className="text-[10px] text-muted-foreground">
+            Apenas os dados essenciais para sua mensalidade
           </p>
         </div>
       </div>

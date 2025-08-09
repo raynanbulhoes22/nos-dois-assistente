@@ -61,7 +61,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
         ativa: editingConta.ativa,
         valor_bem: dadosEspecificos.valor_bem || 0,
         valor_entrada: dadosEspecificos.valor_entrada || 0,
-        valor_financiado: dadosEspecificos.valor_financiado || (dadosEspecificos.valor_bem - dadosEspecificos.valor_entrada) || 0,
+        valor_financiado: dadosEspecificos.valor_financiado || 0,
         ano_veiculo: dadosEspecificos.ano_veiculo || new Date().getFullYear(),
         dados_especificos: dadosEspecificos
       });

@@ -13,7 +13,7 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
 
     // Format number to Brazilian currency format for display
     const formatCurrency = (num: number): string => {
-      if (num === 0) return "";
+      if (num === 0 || isNaN(num)) return "";
       return num.toLocaleString('pt-BR', { 
         minimumFractionDigits: 2,
         maximumFractionDigits: 2 
@@ -58,7 +58,11 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
 
     // Update display value when value prop changes
     React.useEffect(() => {
-      setDisplayValue(formatCurrency(value));
+      if (value === 0) {
+        setDisplayValue("");
+      } else {
+        setDisplayValue(formatCurrency(value));
+      }
     }, [value]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,8 +74,10 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
     };
 
     const handleBlur = () => {
-      // Reformat on blur
-      setDisplayValue(formatCurrency(value));
+      // Reformat on blur only if there's a value
+      if (value > 0) {
+        setDisplayValue(formatCurrency(value));
+      }
     };
 
     return (

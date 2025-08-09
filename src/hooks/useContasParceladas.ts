@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import type { Json } from "@/integrations/supabase/types";
 
 export interface ContaParcelada {
   id: string;
@@ -19,6 +20,7 @@ export interface ContaParcelada {
   debito_automatico: boolean;
   tipo_financiamento: string;
   ativa: boolean;
+  dados_especificos?: Json;
   created_at: string;
   updated_at: string;
 }
@@ -58,7 +60,7 @@ export const useContasParceladas = () => {
         .order('nome');
 
       if (error) throw error;
-      setContas(data || []);
+      setContas((data || []) as ContaParcelada[]);
     } catch (err) {
       console.error('Erro ao buscar contas parceladas:', err);
       setError('Erro ao carregar contas parceladas');
@@ -77,7 +79,7 @@ export const useContasParceladas = () => {
 
       if (error) throw error;
 
-      setContas(prev => [...prev, data]);
+      setContas(prev => [...prev, data as ContaParcelada]);
       toast({
         title: "✅ Sucesso!",
         description: "Conta parcelada adicionada!"
@@ -105,7 +107,7 @@ export const useContasParceladas = () => {
 
       if (error) throw error;
 
-      setContas(prev => prev.map(c => c.id === id ? data : c));
+      setContas(prev => prev.map(c => c.id === id ? data as ContaParcelada : c));
       toast({
         title: "✅ Sucesso!",
         description: "Conta parcelada atualizada!"

@@ -74,6 +74,7 @@ export type Database = {
           cartao_id: string | null
           categoria: string | null
           created_at: string
+          dados_especificos: Json | null
           data_primeira_parcela: string
           debito_automatico: boolean | null
           descricao: string | null
@@ -93,6 +94,7 @@ export type Database = {
           cartao_id?: string | null
           categoria?: string | null
           created_at?: string
+          dados_especificos?: Json | null
           data_primeira_parcela: string
           debito_automatico?: boolean | null
           descricao?: string | null
@@ -112,6 +114,7 @@ export type Database = {
           cartao_id?: string | null
           categoria?: string | null
           created_at?: string
+          dados_especificos?: Json | null
           data_primeira_parcela?: string
           debito_automatico?: boolean | null
           descricao?: string | null

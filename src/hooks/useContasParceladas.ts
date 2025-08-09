@@ -14,6 +14,10 @@ export interface ContaParcelada {
   categoria?: string;
   cartao_id?: string;
   descricao?: string;
+  instituicao_financeira?: string;
+  taxa_juros?: number;
+  debito_automatico: boolean;
+  tipo_financiamento: string;
   ativa: boolean;
   created_at: string;
   updated_at: string;

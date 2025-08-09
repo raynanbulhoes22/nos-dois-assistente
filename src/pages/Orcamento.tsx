@@ -17,8 +17,10 @@ import {
   Target,
   DollarSign,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Building2
 } from "lucide-react";
+import { FINANCING_TYPE_LABELS } from "@/constants/categories";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useFontesRenda } from "@/hooks/useFontesRenda";
@@ -503,7 +505,7 @@ export const Orcamento = () => {
                       <CreditCard className="h-5 w-5 text-orange-600" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl">Contas Parceladas</CardTitle>
+                      <CardTitle className="text-xl">Parcelamentos & Financiamentos</CardTitle>
                       <p className="text-sm text-muted-foreground">Total mensal: {formatCurrency(getTotalParcelasAtivas())}</p>
                     </div>
                   </div>
@@ -525,19 +527,54 @@ export const Orcamento = () => {
                     }).map((conta) => {
                       const parcelasRestantes = conta.total_parcelas - conta.parcelas_pagas;
                       const progressoPercent = ((conta.parcelas_pagas / conta.total_parcelas) * 100);
+                      const isFinanciamento = conta.tipo_financiamento !== 'parcelamento';
+                      const tipoLabel = FINANCING_TYPE_LABELS[conta.tipo_financiamento as keyof typeof FINANCING_TYPE_LABELS] || 'Parcelamento';
                       
                       return (
-                        <div key={conta.id} className="group p-4 border border-border/50 rounded-xl hover:shadow-md transition-all duration-200 hover:border-border">
+                        <div key={conta.id} className={`group p-4 border border-border/50 rounded-xl hover:shadow-md transition-all duration-200 hover:border-border ${isFinanciamento ? 'bg-gradient-to-r from-orange-50/30 to-amber-50/30 dark:from-orange-950/10 dark:to-amber-950/10' : 'bg-gradient-to-r from-blue-50/30 to-cyan-50/30 dark:from-blue-950/10 dark:to-cyan-950/10'}`}>
                           <div className="flex justify-between items-start mb-3">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-semibold text-sm">{conta.nome}</h3>
+                                <div className="flex items-center gap-2">
+                                  {isFinanciamento ? (
+                                    <Building2 className="h-4 w-4 text-orange-600" />
+                                  ) : (
+                                    <CreditCard className="h-4 w-4 text-blue-600" />
+                                  )}
+                                  <h3 className="font-semibold text-sm">{conta.nome}</h3>
+                                </div>
+                                <Badge variant="outline" className={`text-xs ${isFinanciamento ? 'border-orange-200 text-orange-700 dark:border-orange-800 dark:text-orange-300' : 'border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-300'}`}>
+                                  {tipoLabel}
+                                </Badge>
                                 {conta.categoria && (
                                   <Badge variant="secondary" className="text-xs">{conta.categoria}</Badge>
                                 )}
                               </div>
-                              <p className="text-lg font-bold text-orange-600">{formatCurrency(conta.valor_parcela)}/mês</p>
-                              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                              
+                              {/* Instituição Financeira */}
+                              {conta.instituicao_financeira && (
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  📍 {conta.instituicao_financeira}
+                                </p>
+                              )}
+                              
+                              <div className="flex items-center gap-3 mb-2">
+                                <p className={`text-lg font-bold ${isFinanciamento ? 'text-orange-600' : 'text-blue-600'}`}>
+                                  {formatCurrency(conta.valor_parcela)}/mês
+                                </p>
+                                {conta.taxa_juros && conta.taxa_juros > 0 && (
+                                  <Badge variant="destructive" className="text-xs">
+                                    {conta.taxa_juros}% a.m.
+                                  </Badge>
+                                )}
+                                {conta.debito_automatico && (
+                                  <Badge variant="outline" className="text-xs">
+                                    🔄 Débito Automático
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                 <span>{conta.parcelas_pagas}/{conta.total_parcelas} parcelas</span>
                                 <span>{parcelasRestantes} restantes</span>
                                 <span>Total: {formatCurrency(conta.valor_parcela * conta.total_parcelas)}</span>

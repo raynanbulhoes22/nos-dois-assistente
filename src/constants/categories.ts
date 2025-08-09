@@ -12,6 +12,18 @@ export const FINANCIAL_CATEGORIES = {
     "Saúde",
     "Escola / Faculdade"
   ],
+  "Parcelamentos & Financiamentos": [
+    "Financiamento Veicular",
+    "Financiamento Imobiliário",
+    "Empréstimo Pessoal", 
+    "Empréstimo Consignado",
+    "Refinanciamento",
+    "Parcelamento de Cartão",
+    "Parcelamento de Compra",
+    "Consórcio",
+    "Leasing",
+    "CDC (Crédito Direto ao Consumidor)"
+  ],
   "Trabalho / Profissional": [
     "Ferramentas",
     "Software",
@@ -74,3 +86,27 @@ export const PAYMENT_METHODS = [
   "Boleto",
   "Transferência"
 ] as const;
+
+export const FINANCING_TYPES = [
+  "parcelamento",
+  "financiamento_veicular",
+  "financiamento_imobiliario", 
+  "emprestimo_pessoal",
+  "emprestimo_consignado",
+  "refinanciamento",
+  "consorcio",
+  "leasing",
+  "cdc"
+] as const;
+
+export const FINANCING_TYPE_LABELS = {
+  "parcelamento": "Parcelamento",
+  "financiamento_veicular": "Financiamento Veicular",
+  "financiamento_imobiliario": "Financiamento Imobiliário",
+  "emprestimo_pessoal": "Empréstimo Pessoal",
+  "emprestimo_consignado": "Empréstimo Consignado", 
+  "refinanciamento": "Refinanciamento",
+  "consorcio": "Consórcio",
+  "leasing": "Leasing",
+  "cdc": "CDC"
+} as const;

@@ -75,10 +75,14 @@ export type Database = {
           categoria: string | null
           created_at: string
           data_primeira_parcela: string
+          debito_automatico: boolean | null
           descricao: string | null
           id: string
+          instituicao_financeira: string | null
           nome: string
           parcelas_pagas: number
+          taxa_juros: number | null
+          tipo_financiamento: string | null
           total_parcelas: number
           updated_at: string
           user_id: string
@@ -90,10 +94,14 @@ export type Database = {
           categoria?: string | null
           created_at?: string
           data_primeira_parcela: string
+          debito_automatico?: boolean | null
           descricao?: string | null
           id?: string
+          instituicao_financeira?: string | null
           nome: string
           parcelas_pagas?: number
+          taxa_juros?: number | null
+          tipo_financiamento?: string | null
           total_parcelas: number
           updated_at?: string
           user_id: string
@@ -105,10 +113,14 @@ export type Database = {
           categoria?: string | null
           created_at?: string
           data_primeira_parcela?: string
+          debito_automatico?: boolean | null
           descricao?: string | null
           id?: string
+          instituicao_financeira?: string | null
           nome?: string
           parcelas_pagas?: number
+          taxa_juros?: number | null
+          tipo_financiamento?: string | null
           total_parcelas?: number
           updated_at?: string
           user_id?: string

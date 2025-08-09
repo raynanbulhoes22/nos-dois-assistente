@@ -29,7 +29,11 @@ import { useOrcamentos } from "@/hooks/useOrcamentos";
 import { useOrcamentoCategorias } from "@/hooks/useOrcamentoCategorias";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 import { useContasParceladas } from "@/hooks/useContasParceladas";
+import { usePrevisibilidadeFinanceira } from "@/hooks/usePrevisibilidadeFinanceira";
 import { ContaParceladaForm } from "@/components/ContaParceladaForm";
+import { TimelinePrevisao } from "@/components/previsibilidade/TimelinePrevisao";
+import { AlertaFluxo } from "@/components/previsibilidade/AlertaFluxo";
+import { DetalheMensalDialog } from "@/components/previsibilidade/DetalheMensalDialog";
 
 interface OrcamentoCategoria {
   categoria_nome: string;
@@ -48,6 +52,16 @@ export const Orcamento = () => {
   const { getOrcamentoAtual, createOrcamento, updateOrcamento, isLoading: orcamentosLoading } = useOrcamentos();
   const { movimentacoes } = useMovimentacoes();
   const { contas, createConta, updateConta, deleteConta, calcularParcelasProjetadas, getTotalParcelasAtivas, isLoading: contasLoading } = useContasParceladas();
+
+  // Hook para previsibilidade
+  const {
+    previsoes,
+    alertas,
+    isLoading: isLoadingPrevisibilidade,
+    getMesNome: getMesNomeHook,
+    getProximosDeficits,
+    getSaldoProjetado6Meses
+  } = usePrevisibilidadeFinanceira();
   
   // Estados para navegação de mês/ano
   const [mesAtual, setMesAtual] = useState(new Date().getMonth() + 1);
@@ -58,9 +72,11 @@ export const Orcamento = () => {
   const [showCartaoModal, setShowCartaoModal] = useState(false);
   const [showOrcamentoModal, setShowOrcamentoModal] = useState(false);
   const [showContaParceladaModal, setShowContaParceladaModal] = useState(false);
+  const [showDetalheMensal, setShowDetalheMensal] = useState(false);
   const [editingFonte, setEditingFonte] = useState<any>(null);
   const [editingCartao, setEditingCartao] = useState<any>(null);
   const [editingContaParcelada, setEditingContaParcelada] = useState<any>(null);
+  const [previsaoSelecionada, setPrevisaoSelecionada] = useState<any>(null);
   
   // Estados para formulários
   const [fonteForm, setFonteForm] = useState({
@@ -99,6 +115,11 @@ export const Orcamento = () => {
       'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ];
     return meses[mes - 1];
+  };
+
+  const handleMesClick = (previsao: any) => {
+    setPrevisaoSelecionada(previsao);
+    setShowDetalheMensal(true);
   };
 
   const navegarMes = (direcao: 'anterior' | 'proximo') => {
@@ -656,6 +677,61 @@ export const Orcamento = () => {
               </CardContent>
             </Card>
 
+            {/* Timeline de Previsibilidade Financeira */}
+            <Card className="border-0 shadow-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  Previsibilidade Financeira
+                  <Badge variant="outline" className="text-xs">
+                    Próximos 12 Meses
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Alertas Financeiros */}
+                {alertas.length > 0 && (
+                  <AlertaFluxo 
+                    alertas={alertas} 
+                    maxAlertas={3}
+                  />
+                )}
+
+                {/* Timeline de Previsões */}
+                {!isLoadingPrevisibilidade && previsoes.length > 0 && (
+                  <TimelinePrevisao
+                    previsoes={previsoes}
+                    getMesNome={getMesNomeHook}
+                    onMesClick={handleMesClick}
+                  />
+                )}
+
+                {/* Métricas Resumidas */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-border/50">
+                  <div className="text-center p-4 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 rounded-xl border">
+                    <p className="text-sm text-muted-foreground mb-1">Próximos Déficits</p>
+                    <p className="text-xl font-bold text-red-600">
+                      {getProximosDeficits().length} meses
+                    </p>
+                  </div>
+                  <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-xl border">
+                    <p className="text-sm text-muted-foreground mb-1">Saldo 6 Meses</p>
+                    <p className={`text-xl font-bold ${getSaldoProjetado6Meses() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatCurrency(getSaldoProjetado6Meses())}
+                    </p>
+                  </div>
+                  <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-xl border">
+                    <p className="text-sm text-muted-foreground mb-1">Parcelamentos Ativos</p>
+                    <p className="text-xl font-bold text-purple-600">
+                      {contas.filter(c => c.ativa).length}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Análise do Orçamento */}
             {orcamentoAtual && (
               <Card className="border-0 shadow-xl">
@@ -940,6 +1016,14 @@ export const Orcamento = () => {
           createConta
         }
         editingConta={editingContaParcelada}
+      />
+
+      {/* Modal Detalhe Mensal */}
+      <DetalheMensalDialog
+        previsao={previsaoSelecionada}
+        open={showDetalheMensal}
+        onOpenChange={setShowDetalheMensal}
+        getMesNome={getMesNomeHook}
       />
     </div>
   );

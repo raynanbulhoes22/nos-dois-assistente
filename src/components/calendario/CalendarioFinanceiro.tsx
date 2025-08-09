@@ -1,6 +1,6 @@
 import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
-import { DayEvents } from "./DayEvents";
+
 import { useEventosCalendario } from "@/hooks/useEventosCalendario";
 import { format, isSameDay, isToday } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -61,22 +61,15 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
         </div>
 
         {hasEvents && (
-          <DayEvents
-            eventos={eventosDia!.eventos}
-            isToday={isCurrentDay}
-            className="max-h-16 overflow-hidden"
-          />
-        )}
-
-        {hasEvents && eventosDia!.saldo !== 0 && (
           <div
             className={cn(
-              "text-xs mt-1 text-center font-semibold",
-              eventosDia!.saldo > 0 ? "text-success" : "text-destructive"
+              "text-[11px] mt-1 text-center font-semibold truncate",
+              (eventosDia!.saldo || 0) >= 0 ? "text-success" : "text-destructive"
             )}
+            aria-label={`Resumo do dia: ${eventosDia!.eventos.length} ${eventosDia!.eventos.length === 1 ? "evento" : "eventos"} • saldo ${(eventosDia!.saldo || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`}
           >
-            {eventosDia!.saldo > 0 ? "+" : ""}
-            {eventosDia!.saldo.toLocaleString("pt-BR", {
+            {eventosDia!.eventos.length} {eventosDia!.eventos.length === 1 ? "evento" : "eventos"} • {eventosDia!.saldo > 0 ? "+" : ""}
+            {(eventosDia!.saldo || 0).toLocaleString("pt-BR", {
               style: "currency",
               currency: "BRL",
               minimumFractionDigits: 0,

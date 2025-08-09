@@ -46,10 +46,21 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
     const inner = (
       <div
         className={cn(
-          "w-full h-full min-h-[80px] p-1 rounded-md transition-colors",
+          "w-full h-full min-h-[80px] p-1 rounded-md transition-all duration-200",
           heatCls,
-          isCurrentDay ? "ring-1 ring-primary/40" : undefined
+          isCurrentDay ? "ring-1 ring-primary/40" : undefined,
+          hasEvents ? "cursor-pointer hover:scale-[1.02] hover:shadow-md hover:border-primary/30" : "cursor-default"
         )}
+        role={hasEvents ? "button" : undefined}
+        tabIndex={hasEvents ? 0 : undefined}
+        onClick={hasEvents ? () => handleDayClick(data) : undefined}
+        onKeyDown={hasEvents ? (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleDayClick(data);
+          }
+        } : undefined}
+        aria-label={hasEvents ? `Clique para ver detalhes dos eventos do dia ${format(data, "d 'de' MMMM", { locale: ptBR })}` : undefined}
       >
         <div
           className={cn(
@@ -63,8 +74,9 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
         {hasEvents && (
           <div
             className={cn(
-              "text-[11px] mt-1 text-center font-semibold truncate",
-              (eventosDia!.saldo || 0) >= 0 ? "text-success" : "text-destructive"
+              "text-[11px] mt-1 text-center font-semibold truncate px-1",
+              (eventosDia!.saldo || 0) >= 0 ? "text-success" : "text-destructive",
+              "hover:text-primary transition-colors"
             )}
             aria-label={`Resumo do dia: ${eventosDia!.eventos.length} ${eventosDia!.eventos.length === 1 ? "evento" : "eventos"} • saldo ${(eventosDia!.saldo || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`}
           >
@@ -85,10 +97,16 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
     return (
       <TooltipProvider delayDuration={150}>
         <Tooltip>
-          <TooltipTrigger asChild>{inner}</TooltipTrigger>
-          <TooltipContent side="top" align="center" className="space-y-1">
+          <TooltipTrigger asChild>
+            <div>{inner}</div>
+          </TooltipTrigger>
+          <TooltipContent side="top" align="center" className="space-y-1 max-w-xs"
+            onPointerDownOutside={(e) => e.preventDefault()}>
             <div className="text-xs font-medium">
               {format(data, "PPP", { locale: ptBR })}
+            </div>
+            <div className="text-xs text-muted-foreground mb-2">
+              Clique para ver detalhes completos
             </div>
             <div className="flex justify-between gap-4 text-xs">
               <span>Entradas</span>
@@ -138,7 +156,6 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           mode="single"
           locale={ptBR}
           month={new Date(anoAtual, mesAtual - 1)}
-          onDayClick={handleDayClick}
           className="w-full"
           classNames={{
             months: "flex w-full",

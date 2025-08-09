@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Input } from "@/components/ui/input";
 import { RequiredLabel } from "@/components/ui/required-label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -173,14 +174,10 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <div className="space-y-2">
             <RequiredLabel htmlFor="valor_bem" required={requiredFields.includes("valor_bem")}>Valor do Veículo</RequiredLabel>
-            <Input
+            <CurrencyInput
               id="valor_bem"
-              type="number"
-              step="0.01"
-              min="0"
               value={formData.valor_bem}
-              onChange={(e) => {
-                const valor = parseFloat(e.target.value) || 0;
+              onChange={(valor) => {
                 setFormData(prev => ({ 
                   ...prev, 
                   valor_bem: valor,
@@ -196,14 +193,10 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
           
           <div className="space-y-2">
             <RequiredLabel htmlFor="valor_entrada" required={requiredFields.includes("valor_entrada")}>Valor da Entrada</RequiredLabel>
-            <Input
+            <CurrencyInput
               id="valor_entrada"
-              type="number"
-              step="0.01"
-              min="0"
               value={formData.valor_entrada}
-              onChange={(e) => {
-                const entrada = parseFloat(e.target.value) || 0;
+              onChange={(entrada) => {
                 setFormData(prev => ({ 
                   ...prev, 
                   valor_entrada: entrada,
@@ -219,13 +212,10 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
           
           <div className="space-y-2 col-span-1 sm:col-span-2 lg:col-span-1">
             <RequiredLabel htmlFor="valor_financiado" required={requiredFields.includes("valor_financiado")}>Valor Financiado</RequiredLabel>
-            <Input
+            <CurrencyInput
               id="valor_financiado"
-              type="number"
-              step="0.01"
-              min="0"
               value={formData.valor_financiado}
-              onChange={(e) => setFormData(prev => ({ ...prev, valor_financiado: parseFloat(e.target.value) || 0 }))}
+              onChange={(valor) => setFormData(prev => ({ ...prev, valor_financiado: valor }))}
               placeholder="R$ 20.723,05"
               className="text-sm"
             />
@@ -242,13 +232,10 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
           <RequiredLabel htmlFor="valor_parcela" required={requiredFields.includes("valor_parcela")}>Valor da Parcela</RequiredLabel>
-          <Input
+          <CurrencyInput
             id="valor_parcela"
-            type="number"
-            step="0.01"
-            min="0"
             value={formData.valor_parcela}
-            onChange={(e) => setFormData(prev => ({ ...prev, valor_parcela: parseFloat(e.target.value) || 0 }))}
+            onChange={(valor) => setFormData(prev => ({ ...prev, valor_parcela: valor }))}
             placeholder="R$ 0,00"
             required
             className="text-sm"

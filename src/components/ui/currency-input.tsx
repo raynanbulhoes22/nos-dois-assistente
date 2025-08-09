@@ -67,7 +67,7 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const input = e.target.value;
-      setDisplayValue(input);
+      setDisplayValue(input); // Keep raw input while typing
       
       // Only parse and call onChange if there's actual input
       if (input.trim() === "") {
@@ -82,6 +82,8 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
       // Reformat on blur only if there's a value
       if (value > 0) {
         setDisplayValue(formatCurrency(value));
+      } else {
+        setDisplayValue("");
       }
     };
 

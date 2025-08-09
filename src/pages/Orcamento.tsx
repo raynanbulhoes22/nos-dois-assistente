@@ -182,6 +182,11 @@ export const Orcamento = () => {
     }
   };
 
+  // SEO: título da página dinâmico
+  useEffect(() => {
+    document.title = `Calendário Financeiro | ${getMesNome(mesAtual)} ${anoAtual}`;
+  }, [mesAtual, anoAtual]);
+
   // Handlers
   const handleMesClick = (dadosMes: any) => {
     setDetalheMensalData(dadosMes);
@@ -353,23 +358,25 @@ export const Orcamento = () => {
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       <div className="container mx-auto p-4 sm:p-6 max-w-7xl">
         {/* Header com navegação */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Calendário Financeiro
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Visualize todas suas movimentações em um calendário
-            </p>
+        <div className="sticky top-0 z-30 mb-8 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-gradient-to-b from-background/95 to-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                Calendário Financeiro
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Visualize todas suas movimentações em um calendário
+              </p>
+            </div>
+            
+            <MonthNavigation
+              currentMonth={mesAtual}
+              currentYear={anoAtual}
+              onNavigate={navegarMes}
+              getMesNome={getMesNome}
+              statusMes={alertas.length > 0 ? 'critico' : previsibilidadeStatus}
+            />
           </div>
-          
-          <MonthNavigation
-            currentMonth={mesAtual}
-            currentYear={anoAtual}
-            onNavigate={navegarMes}
-            getMesNome={getMesNome}
-            statusMes={alertas.length > 0 ? 'critico' : previsibilidadeStatus}
-          />
         </div>
 
         <div className="space-y-6">

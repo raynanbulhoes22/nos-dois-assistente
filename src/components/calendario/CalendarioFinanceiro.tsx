@@ -8,6 +8,8 @@ import { useState } from "react";
 import { DayDetailsModal } from "./DayDetailsModal";
 import { CalendarioFilters } from "./CalendarioFilters";
 import { EventosDia } from "./tipos";
+import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CalendarioFinanceiroProps {
   mesAtual: number;
@@ -27,41 +29,95 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
 
   const getDayContent = (data: Date) => {
     const eventosDia = eventosPorDia.find(dia => isSameDay(dia.data, data));
-    const hasEvents = eventosDia && eventosDia.eventos.length > 0;
+    const hasEvents = !!(eventosDia && eventosDia.eventos.length > 0);
     const isCurrentDay = isToday(data);
 
-    return (
-      <div className="w-full h-full min-h-[80px] p-1">
-        <div className={`
-          text-center mb-1 font-medium
-          ${isCurrentDay ? 'text-primary font-bold' : 'text-foreground'}
-        `}>
-          {format(data, 'd')}
+    const saldo = eventosDia?.saldo ?? 0;
+    const abs = Math.abs(saldo);
+    let heatCls = "";
+    if (hasEvents) {
+      if (saldo > 0) {
+        heatCls = abs > 2000 ? "bg-success/30" : abs > 800 ? "bg-success/20" : "bg-success/10";
+      } else if (saldo < 0) {
+        heatCls = abs > 2000 ? "bg-destructive/30" : abs > 800 ? "bg-destructive/20" : "bg-destructive/10";
+      }
+    }
+
+    const inner = (
+      <div
+        className={cn(
+          "w-full h-full min-h-[80px] p-1 rounded-md transition-colors",
+          heatCls,
+          isCurrentDay ? "ring-1 ring-primary/40" : undefined
+        )}
+      >
+        <div
+          className={cn(
+            "text-center mb-1 font-medium",
+            isCurrentDay ? "text-primary font-bold" : "text-foreground"
+          )}
+        >
+          {format(data, "d")}
         </div>
-        
+
         {hasEvents && (
-          <DayEvents 
-            eventos={eventosDia.eventos} 
+          <DayEvents
+            eventos={eventosDia!.eventos}
             isToday={isCurrentDay}
             className="max-h-16 overflow-hidden"
           />
         )}
-        
-        {hasEvents && eventosDia.saldo !== 0 && (
-          <div className={`
-            text-xs mt-1 text-center font-semibold
-            ${eventosDia.saldo > 0 ? 'text-success' : 'text-destructive'}
-          `}>
-            {eventosDia.saldo > 0 ? '+' : ''}
-            {eventosDia.saldo.toLocaleString('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
+
+        {hasEvents && eventosDia!.saldo !== 0 && (
+          <div
+            className={cn(
+              "text-xs mt-1 text-center font-semibold",
+              eventosDia!.saldo > 0 ? "text-success" : "text-destructive"
+            )}
+          >
+            {eventosDia!.saldo > 0 ? "+" : ""}
+            {eventosDia!.saldo.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
               minimumFractionDigits: 0,
               maximumFractionDigits: 0,
             })}
           </div>
         )}
       </div>
+    );
+
+    if (!hasEvents) return inner;
+
+    return (
+      <TooltipProvider delayDuration={150}>
+        <Tooltip>
+          <TooltipTrigger asChild>{inner}</TooltipTrigger>
+          <TooltipContent side="top" align="center" className="space-y-1">
+            <div className="text-xs font-medium">
+              {format(data, "PPP", { locale: ptBR })}
+            </div>
+            <div className="flex justify-between gap-4 text-xs">
+              <span>Entradas</span>
+              <span className="text-success font-semibold">
+                {(eventosDia!.totalEntradas || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </span>
+            </div>
+            <div className="flex justify-between gap-4 text-xs">
+              <span>Saídas</span>
+              <span className="text-destructive font-semibold">
+                {(eventosDia!.totalSaidas || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </span>
+            </div>
+            <div className="flex justify-between gap-4 text-xs">
+              <span>Saldo</span>
+              <span className={cn("font-semibold", (eventosDia!.saldo || 0) >= 0 ? "text-success" : "text-destructive")}>
+                {(eventosDia!.saldo || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </span>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
   };
 

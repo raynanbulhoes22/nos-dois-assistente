@@ -46,6 +46,15 @@ export const usePrevisibilidadeFinanceira = () => {
   const [alertas, setAlertas] = useState<AlertaFinanceiro[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Helper function - must be declared before useMemo hooks that use it
+  const getMesNome = (mes: number) => {
+    const meses = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    return meses[mes - 1];
+  };
+
   // Calcular previsões para os próximos 12 meses
   const calcularPrevisoes12Meses = useMemo(() => {
     if (!user || !contas.length) return [];
@@ -156,14 +165,6 @@ export const usePrevisibilidadeFinanceira = () => {
 
     return alertasGerados;
   }, [previsoes]);
-
-  const getMesNome = (mes: number) => {
-    const meses = [
-      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-    ];
-    return meses[mes - 1];
-  };
 
   const getProximosDeficits = () => {
     return previsoes.filter(p => p.status === 'deficit').slice(0, 3);

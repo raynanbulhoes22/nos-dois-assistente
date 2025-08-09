@@ -211,12 +211,21 @@ export const usePrevisibilidadeFinanceira = () => {
 
   useEffect(() => {
     setPrevisoes(calcularPrevisoes12Meses);
-    setIsLoading(calcularPrevisoes12Meses.length === 0);
-  }, [calcularPrevisoes12Meses]);
+    setIsLoading(false);
+  }, [
+    user?.id, 
+    fontesRenda.length, 
+    getTotalRendaAtiva(), 
+    contas.length, 
+    getTotalParcelasAtivas()
+  ]);
 
   useEffect(() => {
     setAlertas(gerarAlertas);
-  }, [gerarAlertas]);
+  }, [
+    previsoes.length,
+    user?.id
+  ]);
 
   return {
     previsoes,

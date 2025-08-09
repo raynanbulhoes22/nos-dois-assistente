@@ -36,13 +36,25 @@ export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
     // 1. Parcelas das contas parceladas
     if (filtros.mostrarParcelas) {
       contas.forEach(conta => {
-        if (!conta.ativa) return;
+        if (!conta.ativa || !conta.data_primeira_parcela) return;
 
         const dataPrimeiraParcela = new Date(conta.data_primeira_parcela);
+        
+        // Validar se a data é válida
+        if (isNaN(dataPrimeiraParcela.getTime())) {
+          console.warn(`Data inválida para conta ${conta.id}: ${conta.data_primeira_parcela}`);
+          return;
+        }
         
         // Calcular todas as parcelas do ano atual
         for (let i = 0; i < conta.total_parcelas; i++) {
           const dataParcela = addMonths(dataPrimeiraParcela, i);
+          
+          // Validar se a data calculada é válida
+          if (isNaN(dataParcela.getTime())) {
+            console.warn(`Data de parcela inválida para conta ${conta.id}, parcela ${i + 1}`);
+            continue;
+          }
           
           if (dataParcela.getMonth() === mesAtual - 1 && dataParcela.getFullYear() === anoAtual) {
             eventos.push({
@@ -110,6 +122,12 @@ export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
 
     // Inicializar todos os dias do mês
     mesRange.forEach(data => {
+      // Validar se a data é válida antes de formatar
+      if (isNaN(data.getTime())) {
+        console.warn(`Data inválida no mesRange: ${data}`);
+        return;
+      }
+      
       const chave = format(data, 'yyyy-MM-dd');
       grupos.set(chave, {
         data,
@@ -122,6 +140,12 @@ export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
 
     // Agrupar eventos por dia
     eventosCalendario.forEach(evento => {
+      // Validar se a data do evento é válida
+      if (!evento.data || isNaN(evento.data.getTime())) {
+        console.warn(`Evento com data inválida: ${evento.id}`, evento.data);
+        return;
+      }
+      
       const chave = format(evento.data, 'yyyy-MM-dd');
       const dia = grupos.get(chave);
       

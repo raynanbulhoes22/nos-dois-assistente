@@ -134,17 +134,17 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header Limpo */}
-      <div className="text-center space-y-3 px-4">
-        <h2 className="text-lg font-semibold text-foreground">
+      <div className="text-center space-y-3 px-6">
+        <h2 className="text-xl font-semibold text-foreground">
           Selecione o tipo de conta
         </h2>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-muted-foreground text-sm leading-relaxed">
           Cada tipo possui campos específicos para melhor organização
         </p>
       </div>
       
-      {/* Grid Compacto */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 px-4 max-h-[50vh] overflow-y-auto">
+      {/* Grid Melhorado */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-6 max-h-[50vh] overflow-y-auto">
         {tiposFinanciamento.map((tipo, index) => {
           const Icone = tipo.icone;
           
@@ -152,62 +152,64 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
             <div 
               key={tipo.id}
               className="animate-scale-in hover-scale group"
-              style={{ animationDelay: `${index * 50}ms` }}
+              style={{ animationDelay: `${index * 80}ms` }}
             >
               <Button
                 variant="ghost"
                 className={`
                   relative w-full h-auto p-0 overflow-hidden 
                   bg-gradient-to-br ${tipo.bgGradient} 
-                  border ${tipo.borderColor}
-                  hover:shadow-md hover:shadow-primary/5
-                  transition-all duration-200 ease-out
-                  active:scale-95
-                  min-h-[90px] max-h-[90px]
+                  border-2 ${tipo.borderColor}
+                  hover:shadow-lg hover:shadow-primary/10
+                  hover:border-primary/30 hover:-translate-y-0.5
+                  active:translate-y-0 active:scale-98
+                  transition-all duration-300 ease-out
+                  min-h-[110px] focus-visible:ring-2 focus-visible:ring-primary
                 `}
                 onClick={() => onSelect(tipo.id)}
+                aria-label={`Selecionar ${tipo.nome} - ${tipo.descricao}`}
               >
                 {/* Badge Popular */}
                 {tipo.popular && (
-                  <div className="absolute top-1 right-1 z-10">
+                  <div className="absolute top-2 right-2 z-10">
                     <Badge 
                       variant="secondary" 
-                      className="bg-primary text-primary-foreground text-[9px] px-1.5 py-0.5 font-medium shadow-sm"
+                      className="bg-primary text-primary-foreground text-[10px] px-2 py-0.5 font-medium shadow-md"
                     >
                       Popular
                     </Badge>
                   </div>
                 )}
                 
-                <div className="w-full p-2.5 space-y-2 text-left">
+                <div className="w-full p-4 space-y-3 text-left">
                   {/* Header do Card */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <div className={`
-                      p-1.5 rounded-lg bg-gradient-to-br ${tipo.gradient}
-                      shadow-sm group-hover:scale-105 transition-transform duration-200
+                      p-2 rounded-xl bg-gradient-to-br ${tipo.gradient}
+                      shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300
                     `}>
-                      <Icone className="h-3.5 w-3.5 text-white" />
+                      <Icone className="h-4 w-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className={`
-                        font-semibold text-xs leading-tight 
+                        font-semibold text-sm leading-tight 
                         ${tipo.textColor} group-hover:scale-105 transition-transform duration-200
                       `}>
                         {tipo.nome}
                       </h3>
-                      <p className="text-[10px] text-muted-foreground leading-tight">
+                      <p className="text-xs text-muted-foreground/80 leading-relaxed mt-0.5">
                         {tipo.descricao}
                       </p>
                     </div>
                   </div>
                   
-                  {/* Campos Essenciais - Compacto */}
-                  <div className="flex flex-wrap gap-0.5">
+                  {/* Campos Essenciais */}
+                  <div className="flex flex-wrap gap-1">
                     {tipo.campos.slice(0, 2).map((campo, index) => (
                       <Badge 
                         key={index}
                         variant="outline" 
-                        className="text-[9px] px-1 py-0 bg-white/50 border-white/30 text-muted-foreground font-normal"
+                        className="text-[10px] px-2 py-0.5 bg-white/70 border-white/50 text-muted-foreground font-medium"
                       >
                         {campo}
                       </Badge>
@@ -215,7 +217,7 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
                     {tipo.campos.length > 2 && (
                       <Badge 
                         variant="outline" 
-                        className="text-[9px] px-1 py-0 bg-white/50 border-white/30 text-muted-foreground font-normal"
+                        className="text-[10px] px-2 py-0.5 bg-white/70 border-white/50 text-muted-foreground font-medium"
                       >
                         +{tipo.campos.length - 2}
                       </Badge>
@@ -223,10 +225,10 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
                   </div>
                   
                   {/* Call to Action */}
-                  <div className="flex items-center justify-end">
+                  <div className="flex items-center justify-end mt-auto">
                     <ChevronRight className={`
-                      h-3 w-3 ${tipo.textColor} 
-                      group-hover:translate-x-0.5 transition-transform duration-200
+                      h-3.5 w-3.5 ${tipo.textColor} 
+                      group-hover:translate-x-1 transition-transform duration-300
                     `} />
                   </div>
                 </div>

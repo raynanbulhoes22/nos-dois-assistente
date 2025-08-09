@@ -210,10 +210,8 @@ export const usePrevisibilidadeFinanceira = () => {
   };
 
   useEffect(() => {
-    if (calcularPrevisoes12Meses.length > 0) {
-      setPrevisoes(calcularPrevisoes12Meses);
-      setIsLoading(false);
-    }
+    setPrevisoes(calcularPrevisoes12Meses);
+    setIsLoading(calcularPrevisoes12Meses.length === 0);
   }, [calcularPrevisoes12Meses]);
 
   useEffect(() => {

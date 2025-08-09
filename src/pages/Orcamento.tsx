@@ -26,6 +26,8 @@ import { useCartoes } from "@/hooks/useCartoes";
 import { useOrcamentos } from "@/hooks/useOrcamentos";
 import { useOrcamentoCategorias } from "@/hooks/useOrcamentoCategorias";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
+import { useContasParceladas } from "@/hooks/useContasParceladas";
+import { ContaParceladaForm } from "@/components/ContaParceladaForm";
 
 interface OrcamentoCategoria {
   categoria_nome: string;
@@ -43,6 +45,7 @@ export const Orcamento = () => {
   const { cartoes, addCartao, updateCartao, deleteCartao, isLoading: cartoesLoading, getTotalLimite } = useCartoes();
   const { getOrcamentoAtual, createOrcamento, updateOrcamento, isLoading: orcamentosLoading } = useOrcamentos();
   const { movimentacoes } = useMovimentacoes();
+  const { contas, createConta, updateConta, deleteConta, calcularParcelasProjetadas, getTotalParcelasAtivas, isLoading: contasLoading } = useContasParceladas();
   
   // Estados para navegação de mês/ano
   const [mesAtual, setMesAtual] = useState(new Date().getMonth() + 1);
@@ -52,8 +55,10 @@ export const Orcamento = () => {
   const [showFonteModal, setShowFonteModal] = useState(false);
   const [showCartaoModal, setShowCartaoModal] = useState(false);
   const [showOrcamentoModal, setShowOrcamentoModal] = useState(false);
+  const [showContaParceladaModal, setShowContaParceladaModal] = useState(false);
   const [editingFonte, setEditingFonte] = useState<any>(null);
   const [editingCartao, setEditingCartao] = useState<any>(null);
+  const [editingContaParcelada, setEditingContaParcelada] = useState<any>(null);
   
   // Estados para formulários
   const [fonteForm, setFonteForm] = useState({
@@ -489,6 +494,131 @@ export const Orcamento = () => {
               </Card>
             </div>
 
+            {/* Contas Parceladas */}
+            <Card className="border-0 shadow-xl">
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+                      <CreditCard className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl">Contas Parceladas</CardTitle>
+                      <p className="text-sm text-muted-foreground">Total mensal: {formatCurrency(getTotalParcelasAtivas())}</p>
+                    </div>
+                  </div>
+                  <Button size="sm" onClick={() => setShowContaParceladaModal(true)} className="shadow-md">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Adicionar
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {contas.filter(conta => {
+                  const parcelasRestantes = conta.total_parcelas - conta.parcelas_pagas;
+                  return parcelasRestantes > 0;
+                }).length > 0 ? (
+                  <div className="space-y-3">
+                    {contas.filter(conta => {
+                      const parcelasRestantes = conta.total_parcelas - conta.parcelas_pagas;
+                      return parcelasRestantes > 0;
+                    }).map((conta) => {
+                      const parcelasRestantes = conta.total_parcelas - conta.parcelas_pagas;
+                      const progressoPercent = ((conta.parcelas_pagas / conta.total_parcelas) * 100);
+                      
+                      return (
+                        <div key={conta.id} className="group p-4 border border-border/50 rounded-xl hover:shadow-md transition-all duration-200 hover:border-border">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-semibold text-sm">{conta.nome}</h3>
+                                {conta.categoria && (
+                                  <Badge variant="secondary" className="text-xs">{conta.categoria}</Badge>
+                                )}
+                              </div>
+                              <p className="text-lg font-bold text-orange-600">{formatCurrency(conta.valor_parcela)}/mês</p>
+                              <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                                <span>{conta.parcelas_pagas}/{conta.total_parcelas} parcelas</span>
+                                <span>{parcelasRestantes} restantes</span>
+                                <span>Total: {formatCurrency(conta.valor_parcela * conta.total_parcelas)}</span>
+                              </div>
+                            </div>
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                onClick={() => {
+                                  setEditingContaParcelada(conta);
+                                  setShowContaParceladaModal(true);
+                                }} 
+                                className="h-8 w-8 p-0"
+                              >
+                                <Edit3 className="h-3 w-3" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                onClick={() => deleteConta(conta.id)} 
+                                className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          {/* Barra de Progresso */}
+                          <div className="space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span className="text-muted-foreground">Progresso</span>
+                              <span className="font-medium">{progressoPercent.toFixed(1)}%</span>
+                            </div>
+                            <Progress value={progressoPercent} className="h-2" />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Projeção das Próximas Parcelas */}
+                    <div className="mt-6 p-4 bg-gradient-to-r from-muted/30 to-muted/10 rounded-xl">
+                      <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                        <Target className="h-4 w-4" />
+                        Projeção dos Próximos 6 Meses
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                        {calcularParcelasProjetadas(6).map((projecao, index) => (
+                          <div key={index} className="text-center p-3 bg-background/80 rounded-lg border">
+                            <p className="text-xs font-medium text-muted-foreground">
+                              {projecao.mes.toString().padStart(2, '0')}/{projecao.ano}
+                            </p>
+                            <p className="text-sm font-bold text-orange-600 mt-1">
+                              {formatCurrency(projecao.valor)}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {projecao.contas.length} conta{projecao.contas.length !== 1 ? 's' : ''}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 space-y-4">
+                    <div className="h-16 w-16 bg-orange-100 dark:bg-orange-900/20 rounded-full flex items-center justify-center mx-auto">
+                      <CreditCard className="h-8 w-8 text-orange-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Nenhuma conta parcelada</h3>
+                      <p className="text-sm text-muted-foreground">Adicione suas compras parceladas para melhor previsibilidade</p>
+                    </div>
+                    <Button onClick={() => setShowContaParceladaModal(true)} className="mt-4">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Adicionar Primeira Conta
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Análise do Orçamento */}
             {orcamentoAtual && (
               <Card className="border-0 shadow-xl">
@@ -758,6 +888,22 @@ export const Orcamento = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Modal Conta Parcelada */}
+      <ContaParceladaForm
+        open={showContaParceladaModal}
+        onOpenChange={(open) => {
+          setShowContaParceladaModal(open);
+          if (!open) {
+            setEditingContaParcelada(null);
+          }
+        }}
+        onSubmit={editingContaParcelada ? 
+          (conta) => updateConta(editingContaParcelada.id, conta) : 
+          createConta
+        }
+        editingConta={editingContaParcelada}
+      />
     </div>
   );
 };

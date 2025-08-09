@@ -68,6 +68,54 @@ export type Database = {
         }
         Relationships: []
       }
+      contas_parceladas: {
+        Row: {
+          ativa: boolean
+          cartao_id: string | null
+          categoria: string | null
+          created_at: string
+          data_primeira_parcela: string
+          descricao: string | null
+          id: string
+          nome: string
+          parcelas_pagas: number
+          total_parcelas: number
+          updated_at: string
+          user_id: string
+          valor_parcela: number
+        }
+        Insert: {
+          ativa?: boolean
+          cartao_id?: string | null
+          categoria?: string | null
+          created_at?: string
+          data_primeira_parcela: string
+          descricao?: string | null
+          id?: string
+          nome: string
+          parcelas_pagas?: number
+          total_parcelas: number
+          updated_at?: string
+          user_id: string
+          valor_parcela: number
+        }
+        Update: {
+          ativa?: boolean
+          cartao_id?: string | null
+          categoria?: string | null
+          created_at?: string
+          data_primeira_parcela?: string
+          descricao?: string | null
+          id?: string
+          nome?: string
+          parcelas_pagas?: number
+          total_parcelas?: number
+          updated_at?: string
+          user_id?: string
+          valor_parcela?: number
+        }
+        Relationships: []
+      }
       fontes_renda: {
         Row: {
           ativa: boolean

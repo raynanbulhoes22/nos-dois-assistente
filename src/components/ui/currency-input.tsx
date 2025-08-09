@@ -69,8 +69,13 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
       const input = e.target.value;
       setDisplayValue(input);
       
-      const numericValue = parseCurrency(input);
-      onChange(numericValue);
+      // Only parse and call onChange if there's actual input
+      if (input.trim() === "") {
+        onChange(0);
+      } else {
+        const numericValue = parseCurrency(input);
+        onChange(numericValue);
+      }
     };
 
     const handleBlur = () => {

@@ -70,6 +70,7 @@ export type Database = {
       }
       contas_parceladas: {
         Row: {
+          ano_veiculo: number | null
           ativa: boolean
           cartao_id: string | null
           categoria: string | null
@@ -90,6 +91,7 @@ export type Database = {
           valor_parcela: number
         }
         Insert: {
+          ano_veiculo?: number | null
           ativa?: boolean
           cartao_id?: string | null
           categoria?: string | null
@@ -110,6 +112,7 @@ export type Database = {
           valor_parcela: number
         }
         Update: {
+          ano_veiculo?: number | null
           ativa?: boolean
           cartao_id?: string | null
           categoria?: string | null

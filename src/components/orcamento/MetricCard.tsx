@@ -8,6 +8,8 @@ interface MetricCardProps {
   icon: LucideIcon;
   variant?: 'success' | 'error' | 'warning' | 'primary' | 'purple';
   className?: string;
+  isLoading?: boolean;
+  subtitle?: string;
 }
 
 export const MetricCard = ({
@@ -15,7 +17,9 @@ export const MetricCard = ({
   value,
   icon: Icon,
   variant = 'primary',
-  className
+  className,
+  isLoading = false,
+  subtitle
 }: MetricCardProps) => {
   const variants = {
     success: {
@@ -51,13 +55,22 @@ export const MetricCard = ({
     <Card className={cn("metric-card", currentVariant.card, className)}>
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-center justify-between">
-          <div className="space-y-1">
+          <div className="space-y-1 flex-1">
             <p className={cn("text-xs sm:text-sm font-medium", currentVariant.text)}>
               {title}
             </p>
-            <p className={cn("text-lg sm:text-2xl font-bold", currentVariant.text)}>
-              {value}
-            </p>
+            {isLoading ? (
+              <div className="h-6 sm:h-8 bg-muted animate-pulse rounded" />
+            ) : (
+              <p className={cn("text-lg sm:text-2xl font-bold", currentVariant.text)}>
+                {value}
+              </p>
+            )}
+            {subtitle && (
+              <p className="text-xs text-muted-foreground">
+                {subtitle}
+              </p>
+            )}
           </div>
           <div className={cn("icon-container", currentVariant.icon)}>
             <Icon className="h-5 w-5 sm:h-6 sm:w-6" />

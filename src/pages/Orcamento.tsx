@@ -19,9 +19,10 @@ import { useContasParceladas } from "@/hooks/useContasParceladas";
 import { usePrevisibilidadeFinanceira } from "@/hooks/usePrevisibilidadeFinanceira";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ContaParceladaForm } from "@/components/ContaParceladaForm";
-import { TimelinePrevisao } from "@/components/previsibilidade/TimelinePrevisao";
 import { AlertaFluxo } from "@/components/previsibilidade/AlertaFluxo";
 import { DetalheMensalDialog } from "@/components/previsibilidade/DetalheMensalDialog";
+import { PrevisaoMesAtual } from "@/components/orcamento/PrevisaoMesAtual";
+import { MiniTimeline } from "@/components/orcamento/MiniTimeline";
 import { QuickActions } from "@/components/orcamento/QuickActions";
 import { MetricCard } from "@/components/orcamento/MetricCard";
 import { MonthNavigation } from "@/components/orcamento/MonthNavigation";
@@ -146,15 +147,29 @@ export const Orcamento = () => {
   const totalLimiteCartoes = getTotalLimite();
   const totalParcelasAtivas = getTotalParcelasAtivas();
   
-  // Calcular gastos do mês atual baseado em movimentações
-  const gastosDoMes = movimentacoes
-    .filter(mov => {
-      const dataMovimento = new Date(mov.data);
-      return dataMovimento.getMonth() + 1 === mesAtual && 
-             dataMovimento.getFullYear() === anoAtual &&
-             mov.tipo_movimento === 'saida';
-    })
-    .reduce((total, mov) => total + mov.valor, 0);
+  // Encontrar previsão do mês atual
+  const previsaoMesAtual = previsoes.find(p => p.mes === mesAtual && p.ano === anoAtual);
+
+  // Calcular gastos do mês selecionado (movimentações + parcelamentos)
+  const gastosDoMesSelecionado = (() => {
+    // Movimentações do mês
+    const gastosMovimentacoes = movimentacoes
+      .filter(mov => {
+        const dataMovimento = new Date(mov.data);
+        return dataMovimento.getMonth() + 1 === mesAtual && 
+               dataMovimento.getFullYear() === anoAtual &&
+               mov.tipo_movimento === 'saida';
+      })
+      .reduce((total, mov) => total + mov.valor, 0);
+
+    // Parcelamentos do mês
+    const gastosParcelamentos = previsaoMesAtual?.gastosFixos || 0;
+
+    return gastosMovimentacoes + gastosParcelamentos;
+  })();
+
+  // Calcular saldo projetado dinâmico
+  const saldoProjetado = totalRendaAtiva - gastosDoMesSelecionado;
 
   // Função para calcular parcelas projetadas
   const calcularParcelasProjetadas = (meses: number) => {
@@ -329,12 +344,23 @@ export const Orcamento = () => {
             </div>
             
             {/* Navegação de Mês */}
-            <MonthNavigation
-              currentMonth={mesAtual}
-              currentYear={anoAtual}
-              onNavigate={navegarMes}
-              getMesNome={getMesNome}
-            />
+          <MonthNavigation
+            currentMonth={mesAtual}
+            currentYear={anoAtual}
+            onNavigate={navegarMes}
+            getMesNome={getMesNome}
+            statusMes={previsaoMesAtual?.status}
+          />
+          <MiniTimeline
+            previsoes={previsoes}
+            currentMonth={mesAtual}
+            currentYear={anoAtual}
+            onMonthSelect={(mes, ano) => {
+              setMesAtual(mes);
+              setAnoAtual(ano);
+            }}
+            getMesNome={getMesNome}
+          />
           </div>
         </div>
 
@@ -346,30 +372,38 @@ export const Orcamento = () => {
 
           {/* Métricas Principais */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <MetricCard
-              title="Renda Total"
-              value={formatCurrency(totalRendaAtiva)}
-              icon={TrendingUp}
-              variant="success"
-            />
-            <MetricCard
-              title="Gastos do Mês"
-              value={formatCurrency(gastosDoMes)}
-              icon={DollarSign}
-              variant="error"
-            />
-            <MetricCard
-              title="Saldo Inicial"
-              value={formatCurrency(orcamentoAtual?.saldo_inicial || 0)}
-              icon={Target}
-              variant="primary"
-            />
-            <MetricCard
-              title="Meta Economia"
-              value={formatCurrency(orcamentoAtual?.meta_economia || 0)}
-              icon={Target}
-              variant="purple"
-            />
+          <MetricCard
+            title="Renda Total"
+            value={formatCurrency(totalRendaAtiva)}
+            icon={TrendingUp}
+            variant="success"
+            isLoading={isLoading}
+            subtitle="Fontes ativas"
+          />
+          <MetricCard
+            title="Gastos Projetados"
+            value={formatCurrency(gastosDoMesSelecionado)}
+            icon={DollarSign}
+            variant="error"
+            isLoading={isLoading}
+            subtitle={`${getMesNome(mesAtual)} ${anoAtual}`}
+          />
+          <MetricCard
+            title="Saldo Projetado"
+            value={formatCurrency(saldoProjetado)}
+            icon={Target}
+            variant={saldoProjetado >= 0 ? "success" : "error"}
+            isLoading={isLoading}
+            subtitle={`${getMesNome(mesAtual)} ${anoAtual}`}
+          />
+          <MetricCard
+            title="Meta Economia"
+            value={formatCurrency(orcamentoAtual?.meta_economia || totalRendaAtiva * 0.2)}
+            icon={Target}
+            variant="purple"
+            isLoading={isLoading}
+            subtitle="Objetivo mensal"
+          />
           </div>
 
           {/* Ações Rápidas */}
@@ -401,50 +435,42 @@ export const Orcamento = () => {
             onAddParcelamento={() => setShowContaParceladaModal(true)}
           />
 
-          {/* Timeline de Previsibilidade */}
-          {!isLoadingPrevisibilidade && previsoes.length > 0 && (
-            <Card className="border-0 shadow-xl">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-5 w-5 text-emerald-600" />
-                  </div>
-                  Previsibilidade Financeira
-                  <Badge variant="outline" className="text-xs">
-                    Próximos 12 Meses
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <TimelinePrevisao
-                  previsoes={previsoes}
-                  getMesNome={getMesNomeHook}
-                  onMesClick={handleMesClick}
-                />
+          {/* Previsão do Mês Atual */}
+          {!isLoadingPrevisibilidade && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-foreground">
+                  Previsão Financeira
+                </h2>
+              </div>
+              
+              <PrevisaoMesAtual 
+                previsao={previsaoMesAtual}
+                getMesNome={getMesNome}
+              />
 
-                {/* Métricas Resumidas */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-border/50">
-                  <div className="text-center p-4 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 rounded-xl border">
-                    <p className="text-sm text-muted-foreground mb-1">Próximos Déficits</p>
-                    <p className="text-xl font-bold text-red-600">
-                      {getProximosDeficits().length} meses
-                    </p>
-                  </div>
-                  <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-xl border">
-                    <p className="text-sm text-muted-foreground mb-1">Saldo 6 Meses</p>
-                    <p className={`text-xl font-bold ${getSaldoProjetado6Meses() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatCurrency(getSaldoProjetado6Meses())}
-                    </p>
-                  </div>
-                  <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-xl border">
-                    <p className="text-sm text-muted-foreground mb-1">Parcelamentos Ativos</p>
-                    <p className="text-xl font-bold text-purple-600">
-                      {contas.filter(c => c.ativa).length}
-                    </p>
-                  </div>
+              {/* Métricas Resumidas */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="text-center p-4 bg-gradient-to-br from-red-50 to-pink-50 dark:from-red-950/20 dark:to-pink-950/20 rounded-xl border">
+                  <p className="text-sm text-muted-foreground mb-1">Próximos Déficits</p>
+                  <p className="text-xl font-bold text-red-600">
+                    {getProximosDeficits().length} meses
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 rounded-xl border">
+                  <p className="text-sm text-muted-foreground mb-1">Saldo 6 Meses</p>
+                  <p className={`text-xl font-bold ${getSaldoProjetado6Meses() >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {formatCurrency(getSaldoProjetado6Meses())}
+                  </p>
+                </div>
+                <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20 rounded-xl border">
+                  <p className="text-sm text-muted-foreground mb-1">Parcelamentos Ativos</p>
+                  <p className="text-xl font-bold text-purple-600">
+                    {contas.filter(c => c.ativa).length}
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Análise do Orçamento */}
@@ -464,15 +490,15 @@ export const Orcamento = () => {
                   <div className="flex justify-between items-center mb-4">
                     <span className="text-sm font-medium">Gastos vs Renda</span>
                     <span className="text-xl font-bold">
-                      {totalRendaAtiva > 0 ? ((gastosDoMes / totalRendaAtiva) * 100).toFixed(1) : 0}%
+                      {totalRendaAtiva > 0 ? ((gastosDoMesSelecionado / totalRendaAtiva) * 100).toFixed(1) : 0}%
                     </span>
                   </div>
                   <Progress 
-                    value={totalRendaAtiva > 0 ? Math.min((gastosDoMes / totalRendaAtiva) * 100, 100) : 0} 
+                    value={totalRendaAtiva > 0 ? Math.min((gastosDoMesSelecionado / totalRendaAtiva) * 100, 100) : 0} 
                     className="h-4 mb-2" 
                   />
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Gasto: {formatCurrency(gastosDoMes)}</span>
+                    <span>Gasto: {formatCurrency(gastosDoMesSelecionado)}</span>
                     <span>Renda: {formatCurrency(totalRendaAtiva)}</span>
                   </div>
                 </div>
@@ -485,7 +511,7 @@ export const Orcamento = () => {
                     </div>
                     <p className="text-sm text-muted-foreground mb-1">Sobra Estimada</p>
                     <p className="text-xl font-bold text-green-600">
-                      {formatCurrency(Math.max(0, totalRendaAtiva - gastosDoMes))}
+                      {formatCurrency(Math.max(0, saldoProjetado))}
                     </p>
                   </div>
 
@@ -495,8 +521,8 @@ export const Orcamento = () => {
                     </div>
                     <p className="text-sm text-muted-foreground mb-1">Meta de Economia</p>
                     <p className="text-xl font-bold text-blue-600">
-                      {orcamentoAtual.meta_economia ? 
-                        `${((Math.max(0, totalRendaAtiva - gastosDoMes) / orcamentoAtual.meta_economia) * 100).toFixed(1)}%` : 
+                      {orcamentoAtual?.meta_economia ? 
+                        `${((Math.max(0, saldoProjetado) / orcamentoAtual.meta_economia) * 100).toFixed(1)}%` : 
                         'Não definida'
                       }
                     </p>

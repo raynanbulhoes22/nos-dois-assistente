@@ -1,19 +1,35 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface MonthNavigationProps {
   currentMonth: number;
   currentYear: number;
   onNavigate: (direction: 'anterior' | 'proximo') => void;
   getMesNome: (mes: number) => string;
+  statusMes?: 'positivo' | 'deficit' | 'atencao';
 }
 
 export const MonthNavigation = ({
   currentMonth,
   currentYear,
   onNavigate,
-  getMesNome
+  getMesNome,
+  statusMes
 }: MonthNavigationProps) => {
+  const getStatusStyles = () => {
+    switch (statusMes) {
+      case 'positivo':
+        return 'bg-success/10 text-success border-success/20';
+      case 'deficit':
+        return 'bg-error/10 text-error border-error/20';
+      case 'atencao':
+        return 'bg-warning/10 text-warning border-warning/20';
+      default:
+        return 'bg-background text-foreground border-border';
+    }
+  };
+
   return (
     <div className="navigation-month">
       <Button 
@@ -25,7 +41,10 @@ export const MonthNavigation = ({
         <ChevronLeft className="h-4 w-4" />
       </Button>
       
-      <div className="px-3 py-1 min-w-[140px] text-center">
+      <div className={cn(
+        "px-4 py-2 min-w-[160px] text-center rounded-lg border transition-colors duration-200",
+        getStatusStyles()
+      )}>
         <span className="font-semibold text-sm">
           {getMesNome(currentMonth)} {currentYear}
         </span>

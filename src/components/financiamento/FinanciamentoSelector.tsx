@@ -171,7 +171,7 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
               >
                 {/* Badge Popular */}
                 {tipo.popular && (
-                  <div className="absolute top-1.5 right-1.5 z-10">
+                  <div className="absolute top-1.5 left-1.5 z-10">
                     <Badge 
                       variant="secondary" 
                       className="bg-primary text-primary-foreground text-[9px] px-1.5 py-0.5 font-medium shadow-md"

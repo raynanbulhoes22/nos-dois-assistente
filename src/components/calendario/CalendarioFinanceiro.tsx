@@ -48,55 +48,55 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
         className={cn(
           "w-full h-full min-h-[80px] p-2 rounded-md transition-all duration-200 relative",
           heatCls,
-          isCurrentDay ? "ring-2 ring-primary/50" : undefined,
-          hasEvents ? "cursor-pointer hover:scale-[1.02] hover:shadow-lg hover:ring-2 hover:ring-primary/30" : "cursor-default"
+          hasEvents && "cursor-pointer hover:scale-105 hover:shadow-lg hover:z-10",
+          isCurrentDay && "ring-2 ring-primary ring-opacity-50"
         )}
+        onClick={hasEvents ? () => handleDayClick(data) : undefined}
       >
-        {/* Número do dia */}
-        <div
-          className={cn(
-            "text-center mb-2 font-medium text-sm",
-            isCurrentDay ? "text-primary font-bold" : "text-foreground"
-          )}
-        >
-          {format(data, "d")}
-        </div>
-
-        {/* Informações dos eventos */}
-        {hasEvents && (
-          <div className="space-y-1">
-            <div
-              className={cn(
-                "text-[10px] text-center font-semibold px-1 py-0.5 rounded",
-                (eventosDia!.saldo || 0) >= 0 ? "text-success bg-success/10" : "text-destructive bg-destructive/10"
-              )}
-            >
-              {eventosDia!.eventos.length} {eventosDia!.eventos.length === 1 ? "evento" : "eventos"}
-            </div>
-            
-            <div
-              className={cn(
-                "text-[10px] text-center font-bold",
-                (eventosDia!.saldo || 0) >= 0 ? "text-success" : "text-destructive"
-              )}
-            >
-              {eventosDia!.saldo > 0 ? "+" : ""}
-              {(eventosDia!.saldo || 0).toLocaleString("pt-BR", {
-                style: "currency",
-                currency: "BRL",
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              })}
-            </div>
-
-            {/* Indicador visual que é clicável */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-primary/5 rounded-md">
-              <div className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
-                Ver detalhes
-              </div>
-            </div>
+        <div className="flex flex-col h-full">
+          <div className="text-sm font-medium mb-1">
+            {format(data, "d")}
           </div>
-        )}
+          
+          {hasEvents && (
+            <div className="flex-1 space-y-1 overflow-hidden">
+              {eventosDia?.eventos.slice(0, 2).map((evento, index) => (
+                <TooltipProvider key={index}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className={cn(
+                        "text-xs p-1 rounded truncate",
+                        evento.isEntrada 
+                          ? "bg-success/20 text-success-foreground" 
+                          : "bg-destructive/20 text-destructive-foreground"
+                      )}>
+                        {evento.titulo}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{evento.titulo}: {evento.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ))}
+              
+              {(eventosDia?.eventos.length ?? 0) > 2 && (
+                <div className="text-xs text-muted-foreground font-medium">
+                  +{(eventosDia?.eventos.length ?? 0) - 2} mais
+                </div>
+              )}
+              
+              {saldo !== 0 && (
+                <div className={cn(
+                  "text-xs font-bold mt-auto",
+                  saldo > 0 ? "text-success" : "text-destructive"
+                )}>
+                  {saldo > 0 ? "+" : ""}{saldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -117,10 +117,16 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
   }
 
   return (
-    <div className="space-y-4">
-      <CalendarioFilters filtros={filtros} onChange={setFiltros} />
+    <Card className="overflow-hidden">
+      {/* Header compacto com filtros integrados */}
+      <div className="px-4 py-3 border-b bg-muted/20">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold">Calendário Financeiro</h3>
+          <CalendarioFilters filtros={filtros} onChange={setFiltros} />
+        </div>
+      </div>
       
-      <Card className="overflow-hidden">
+      <div className="p-2">
         <Calendar
           mode="single"
           locale={ptBR}
@@ -152,7 +158,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           }}
           showOutsideDays={false}
         />
-      </Card>
+      </div>
 
       {selectedDay && (
         <DayDetailsModal
@@ -161,6 +167,6 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           onClose={() => setSelectedDay(null)}
         />
       )}
-    </div>
+    </Card>
   );
 };

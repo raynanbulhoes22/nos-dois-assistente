@@ -30,7 +30,8 @@ const tiposFinanciamento = [
     textColor: "text-blue-700",
     borderColor: "border-blue-200",
     campos: ["Produto", "Loja", "Cartão"],
-    popular: false
+    popular: false,
+    disponivel: true
   },
   {
     id: "financiamento_veicular",
@@ -42,7 +43,8 @@ const tiposFinanciamento = [
     textColor: "text-emerald-700",
     borderColor: "border-emerald-200",
     campos: ["Veículo", "Taxa de juros", "Entrada"],
-    popular: true
+    popular: true,
+    disponivel: true
   },
   {
     id: "financiamento_imobiliario",
@@ -54,7 +56,8 @@ const tiposFinanciamento = [
     textColor: "text-purple-700",
     borderColor: "border-purple-200",
     campos: ["Imóvel", "Sistema amortização"],
-    popular: true
+    popular: true,
+    disponivel: false
   },
   {
     id: "emprestimo_pessoal",
@@ -66,7 +69,8 @@ const tiposFinanciamento = [
     textColor: "text-orange-700",
     borderColor: "border-orange-200",
     campos: ["Finalidade", "Taxa de juros"],
-    popular: false
+    popular: false,
+    disponivel: false
   },
   {
     id: "emprestimo_consignado",
@@ -78,7 +82,8 @@ const tiposFinanciamento = [
     textColor: "text-teal-700",
     borderColor: "border-teal-200",
     campos: ["Margem consignável"],
-    popular: false
+    popular: false,
+    disponivel: false
   },
   {
     id: "refinanciamento",
@@ -90,7 +95,8 @@ const tiposFinanciamento = [
     textColor: "text-cyan-700",
     borderColor: "border-cyan-200",
     campos: ["Taxa anterior", "Nova taxa"],
-    popular: false
+    popular: false,
+    disponivel: false
   },
   {
     id: "consorcio",
@@ -102,7 +108,8 @@ const tiposFinanciamento = [
     textColor: "text-pink-700",
     borderColor: "border-pink-200",
     campos: ["Bem", "Taxa administração"],
-    popular: false
+    popular: false,
+    disponivel: false
   },
   {
     id: "leasing",
@@ -114,7 +121,8 @@ const tiposFinanciamento = [
     textColor: "text-indigo-700",
     borderColor: "border-indigo-200",
     campos: ["Bem", "VRG"],
-    popular: false
+    popular: false,
+    disponivel: false
   },
   {
     id: "cdc",
@@ -126,7 +134,8 @@ const tiposFinanciamento = [
     textColor: "text-amber-700",
     borderColor: "border-amber-200",
     campos: ["Produto", "Taxa de juros"],
-    popular: false
+    popular: false,
+    disponivel: false
   }
 ];
 
@@ -147,53 +156,76 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 px-2">
         {tiposFinanciamento.map((tipo, index) => {
           const Icone = tipo.icone;
+          const isDisponivel = tipo.disponivel;
           
           return (
             <div 
               key={tipo.id}
-              className="animate-scale-in hover-scale group"
+              className={`animate-scale-in group ${isDisponivel ? 'hover-scale' : 'opacity-60'}`}
               style={{ animationDelay: `${index * 60}ms` }}
             >
               <Button
                 variant="ghost"
+                disabled={!isDisponivel}
                 className={`
                   relative w-full h-auto p-0 overflow-hidden 
                   bg-gradient-to-br ${tipo.bgGradient} 
                   border-2 ${tipo.borderColor}
-                  hover:shadow-md hover:shadow-primary/10
-                  hover:border-primary/30 hover:-translate-y-0.5
-                  active:translate-y-0 active:scale-98
+                  ${isDisponivel ? `
+                    hover:shadow-md hover:shadow-primary/10
+                    hover:border-primary/30 hover:-translate-y-0.5
+                    active:translate-y-0 active:scale-98
+                    cursor-pointer
+                  ` : `
+                    cursor-not-allowed
+                    grayscale-50 bg-gray-50
+                  `}
                   transition-all duration-300 ease-out
                   min-h-[75px] focus-visible:ring-2 focus-visible:ring-primary
                 `}
-                onClick={() => onSelect(tipo.id)}
-                aria-label={`Selecionar ${tipo.nome} - ${tipo.descricao}`}
+                onClick={() => isDisponivel && onSelect(tipo.id)}
+                aria-label={isDisponivel ? `Selecionar ${tipo.nome} - ${tipo.descricao}` : `${tipo.nome} - Em breve`}
               >
+                {/* Badge "Em breve" para items indisponíveis */}
+                {!isDisponivel && (
+                  <div className="absolute top-1 right-1 z-10">
+                    <Badge 
+                      variant="secondary" 
+                      className="text-[8px] px-1.5 py-0.5 bg-gray-200 text-gray-600 font-medium rounded-full"
+                    >
+                      Em breve
+                    </Badge>
+                  </div>
+                )}
                 
                 <div className="w-full p-3 space-y-2 text-left">
                   {/* Header Compacto */}
                   <div className="flex items-center gap-2.5">
                     <div className={`
                       p-1.5 rounded-lg bg-gradient-to-br ${tipo.gradient}
-                      shadow-sm group-hover:scale-105 transition-transform duration-300
+                      shadow-sm ${isDisponivel ? 'group-hover:scale-105' : ''} transition-transform duration-300
+                      ${!isDisponivel ? 'opacity-70' : ''}
                     `}>
                       <Icone className="h-3.5 w-3.5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className={`
                         font-semibold text-sm leading-tight 
-                        ${tipo.textColor} group-hover:scale-105 transition-transform duration-200
+                        ${tipo.textColor} ${isDisponivel ? 'group-hover:scale-105' : ''} transition-transform duration-200
+                        ${!isDisponivel ? 'text-gray-500' : ''}
                       `}>
                         {tipo.nome}
                       </h3>
-                      <p className="text-[10px] text-muted-foreground/80 leading-tight mt-0.5">
+                      <p className={`text-[10px] leading-tight mt-0.5 ${!isDisponivel ? 'text-gray-400' : 'text-muted-foreground/80'}`}>
                         {tipo.descricao}
                       </p>
                     </div>
-                    <ChevronRight className={`
-                      h-3.5 w-3.5 ${tipo.textColor} 
-                      group-hover:translate-x-1 transition-transform duration-300 flex-shrink-0
-                    `} />
+                    {isDisponivel && (
+                      <ChevronRight className={`
+                        h-3.5 w-3.5 ${tipo.textColor} 
+                        group-hover:translate-x-1 transition-transform duration-300 flex-shrink-0
+                      `} />
+                    )}
                   </div>
                   
                   {/* Campos Essenciais - Ultra Compacto */}
@@ -202,7 +234,9 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
                       <Badge 
                         key={index}
                         variant="outline" 
-                        className="text-[9px] px-1.5 py-0.5 bg-white/70 border-white/50 text-muted-foreground font-medium"
+                        className={`text-[9px] px-1.5 py-0.5 bg-white/70 border-white/50 font-medium ${
+                          !isDisponivel ? 'text-gray-400' : 'text-muted-foreground'
+                        }`}
                       >
                         {campo}
                       </Badge>
@@ -210,7 +244,9 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
                     {tipo.campos.length > 2 && (
                       <Badge 
                         variant="outline" 
-                        className="text-[9px] px-1.5 py-0.5 bg-white/70 border-white/50 text-muted-foreground font-medium"
+                        className={`text-[9px] px-1.5 py-0.5 bg-white/70 border-white/50 font-medium ${
+                          !isDisponivel ? 'text-gray-400' : 'text-muted-foreground'
+                        }`}
                       >
                         +{tipo.campos.length - 2}
                       </Badge>

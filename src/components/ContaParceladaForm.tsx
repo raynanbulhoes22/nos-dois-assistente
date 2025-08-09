@@ -87,14 +87,14 @@ export const ContaParceladaForm: React.FC<ContaParceladaFormProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl w-[95vw] max-h-[85vh] overflow-hidden border-0 p-0 gap-0">
-        <DialogHeader className="px-4 pt-4 pb-3 border-b bg-muted/30 flex-shrink-0">
-          <DialogTitle className="text-lg font-semibold text-center">
+      <DialogContent className="max-w-4xl w-[95vw] h-[90vh] sm:h-[85vh] overflow-hidden border-0 p-0 gap-0 flex flex-col">
+        <DialogHeader className="px-3 sm:px-4 pt-3 sm:pt-4 pb-2 sm:pb-3 border-b bg-muted/30 flex-shrink-0">
+          <DialogTitle className="text-base sm:text-lg font-semibold text-center">
             Parcelamentos & Financiamentos
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-4 py-3">
+        <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-4 py-2 sm:py-3">
           {renderForm()}
         </div>
       </DialogContent>

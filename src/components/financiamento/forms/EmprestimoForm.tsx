@@ -280,36 +280,28 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
         />
       </div>
 
-      {/* Resumo */}
+      {/* Resumo Compacto */}
       {formData.valor_parcela > 0 && formData.total_parcelas > 0 && (
-        <div className="modern-card p-4 space-y-3">
-          <h4 className="font-medium text-sm">Resumo do Empréstimo</h4>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="space-y-2">
+        <div className="bg-muted/50 p-3 rounded-lg space-y-2">
+          <h4 className="font-medium text-xs">Resumo do Empréstimo</h4>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Valor Emprestado:</span>
+                <span className="text-muted-foreground">Emprestado:</span>
                 <span className="font-medium">R$ {formData.valor_emprestado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Total a Pagar:</span>
+                <span className="text-muted-foreground">Total:</span>
                 <span className="font-medium">R$ {valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Juros Total:</span>
-                <span className="font-medium text-orange-600">R$ {jurosTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-              </div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Parcelas Restantes:</span>
-                <span className="font-medium">{parcelasRestantes}</span>
+                <span className="text-muted-foreground">Restantes:</span>
+                <span className="font-medium">{parcelasRestantes}x</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Valor Restante:</span>
-                <span className="font-medium text-primary">R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Taxa Mensal:</span>
+                <span className="text-muted-foreground">Taxa:</span>
                 <span className="font-medium text-orange-600">{formData.taxa_juros}%</span>
               </div>
             </div>

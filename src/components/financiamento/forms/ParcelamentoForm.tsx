@@ -224,26 +224,22 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
         />
       </div>
 
-      {/* Resumo */}
+      {/* Resumo Compacto */}
       {formData.valor_parcela > 0 && formData.total_parcelas > 0 && (
-        <div className="modern-card p-4 space-y-3">
-          <h4 className="font-medium text-sm">Resumo do Parcelamento</h4>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Valor Total:</span>
-                <span className="font-medium">R$ {valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Parcelas Restantes:</span>
-                <span className="font-medium">{parcelasRestantes}</span>
-              </div>
+        <div className="bg-muted/50 p-3 rounded-lg space-y-2">
+          <h4 className="font-medium text-xs">Resumo</h4>
+          <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="text-center">
+              <p className="text-muted-foreground text-[10px]">Total</p>
+              <p className="font-medium">R$ {valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
             </div>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Valor Restante:</span>
-                <span className="font-medium text-primary">R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-              </div>
+            <div className="text-center">
+              <p className="text-muted-foreground text-[10px]">Restantes</p>
+              <p className="font-medium">{parcelasRestantes}x</p>
+            </div>
+            <div className="text-center">
+              <p className="text-muted-foreground text-[10px]">A Pagar</p>
+              <p className="font-medium text-primary">R$ {valorRestante.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
             </div>
           </div>
         </div>

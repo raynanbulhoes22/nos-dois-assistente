@@ -133,20 +133,13 @@ const tiposFinanciamento = [
 export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ onSelect }) => {
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header Moderno */}
+      {/* Header Limpo */}
       <div className="text-center space-y-3 px-4">
-        <div className="flex items-center justify-center gap-2 mb-1">
-          <Sparkles className="h-4 w-4 text-primary animate-pulse" />
-          <span className="text-xs font-medium text-primary">Organize suas contas</span>
-        </div>
-        <h2 className="text-xl md:text-2xl font-bold text-foreground leading-tight">
-          Parcelamentos &<br />
-          <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-            Financiamentos
-          </span>
+        <h2 className="text-lg font-semibold text-foreground">
+          Selecione o tipo de conta
         </h2>
-        <p className="text-muted-foreground max-w-md mx-auto text-xs leading-relaxed">
-          Escolha o tipo para preencher apenas os campos essenciais
+        <p className="text-muted-foreground text-sm">
+          Cada tipo possui campos específicos para melhor organização
         </p>
       </div>
       
@@ -243,14 +236,11 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
         })}
       </div>
       
-      {/* Footer com Dica */}
-      <div className="text-center px-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full">
-          <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
-          <p className="text-[10px] text-muted-foreground">
-            Apenas os dados essenciais para sua mensalidade
-          </p>
-        </div>
+      {/* Footer Simples */}
+      <div className="text-center px-4 pt-2">
+        <p className="text-xs text-muted-foreground">
+          💡 Apenas os campos essenciais para organizar suas contas
+        </p>
       </div>
     </div>
   );

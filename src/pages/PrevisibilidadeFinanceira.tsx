@@ -50,7 +50,7 @@ export default function PrevisibilidadeFinanceira() {
   } = useContasParceladas();
 
   const { 
-    fontesRenda, 
+    fontes, 
     getTotalRendaAtiva 
   } = useFontesRenda();
 
@@ -320,6 +320,10 @@ export default function PrevisibilidadeFinanceira() {
           open={showParcelamentoForm}
           onOpenChange={setShowParcelamentoForm}
           editingConta={editingConta}
+          onSubmit={async (conta) => {
+            setShowParcelamentoForm(false);
+            return true;
+          }}
         />
 
         <DetalheMensalDialog

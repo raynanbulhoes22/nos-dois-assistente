@@ -46,31 +46,32 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
     return (
       <div
         className={cn(
-          "w-full h-full min-h-[80px] p-2 rounded-md transition-all duration-200 relative",
+          "w-full h-full min-h-[60px] sm:min-h-[80px] p-1 sm:p-2 rounded-md transition-all duration-200 relative",
           heatCls,
-          hasEvents && "cursor-pointer hover:scale-105 hover:shadow-lg hover:z-10",
-          isCurrentDay && "ring-2 ring-primary ring-opacity-50"
+          hasEvents && "cursor-pointer hover:scale-105 hover:shadow-lg hover:z-10 active:scale-95",
+          isCurrentDay && "ring-1 sm:ring-2 ring-primary ring-opacity-50"
         )}
         onClick={hasEvents ? () => handleDayClick(data) : undefined}
       >
         <div className="flex flex-col h-full">
-          <div className="text-sm font-medium mb-1">
+          <div className="text-xs sm:text-sm font-medium mb-1">
             {format(data, "d")}
           </div>
           
           {hasEvents && (
-            <div className="flex-1 space-y-1 overflow-hidden">
-              {eventosDia?.eventos.slice(0, 2).map((evento, index) => (
+            <div className="flex-1 space-y-0.5 sm:space-y-1 overflow-hidden">
+              {eventosDia?.eventos.slice(0, 1).map((evento, index) => (
                 <TooltipProvider key={index}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className={cn(
-                        "text-xs p-1 rounded truncate",
+                        "text-xs p-0.5 sm:p-1 rounded truncate",
                         evento.isEntrada 
                           ? "bg-success/20 text-success-foreground" 
                           : "bg-destructive/20 text-destructive-foreground"
                       )}>
-                        {evento.titulo}
+                        <span className="hidden sm:inline">{evento.titulo}</span>
+                        <span className="sm:hidden">{evento.titulo.substring(0, 8)}...</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -80,9 +81,10 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
                 </TooltipProvider>
               ))}
               
-              {(eventosDia?.eventos.length ?? 0) > 2 && (
+              {(eventosDia?.eventos.length ?? 0) > 1 && (
                 <div className="text-xs text-muted-foreground font-medium">
-                  +{(eventosDia?.eventos.length ?? 0) - 2} mais
+                  <span className="hidden sm:inline">+{(eventosDia?.eventos.length ?? 0) - 1} mais</span>
+                  <span className="sm:hidden">+{(eventosDia?.eventos.length ?? 0) - 1}</span>
                 </div>
               )}
               
@@ -91,7 +93,12 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
                   "text-xs font-bold mt-auto",
                   saldo > 0 ? "text-success" : "text-destructive"
                 )}>
-                  {saldo > 0 ? "+" : ""}{saldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  <span className="hidden sm:inline">
+                    {saldo > 0 ? "+" : ""}{saldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </span>
+                  <span className="sm:hidden">
+                    {saldo > 0 ? "+" : ""}{Math.abs(saldo) > 1000 ? `${(saldo/1000).toFixed(1)}k` : saldo.toFixed(0)}
+                  </span>
                 </div>
               )}
             </div>
@@ -119,14 +126,14 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
   return (
     <Card className="overflow-hidden">
       {/* Header compacto com filtros integrados */}
-      <div className="px-4 py-3 border-b bg-muted/20">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold">Calendário Financeiro</h3>
+      <div className="px-3 sm:px-4 py-2 sm:py-3 border-b bg-muted/20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h3 className="text-sm sm:text-base font-semibold">Calendário Financeiro</h3>
           <CalendarioFilters filtros={filtros} onChange={setFiltros} />
         </div>
       </div>
       
-      <div className="p-2">
+      <div className="p-1 sm:p-2">
         <Calendar
           mode="single"
           locale={ptBR}
@@ -144,9 +151,9 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
             nav_button_next: "absolute right-4",
             table: "w-full border-collapse space-y-1",
             head_row: "flex w-full",
-            head_cell: "text-muted-foreground rounded-md w-full font-semibold text-sm py-2",
+            head_cell: "text-muted-foreground rounded-md w-full font-semibold text-xs sm:text-sm py-1 sm:py-2",
             row: "flex w-full",
-            cell: "relative w-full h-24 text-center text-sm focus-within:relative focus-within:z-20 border border-border/50",
+            cell: "relative w-full h-16 sm:h-24 text-center text-sm focus-within:relative focus-within:z-20 border border-border/50",
             day: "h-full w-full p-0 font-normal relative flex flex-col",
             day_today: "bg-primary/5",
             day_selected: "bg-primary/10",

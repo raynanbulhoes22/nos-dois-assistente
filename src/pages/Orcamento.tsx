@@ -386,15 +386,15 @@ export const Orcamento = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      <div className="container mx-auto p-4 sm:p-6 max-w-7xl">
+      <div className="container mx-auto p-2 sm:p-4 lg:p-6 max-w-7xl">
         {/* Header com navegação */}
-        <div className="sticky top-0 z-30 mb-8 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 bg-gradient-to-b from-background/95 to-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-          <div className="flex items-center justify-between">
+        <div className="sticky top-0 z-30 mb-4 sm:mb-8 -mx-2 sm:-mx-4 lg:-mx-6 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 bg-gradient-to-b from-background/95 to-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 Calendário Financeiro
               </h1>
-              <p className="text-muted-foreground mt-1">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Visualize todas suas movimentações em um calendário
               </p>
             </div>
@@ -409,7 +409,7 @@ export const Orcamento = () => {
           </div>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-3 sm:space-y-6">
           {/* Alertas Críticos */}
           {alertas.length > 0 && (
             <AlertaFluxo alertas={alertas} />
@@ -425,9 +425,9 @@ export const Orcamento = () => {
           />
 
           {/* Seções Compactas em Tabs */}
-          <Card>
+          <Card className="sm:block hidden">
             <CardHeader>
-              <CardTitle className="text-lg">Configurações Financeiras</CardTitle>
+              <CardTitle className="text-base sm:text-lg">Configurações Financeiras</CardTitle>
             </CardHeader>
             <CardContent>
               <TabSection

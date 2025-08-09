@@ -79,8 +79,11 @@ export type Database = {
           data_primeira_parcela: string
           debito_automatico: boolean | null
           descricao: string | null
+          finalidade: string | null
           id: string
           instituicao_financeira: string | null
+          loja: string | null
+          margem_consignavel: number | null
           nome: string
           parcelas_pagas: number
           taxa_efetiva_anual: number | null
@@ -91,6 +94,7 @@ export type Database = {
           updated_at: string
           user_id: string
           valor_bem: number | null
+          valor_emprestado: number | null
           valor_entrada: number | null
           valor_financiado: number | null
           valor_parcela: number
@@ -105,8 +109,11 @@ export type Database = {
           data_primeira_parcela: string
           debito_automatico?: boolean | null
           descricao?: string | null
+          finalidade?: string | null
           id?: string
           instituicao_financeira?: string | null
+          loja?: string | null
+          margem_consignavel?: number | null
           nome: string
           parcelas_pagas?: number
           taxa_efetiva_anual?: number | null
@@ -117,6 +124,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           valor_bem?: number | null
+          valor_emprestado?: number | null
           valor_entrada?: number | null
           valor_financiado?: number | null
           valor_parcela: number
@@ -131,8 +139,11 @@ export type Database = {
           data_primeira_parcela?: string
           debito_automatico?: boolean | null
           descricao?: string | null
+          finalidade?: string | null
           id?: string
           instituicao_financeira?: string | null
+          loja?: string | null
+          margem_consignavel?: number | null
           nome?: string
           parcelas_pagas?: number
           taxa_efetiva_anual?: number | null
@@ -143,6 +154,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           valor_bem?: number | null
+          valor_emprestado?: number | null
           valor_entrada?: number | null
           valor_financiado?: number | null
           valor_parcela?: number

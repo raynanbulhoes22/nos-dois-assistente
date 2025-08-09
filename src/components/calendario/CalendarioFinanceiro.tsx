@@ -51,12 +51,6 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           isCurrentDay ? "ring-2 ring-primary/50" : undefined,
           hasEvents ? "cursor-pointer hover:scale-[1.02] hover:shadow-lg hover:ring-2 hover:ring-primary/30" : "cursor-default"
         )}
-        onClick={(e) => {
-          if (hasEvents) {
-            e.stopPropagation();
-            setSelectedDay(eventosDia);
-          }
-        }}
       >
         {/* Número do dia */}
         <div
@@ -103,11 +97,6 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
             </div>
           </div>
         )}
-
-        {/* Tooltip para dias com eventos */}
-        {hasEvents && (
-          <div className="absolute inset-0" title={`Clique para ver os ${eventosDia!.eventos.length} eventos do dia ${format(data, "d 'de' MMMM", { locale: ptBR })}`} />
-        )}
       </div>
     );
   };
@@ -136,6 +125,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           mode="single"
           locale={ptBR}
           month={new Date(anoAtual, mesAtual - 1)}
+          onDayClick={handleDayClick}
           className="w-full pointer-events-auto"
           classNames={{
             months: "flex w-full",

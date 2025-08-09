@@ -44,13 +44,13 @@ export const ComparativoCard = ({
   if (isLoading) {
     return (
       <Card className={cn("animate-pulse", className)}>
-        <CardHeader className="pb-2">
-          <div className="h-4 bg-muted rounded w-3/4"></div>
+        <CardHeader className="pb-1">
+          <div className="h-3 bg-muted rounded w-2/3"></div>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <div className="h-6 bg-muted rounded"></div>
-          <div className="h-6 bg-muted rounded"></div>
-          <div className="h-4 bg-muted rounded w-1/2"></div>
+        <CardContent className="space-y-2 pb-3">
+          <div className="h-4 bg-muted rounded"></div>
+          <div className="h-4 bg-muted rounded"></div>
+          <div className="h-3 bg-muted rounded w-1/2"></div>
         </CardContent>
       </Card>
     );
@@ -59,45 +59,45 @@ export const ComparativoCard = ({
   return (
     <Card className={cn("transition-all hover:shadow-md", className)}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+        <CardTitle className="text-xs font-medium text-muted-foreground">
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="space-y-2">
+      <CardContent className="space-y-2 pb-3">
+        <div className="space-y-1">
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Projetado</span>
-            <span className="text-sm font-medium">
+            <span className="text-xs font-medium">
               {formatValue(valorProjetado)}
             </span>
           </div>
           
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">Realizado</span>
-            <span className="text-base font-semibold">
+            <span className="text-sm font-semibold">
               {formatValue(valorRealizado)}
             </span>
           </div>
         </div>
 
         {showPercentage && (
-          <div className="flex items-center justify-between pt-2 border-t">
+          <div className="flex items-center justify-between pt-1 border-t">
             <div className="flex items-center gap-1">
               <PerformanceIcon className="h-3 w-3" />
               <span className="text-xs text-muted-foreground">Performance</span>
             </div>
             <Badge 
               variant={getPerformanceVariant()}
-              className="text-xs"
+              className="text-xs h-4 px-1"
             >
               {percentualRealizacao.toFixed(0)}%
             </Badge>
           </div>
         )}
 
-        {/* Barra de progresso visual */}
+        {/* Barra de progresso compacta */}
         <div className="space-y-1">
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
+          <div className="h-1 bg-muted rounded-full overflow-hidden">
             <div 
               className={cn(
                 "h-full transition-all duration-300 rounded-full",

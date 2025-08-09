@@ -469,7 +469,7 @@ export const Orcamento = () => {
                 totalRendaAtiva={totalRendaAtiva}
                 totalLimiteCartoes={totalLimiteCartoes}
                 totalParcelasAtivas={totalParcelasAtivas}
-                totalGastosFixosAtivos={totalGastosFixos}
+                totalGastosFixosAtivos={getTotalGastosFixosAtivos()}
                 onEditFonte={handleEditFonte}
                 onDeleteFonte={deleteFonte}
                 onEditCartao={handleEditCartao}

@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useMovimentacoes } from '@/hooks/useMovimentacoes';
 import { useContasParceladas } from '@/hooks/useContasParceladas';
 import { useCartoes } from '@/hooks/useCartoes';
 import { useFontesRenda } from '@/hooks/useFontesRenda';
@@ -9,19 +8,17 @@ import { startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, form
 
 export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
   const { user } = useAuth();
-  const { movimentacoes, isLoading: loadingMovimentacoes } = useMovimentacoes();
   const { contas, isLoading: loadingContas } = useContasParceladas();
   const { cartoes, isLoading: loadingCartoes } = useCartoes();
   const { fontes, isLoading: loadingFontes } = useFontesRenda();
 
   const [filtros, setFiltros] = useState<FiltrosCalendario>({
-    mostrarMovimentacoes: true,
     mostrarParcelas: true,
     mostrarVencimentosCartao: true,
     mostrarRenda: true,
   });
 
-  const isLoading = loadingMovimentacoes || loadingContas || loadingCartoes || loadingFontes;
+  const isLoading = loadingContas || loadingCartoes || loadingFontes;
 
   // Criar range de datas do mês atual
   const mesRange = useMemo(() => {
@@ -36,29 +33,7 @@ export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
 
     const eventos: EventoFinanceiro[] = [];
 
-    // 1. Movimentações dos registros financeiros
-    if (filtros.mostrarMovimentacoes) {
-      movimentacoes.forEach(mov => {
-        const dataMovimentacao = new Date(mov.data);
-        if (dataMovimentacao.getMonth() === mesAtual - 1 && dataMovimentacao.getFullYear() === anoAtual) {
-          eventos.push({
-            id: `mov-${mov.id}`,
-            data: dataMovimentacao,
-            tipo: 'movimentacao',
-            titulo: mov.nome || mov.categoria || 'Movimentação',
-            valor: mov.valor,
-            categoria: mov.categoria,
-            isEntrada: mov.isEntrada,
-            detalhes: {
-              estabelecimento: mov.estabelecimento,
-              observacao: mov.observacao,
-            },
-          });
-        }
-      });
-    }
-
-    // 2. Parcelas das contas parceladas
+    // 1. Parcelas das contas parceladas
     if (filtros.mostrarParcelas) {
       contas.forEach(conta => {
         if (!conta.ativa) return;
@@ -87,7 +62,7 @@ export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
       });
     }
 
-    // 3. Vencimentos de cartão de crédito
+    // 2. Vencimentos de cartão de crédito
     if (filtros.mostrarVencimentosCartao) {
       cartoes.forEach(cartao => {
         if (!cartao.ativo) return;
@@ -108,7 +83,7 @@ export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
       });
     }
 
-    // 4. Fontes de renda (assumindo recebimento no dia 5 de cada mês como exemplo)
+    // 3. Fontes de renda (assumindo recebimento no dia 5 de cada mês como exemplo)
     if (filtros.mostrarRenda) {
       fontes.forEach(fonte => {
         if (!fonte.ativa) return;
@@ -127,7 +102,7 @@ export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
     }
 
     return eventos;
-  }, [user, isLoading, movimentacoes, contas, cartoes, fontes, filtros, mesAtual, anoAtual]);
+  }, [user, isLoading, contas, cartoes, fontes, filtros, mesAtual, anoAtual]);
 
   // Agrupar eventos por dia
   const eventosPorDia = useMemo(() => {

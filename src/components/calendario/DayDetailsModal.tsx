@@ -22,8 +22,6 @@ export const DayDetailsModal = ({ eventosDia, isOpen, onClose }: DayDetailsModal
 
   const getEventIcon = (tipo: EventoFinanceiro['tipo']) => {
     switch (tipo) {
-      case 'movimentacao':
-        return Wallet;
       case 'parcela':
         return Calendar;
       case 'vencimento-cartao':
@@ -31,7 +29,7 @@ export const DayDetailsModal = ({ eventosDia, isOpen, onClose }: DayDetailsModal
       case 'renda':
         return TrendingUp;
       default:
-        return Wallet;
+        return Calendar;
     }
   };
 
@@ -50,8 +48,6 @@ export const DayDetailsModal = ({ eventosDia, isOpen, onClose }: DayDetailsModal
 
   const getEventTypeLabel = (tipo: EventoFinanceiro['tipo']) => {
     switch (tipo) {
-      case 'movimentacao':
-        return 'Movimentação';
       case 'parcela':
         return 'Parcela';
       case 'vencimento-cartao':
@@ -130,17 +126,6 @@ export const DayDetailsModal = ({ eventosDia, isOpen, onClose }: DayDetailsModal
                       </p>
                     )}
                     
-                    {evento.detalhes?.observacao && (
-                      <p className="text-sm text-muted-foreground mb-1">
-                        {evento.detalhes.observacao}
-                      </p>
-                    )}
-                    
-                    {evento.detalhes?.estabelecimento && (
-                      <p className="text-sm text-muted-foreground mb-1">
-                        📍 {evento.detalhes.estabelecimento}
-                      </p>
-                    )}
                     
                     {evento.detalhes?.numeroParcela && evento.detalhes?.totalParcelas && (
                       <p className="text-sm text-muted-foreground mb-1">

@@ -15,8 +15,6 @@ export const DayEvents = ({ eventos, isToday, className }: DayEventsProps) => {
 
   const getEventIcon = (tipo: EventoFinanceiro['tipo']) => {
     switch (tipo) {
-      case 'movimentacao':
-        return Wallet;
       case 'parcela':
         return Calendar;
       case 'vencimento-cartao':
@@ -24,7 +22,7 @@ export const DayEvents = ({ eventos, isToday, className }: DayEventsProps) => {
       case 'renda':
         return TrendingUp;
       default:
-        return Wallet;
+        return Calendar;
     }
   };
 

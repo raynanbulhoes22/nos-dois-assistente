@@ -18,13 +18,6 @@ export const CalendarioFilters = ({ filtros, onChange }: CalendarioFiltersProps)
 
   const filterItems = [
     {
-      key: 'mostrarMovimentacoes' as const,
-      label: 'Movimentações',
-      icon: Wallet,
-      active: filtros.mostrarMovimentacoes,
-      color: 'default',
-    },
-    {
       key: 'mostrarParcelas' as const,
       label: 'Parcelas',
       icon: Calendar,

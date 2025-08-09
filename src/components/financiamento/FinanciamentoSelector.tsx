@@ -169,17 +169,6 @@ export const FinanciamentoSelector: React.FC<FinanciamentoSelectorProps> = ({ on
                 onClick={() => onSelect(tipo.id)}
                 aria-label={`Selecionar ${tipo.nome} - ${tipo.descricao}`}
               >
-                {/* Badge Popular */}
-                {tipo.popular && (
-                  <div className="absolute top-1.5 left-1.5 z-10">
-                    <Badge 
-                      variant="secondary" 
-                      className="bg-primary text-primary-foreground text-[9px] px-1.5 py-0.5 font-medium shadow-md"
-                    >
-                      Popular
-                    </Badge>
-                  </div>
-                )}
                 
                 <div className="w-full p-3 space-y-2 text-left">
                   {/* Header Compacto */}

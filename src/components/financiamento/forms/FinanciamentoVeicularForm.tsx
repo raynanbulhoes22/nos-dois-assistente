@@ -5,13 +5,13 @@ import { Input } from "@/components/ui/input";
 import { RequiredLabel } from "@/components/ui/required-label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { ContaParcelada } from "@/hooks/useContasParceladas";
+import { ContaParcelada, ContaParceladaCreate } from "@/hooks/useContasParceladas";
 import { FINANCIAL_CATEGORIES } from "@/constants/categories";
 import { validateForm, getRequiredFields } from "@/lib/financial-validations";
 import { toast } from "@/hooks/use-toast";
 
 interface FinanciamentoVeicularFormProps {
-  onSubmit: (conta: Omit<ContaParcelada, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<boolean>;
+  onSubmit: (conta: ContaParceladaCreate) => Promise<boolean>;
   onBack: () => void;
   editingConta?: ContaParcelada | null;
 }

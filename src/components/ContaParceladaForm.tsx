@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ContaParcelada } from "@/hooks/useContasParceladas";
+import { ContaParcelada, ContaParceladaCreate } from "@/hooks/useContasParceladas";
 import { FinanciamentoSelector } from "@/components/financiamento/FinanciamentoSelector";
 import { ParcelamentoForm } from "@/components/financiamento/forms/ParcelamentoForm";
 import { FinanciamentoVeicularForm } from "@/components/financiamento/forms/FinanciamentoVeicularForm";
@@ -9,7 +9,7 @@ import { EmprestimoForm } from "@/components/financiamento/forms/EmprestimoForm"
 interface ContaParceladaFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (conta: Omit<ContaParcelada, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<boolean>;
+  onSubmit: (conta: ContaParceladaCreate) => Promise<boolean>;
   editingConta?: ContaParcelada | null;
 }
 
@@ -31,7 +31,7 @@ export const ContaParceladaForm: React.FC<ContaParceladaFormProps> = ({
     setSelectedTipo(null);
   };
 
-  const handleFormSubmit = async (conta: Omit<ContaParcelada, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+  const handleFormSubmit = async (conta: ContaParceladaCreate) => {
     const success = await onSubmit(conta);
     if (success) {
       setSelectedTipo(null);

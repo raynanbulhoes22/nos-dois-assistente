@@ -2,28 +2,19 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { Json } from "@/integrations/supabase/types";
+import type { Database } from "@/integrations/supabase/types";
 
-export interface ContaParcelada {
-  id: string;
-  user_id: string;
+// Use Supabase generated types for perfect sync with database
+export type ContaParcelada = Database['public']['Tables']['contas_parceladas']['Row'];
+export type ContaParceladaInsert = Database['public']['Tables']['contas_parceladas']['Insert'];
+
+// Type for creating new accounts with flexible optional fields
+export type ContaParceladaCreate = Partial<ContaParceladaInsert> & {
   nome: string;
   valor_parcela: number;
   total_parcelas: number;
-  parcelas_pagas: number;
   data_primeira_parcela: string;
-  categoria?: string;
-  cartao_id?: string;
-  descricao?: string;
-  instituicao_financeira?: string;
-  taxa_juros?: number;
-  debito_automatico: boolean;
-  tipo_financiamento: string;
-  ativa: boolean;
-  dados_especificos?: Json;
-  created_at: string;
-  updated_at: string;
-}
+};
 
 export interface ParcelaProjetada {
   mes: number;
@@ -69,7 +60,7 @@ export const useContasParceladas = () => {
     }
   };
 
-  const createConta = async (conta: Omit<ContaParcelada, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+  const createConta = async (conta: ContaParceladaCreate) => {
     try {
       const { data, error } = await supabase
         .from('contas_parceladas')

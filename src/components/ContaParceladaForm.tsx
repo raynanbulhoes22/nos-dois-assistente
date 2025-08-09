@@ -87,14 +87,16 @@ export const ContaParceladaForm: React.FC<ContaParceladaFormProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {editingConta ? "Editar" : "Novo"} Financiamento
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto border-0 p-0">
+        <DialogHeader className="px-8 pt-8 pb-0">
+          <DialogTitle className="text-2xl font-bold">
+            {editingConta ? "Editar Financiamento" : "Novo Financiamento"}
           </DialogTitle>
         </DialogHeader>
 
-        {renderForm()}
+        <div className="px-8 pb-8">
+          {renderForm()}
+        </div>
       </DialogContent>
     </Dialog>
   );

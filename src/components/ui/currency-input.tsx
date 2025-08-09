@@ -10,6 +10,7 @@ interface CurrencyInputProps extends Omit<React.ComponentProps<"input">, "onChan
 export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputProps>(
   ({ className, value, onChange, ...props }, ref) => {
     const [displayValue, setDisplayValue] = React.useState("");
+    const [isFocused, setIsFocused] = React.useState(false);
 
     // Format number to Brazilian currency format for display
     const formatCurrency = (num: number): string => {
@@ -20,34 +21,34 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
       });
     };
 
-    // Parse Brazilian format to number
+    // Simple parser that handles common input formats
     const parseCurrency = (str: string): number => {
       if (!str || str.trim() === "") return 0;
       
-      // Remove all non-digit characters except comma and dot
+      // Remove everything except digits, comma and dot
       let cleaned = str.replace(/[^\d,.-]/g, '');
       
-      // Handle Brazilian format (1.234,56) or US format (1,234.56)
+      // If it has both comma and dot, determine which is decimal separator
       if (cleaned.includes(',') && cleaned.includes('.')) {
-        // If both exist, assume last one is decimal separator
         const lastComma = cleaned.lastIndexOf(',');
         const lastDot = cleaned.lastIndexOf('.');
         
         if (lastComma > lastDot) {
-          // Brazilian format: 1.234,56
+          // Brazilian format: 1.234,56 -> replace . with nothing, , with .
           cleaned = cleaned.replace(/\./g, '').replace(',', '.');
         } else {
-          // US format: 1,234.56
+          // US format: 1,234.56 -> replace , with nothing
           cleaned = cleaned.replace(/,/g, '');
         }
       } else if (cleaned.includes(',')) {
-        // Only comma - could be thousands separator or decimal
-        const parts = cleaned.split(',');
-        if (parts.length === 2 && parts[1].length <= 2) {
-          // Likely decimal separator
+        // Only has comma - if it's in decimal position (last 3 chars), treat as decimal
+        const commaIndex = cleaned.lastIndexOf(',');
+        const afterComma = cleaned.substring(commaIndex + 1);
+        if (afterComma.length <= 2) {
+          // Treat as decimal separator
           cleaned = cleaned.replace(',', '.');
         } else {
-          // Likely thousands separator
+          // Treat as thousands separator
           cleaned = cleaned.replace(/,/g, '');
         }
       }
@@ -56,30 +57,36 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
       return isNaN(parsed) ? 0 : parsed;
     };
 
-    // Update display value when value prop changes
+    // Update display value when external value changes and not focused
     React.useEffect(() => {
-      if (value === 0) {
-        setDisplayValue("");
-      } else {
-        setDisplayValue(formatCurrency(value));
+      if (!isFocused) {
+        if (value === 0) {
+          setDisplayValue("");
+        } else {
+          setDisplayValue(formatCurrency(value));
+        }
       }
-    }, [value]);
+    }, [value, isFocused]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const input = e.target.value;
-      setDisplayValue(input); // Keep raw input while typing
+      setDisplayValue(input);
       
-      // Only parse and call onChange if there's actual input
-      if (input.trim() === "") {
-        onChange(0);
-      } else {
-        const numericValue = parseCurrency(input);
-        onChange(numericValue);
+      const numericValue = parseCurrency(input);
+      onChange(numericValue);
+    };
+
+    const handleFocus = () => {
+      setIsFocused(true);
+      // Convert formatted value back to raw input for easier editing
+      if (value > 0) {
+        setDisplayValue(value.toString());
       }
     };
 
     const handleBlur = () => {
-      // Reformat on blur only if there's a value
+      setIsFocused(false);
+      // Format the value when leaving the field
       if (value > 0) {
         setDisplayValue(formatCurrency(value));
       } else {
@@ -95,6 +102,7 @@ export const CurrencyInput = React.forwardRef<HTMLInputElement, CurrencyInputPro
         inputMode="decimal"
         value={displayValue}
         onChange={handleChange}
+        onFocus={handleFocus}
         onBlur={handleBlur}
         className={cn(className)}
       />

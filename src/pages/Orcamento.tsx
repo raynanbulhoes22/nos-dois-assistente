@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, DollarSign, Target, Plus, Edit3, Trash2, ChevronLeft, ChevronRight, CreditCard, Building2 } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Target, Plus, Edit3, Trash2, ChevronLeft, ChevronRight, CreditCard, Building2, Calendar as CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -27,6 +27,7 @@ import { PrevisaoMesAtual } from "@/components/orcamento/PrevisaoMesAtual";
 import { MetricCard } from "@/components/orcamento/MetricCard";
 import { MonthNavigation } from "@/components/orcamento/MonthNavigation";
 import { TabSection } from "@/components/orcamento/TabSection";
+import { CalendarioFinanceiro } from "@/components/calendario/CalendarioFinanceiro";
 
 const FINANCING_TYPE_LABELS = {
   parcelamento: 'Parcelamento',
@@ -364,68 +365,81 @@ export const Orcamento = () => {
           </div>
         </div>
 
-        <div className="space-y-6 sm:space-y-8">
           {/* Alertas Críticos */}
           {alertas.length > 0 && (
-            <AlertaFluxo alertas={alertas} maxAlertas={2} />
+            <AlertaFluxo alertas={alertas} />
           )}
 
-          {/* Métricas Principais */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard
-            title="Renda Total"
-            value={formatCurrency(totalRendaAtiva)}
-            icon={TrendingUp}
-            variant="success"
-            isLoading={isLoading}
-            subtitle="Fontes ativas"
-          />
-          <MetricCard
-            title="Gastos Projetados"
-            value={formatCurrency(gastosDoMesSelecionado)}
-            icon={DollarSign}
-            variant="error"
-            isLoading={isLoading}
-            subtitle={`${getMesNome(mesAtual)} ${anoAtual}`}
-          />
-          <MetricCard
-            title="Saldo Projetado"
-            value={formatCurrency(saldoProjetado)}
-            icon={Target}
-            variant={saldoProjetado >= 0 ? "success" : "error"}
-            isLoading={isLoading}
-            subtitle={`${getMesNome(mesAtual)} ${anoAtual}`}
-          />
-          <MetricCard
-            title="Meta Economia"
-            value={formatCurrency(orcamentoAtual?.meta_economia || totalRendaAtiva * 0.2)}
-            icon={Target}
-            variant="purple"
-            isLoading={isLoading}
-            subtitle="Objetivo mensal"
-          />
+          {/* Métricas Compactas */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <MetricCard
+              title="Renda Total"
+              value={formatCurrency(totalRendaAtiva)}
+              icon={TrendingUp}
+              variant="success"
+              isLoading={fontesLoading}
+            />
+            
+            <MetricCard
+              title="Gastos Previstos"
+              value={formatCurrency(totalParcelasAtivas)}
+              icon={TrendingDown}
+              variant="destructive"
+              isLoading={contasLoading}
+            />
+            
+            <MetricCard
+              title="Saldo Projetado"
+              value={formatCurrency(saldoProjetado)}
+              icon={saldoProjetado >= 0 ? TrendingUp : TrendingDown}
+              variant={saldoProjetado >= 0 ? "success" : "destructive"}
+              isLoading={fontesLoading || contasLoading}
+            />
+            
+            <MetricCard
+              title="Limite Cartões"
+              value={formatCurrency(totalLimiteCartoes)}
+              icon={DollarSign}
+              variant="default"
+              isLoading={cartoesLoading}
+            />
           </div>
 
-
-          {/* Seções Organizadas em Tabs */}
-          <TabSection
-            fontes={fontes}
-            cartoes={cartoes}
-            contas={contas}
-            formatCurrency={formatCurrency}
-            totalRendaAtiva={totalRendaAtiva}
-            totalLimiteCartoes={totalLimiteCartoes}
-            totalParcelasAtivas={totalParcelasAtivas}
-            onEditFonte={handleEditFonte}
-            onDeleteFonte={deleteFonte}
-            onEditCartao={handleEditCartao}
-            onDeleteCartao={deleteCartao}
-            onEditContaParcelada={handleEditContaParcelada}
-            onDeleteContaParcelada={deleteConta}
-            onAddFonte={() => setShowFonteModal(true)}
-            onAddCartao={() => setShowCartaoModal(true)}
-            onAddParcelamento={() => setShowContaParceladaModal(true)}
+          {/* Calendário Principal */}
+          <CalendarioFinanceiro 
+            mesAtual={mesAtual} 
+            anoAtual={anoAtual}
           />
+
+          {/* Seções Compactas em Tabs */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Configurações Financeiras</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TabSection
+                // Renda
+                fontes={fontes}
+                onAddFonte={() => setShowFonteModal(true)}
+                onEditFonte={handleEditFonte}
+                totalRendaAtiva={totalRendaAtiva}
+                
+                // Cartões
+                cartoes={cartoes}
+                onAddCartao={() => setShowCartaoModal(true)}
+                onEditCartao={handleEditCartao}
+                totalLimiteCartoes={totalLimiteCartoes}
+                
+                // Parcelados
+                contas={contas}
+                onAddParcelamento={() => setShowContaParceladaModal(true)}
+                onEditParcelamento={handleEditContaParcelada}
+                totalParcelasAtivas={totalParcelasAtivas}
+                
+                isLoading={fontesLoading || cartoesLoading || contasLoading}
+              />
+            </CardContent>
+          </Card>
 
           {/* Previsão do Mês Atual */}
           {!isLoadingPrevisibilidade && (

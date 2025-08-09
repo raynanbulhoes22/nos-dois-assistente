@@ -8,9 +8,8 @@ import { useState } from "react";
 import { DayDetailsModal } from "./DayDetailsModal";
 import { CalendarioFilters } from "./CalendarioFilters";
 import { EventosDia } from "./tipos";
-import { DayEvents } from "./DayEvents";
 import { cn } from "@/lib/utils";
-
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CalendarioFinanceiroProps {
   mesAtual: number;
@@ -52,6 +51,12 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           isCurrentDay ? "ring-2 ring-primary/50" : undefined,
           hasEvents ? "cursor-pointer hover:scale-[1.02] hover:shadow-lg hover:ring-2 hover:ring-primary/30" : "cursor-default"
         )}
+        onClick={(e) => {
+          if (hasEvents) {
+            e.stopPropagation();
+            setSelectedDay(eventosDia);
+          }
+        }}
       >
         {/* Número do dia */}
         <div
@@ -66,7 +71,15 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
         {/* Informações dos eventos */}
         {hasEvents && (
           <div className="space-y-1">
-            <DayEvents eventos={eventosDia!.eventos} isToday={isCurrentDay} />
+            <div
+              className={cn(
+                "text-[10px] text-center font-semibold px-1 py-0.5 rounded",
+                (eventosDia!.saldo || 0) >= 0 ? "text-success bg-success/10" : "text-destructive bg-destructive/10"
+              )}
+            >
+              {eventosDia!.eventos.length} {eventosDia!.eventos.length === 1 ? "evento" : "eventos"}
+            </div>
+            
             <div
               className={cn(
                 "text-[10px] text-center font-bold",
@@ -83,7 +96,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
             </div>
 
             {/* Indicador visual que é clicável */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-primary/5 rounded-md pointer-events-none">
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-primary/5 rounded-md">
               <div className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
                 Ver detalhes
               </div>
@@ -91,6 +104,10 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           </div>
         )}
 
+        {/* Tooltip para dias com eventos */}
+        {hasEvents && (
+          <div className="absolute inset-0" title={`Clique para ver os ${eventosDia!.eventos.length} eventos do dia ${format(data, "d 'de' MMMM", { locale: ptBR })}`} />
+        )}
       </div>
     );
   };
@@ -143,7 +160,6 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           components={{
             DayContent: ({ date }) => getDayContent(date),
           }}
-          onDayClick={(date) => handleDayClick(date)}
           showOutsideDays={false}
         />
       </Card>

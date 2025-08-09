@@ -27,12 +27,14 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
     categoria: "",
     descricao: "",
     instituicao_financeira: "",
-    taxa_juros: 0,
+    taxa_nominal_anual: 0,
+    taxa_efetiva_anual: 0,
     debito_automatico: false,
     tipo_financiamento: "financiamento_veicular",
     ativa: true,
     valor_bem: 0,
     valor_entrada: 0,
+    valor_financiado: 0,
     ano_veiculo: new Date().getFullYear(),
     dados_especificos: {}
   });
@@ -49,12 +51,14 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
         categoria: editingConta.categoria || "",
         descricao: editingConta.descricao || "",
         instituicao_financeira: editingConta.instituicao_financeira || "",
-        taxa_juros: editingConta.taxa_juros || 0,
+        taxa_nominal_anual: dadosEspecificos.taxa_nominal_anual || 0,
+        taxa_efetiva_anual: dadosEspecificos.taxa_efetiva_anual || 0,
         debito_automatico: editingConta.debito_automatico,
         tipo_financiamento: "financiamento_veicular",
         ativa: editingConta.ativa,
         valor_bem: dadosEspecificos.valor_bem || 0,
         valor_entrada: dadosEspecificos.valor_entrada || 0,
+        valor_financiado: dadosEspecificos.valor_financiado || (dadosEspecificos.valor_bem - dadosEspecificos.valor_entrada) || 0,
         ano_veiculo: dadosEspecificos.ano_veiculo || new Date().getFullYear(),
         dados_especificos: dadosEspecificos
       });
@@ -72,7 +76,9 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
       valor_bem: formData.valor_bem,
       valor_entrada: formData.valor_entrada,
       ano_veiculo: formData.ano_veiculo,
-      valor_financiado: formData.valor_bem - formData.valor_entrada
+      valor_financiado: formData.valor_financiado,
+      taxa_nominal_anual: formData.taxa_nominal_anual,
+      taxa_efetiva_anual: formData.taxa_efetiva_anual
     };
 
     const success = await onSubmit({
@@ -85,7 +91,9 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
     }
   };
 
-  const valorFinanciado = formData.valor_bem - formData.valor_entrada;
+  // Auto-calculate financed value if not manually set
+  const valorFinanciadoCalculado = formData.valor_bem - formData.valor_entrada;
+  const valorFinanciado = formData.valor_financiado || valorFinanciadoCalculado;
   const valorTotal = formData.valor_parcela * formData.total_parcelas;
   const jurosTotal = valorTotal - valorFinanciado;
   const parcelasRestantes = formData.total_parcelas - formData.parcelas_pagas;
@@ -129,39 +137,74 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
         </div>
       </div>
 
-      {/* Valores - Mobile Vertical */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <div className="space-y-2">
-          <Label htmlFor="valor_bem" className="text-sm font-medium">Valor do Veículo *</Label>
-          <Input
-            id="valor_bem"
-            type="number"
-            step="0.01"
-            min="0"
-            value={formData.valor_bem}
-            onChange={(e) => setFormData(prev => ({ ...prev, valor_bem: parseFloat(e.target.value) || 0 }))}
-            placeholder="R$ 0,00"
-            className="text-sm"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="valor_entrada" className="text-sm font-medium">Valor da Entrada</Label>
-          <Input
-            id="valor_entrada"
-            type="number"
-            step="0.01"
-            min="0"
-            max={formData.valor_bem}
-            value={formData.valor_entrada}
-            onChange={(e) => setFormData(prev => ({ ...prev, valor_entrada: parseFloat(e.target.value) || 0 }))}
-            placeholder="R$ 0,00"
-            className="text-sm"
-          />
-        </div>
-        <div className="space-y-2 col-span-1 sm:col-span-2 lg:col-span-1">
-          <Label className="text-sm font-medium">Valor Financiado</Label>
-          <div className="h-10 px-3 py-2 border border-input bg-background rounded-md flex items-center text-sm">
-            R$ {valorFinanciado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+      {/* Seção de Valores */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium border-b pb-2">Valores do Financiamento</h4>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="valor_bem" className="text-sm font-medium">Valor do Veículo *</Label>
+            <Input
+              id="valor_bem"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.valor_bem}
+              onChange={(e) => {
+                const valor = parseFloat(e.target.value) || 0;
+                setFormData(prev => ({ 
+                  ...prev, 
+                  valor_bem: valor,
+                  // Auto-update financed value if not manually set
+                  valor_financiado: prev.valor_financiado === (prev.valor_bem - prev.valor_entrada) ? 
+                    valor - prev.valor_entrada : prev.valor_financiado
+                }));
+              }}
+              placeholder="R$ 18.000,00"
+              className="text-sm"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="valor_entrada" className="text-sm font-medium">Valor da Entrada</Label>
+            <Input
+              id="valor_entrada"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.valor_entrada}
+              onChange={(e) => {
+                const entrada = parseFloat(e.target.value) || 0;
+                setFormData(prev => ({ 
+                  ...prev, 
+                  valor_entrada: entrada,
+                  // Auto-update financed value if not manually set
+                  valor_financiado: prev.valor_financiado === (prev.valor_bem - prev.valor_entrada) ? 
+                    prev.valor_bem - entrada : prev.valor_financiado
+                }));
+              }}
+              placeholder="R$ 0,00"
+              className="text-sm"
+            />
+          </div>
+          
+          <div className="space-y-2 col-span-1 sm:col-span-2 lg:col-span-1">
+            <Label htmlFor="valor_financiado" className="text-sm font-medium">Valor Financiado *</Label>
+            <Input
+              id="valor_financiado"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.valor_financiado}
+              onChange={(e) => setFormData(prev => ({ ...prev, valor_financiado: parseFloat(e.target.value) || 0 }))}
+              placeholder="R$ 20.723,05"
+              className="text-sm"
+            />
+            {formData.valor_bem > 0 && formData.valor_financiado > (formData.valor_bem - formData.valor_entrada) && (
+              <p className="text-xs text-muted-foreground">
+                ℹ️ Inclui taxas e custos adicionais
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -197,27 +240,54 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
         </div>
       </div>
 
-      {/* Taxa e Instituição - Mobile Vertical */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label htmlFor="taxa_juros">Taxa de Juros (% ao mês) *</Label>
-          <Input
-            id="taxa_juros"
-            type="number"
-            step="0.01"
-            min="0"
-            value={formData.taxa_juros}
-            onChange={(e) => setFormData(prev => ({ ...prev, taxa_juros: parseFloat(e.target.value) || 0 }))}
-            placeholder="1.20"
-          />
+      {/* Seção de Taxas */}
+      <div className="space-y-4">
+        <h4 className="text-sm font-medium border-b pb-2">Taxas de Juros</h4>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="taxa_nominal_anual" className="text-sm font-medium">Taxa Nominal Anual (%) *</Label>
+            <Input
+              id="taxa_nominal_anual"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.taxa_nominal_anual}
+              onChange={(e) => setFormData(prev => ({ ...prev, taxa_nominal_anual: parseFloat(e.target.value) || 0 }))}
+              placeholder="14.40"
+              className="text-sm"
+            />
+            <p className="text-xs text-muted-foreground">
+              Taxa informada no contrato
+            </p>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="taxa_efetiva_anual" className="text-sm font-medium">Taxa Efetiva Anual (%) *</Label>
+            <Input
+              id="taxa_efetiva_anual"
+              type="number"
+              step="0.01"
+              min="0"
+              value={formData.taxa_efetiva_anual}
+              onChange={(e) => setFormData(prev => ({ ...prev, taxa_efetiva_anual: parseFloat(e.target.value) || 0 }))}
+              placeholder="15.47"
+              className="text-sm"
+            />
+            <p className="text-xs text-muted-foreground">
+              CET com todos os custos
+            </p>
+          </div>
         </div>
+        
         <div className="space-y-2">
-          <Label htmlFor="instituicao_financeira">Instituição Financeira</Label>
+          <Label htmlFor="instituicao_financeira" className="text-sm font-medium">Instituição Financeira</Label>
           <Input
             id="instituicao_financeira"
             value={formData.instituicao_financeira}
             onChange={(e) => setFormData(prev => ({ ...prev, instituicao_financeira: e.target.value }))}
             placeholder="Ex: Banco do Brasil, Santander"
+            className="text-sm"
           />
         </div>
       </div>
@@ -299,8 +369,8 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
                 <span className="font-medium">{parcelasRestantes}x</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Taxa:</span>
-                <span className="font-medium text-orange-600">{formData.taxa_juros}%</span>
+                <span className="text-muted-foreground">Taxa Efetiva:</span>
+                <span className="font-medium text-orange-600">{formData.taxa_efetiva_anual}% a.a.</span>
               </div>
             </div>
           </div>

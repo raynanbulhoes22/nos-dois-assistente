@@ -156,6 +156,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           mode="single"
           locale={ptBR}
           month={new Date(anoAtual, mesAtual - 1)}
+          onDayClick={handleDayClick}
           className="w-full"
           classNames={{
             months: "flex w-full",

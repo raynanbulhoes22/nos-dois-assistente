@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComparativoCard } from "./ComparativoCard";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, BarChart3, AlertTriangle } from "lucide-react";
-import { CalendarioFinanceiro } from "@/components/calendario/CalendarioFinanceiro";
+
 import { useComparativoFinanceiro } from "@/hooks/useComparativoFinanceiro";
 
 interface PerformanceSectionProps {
@@ -75,13 +75,6 @@ export const PerformanceSection = ({ mes, ano }: PerformanceSectionProps) => {
               formatValue={formatCurrency}
             />
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Calendário Principal */}
-      <Card>
-        <CardContent className="p-0">
-          <CalendarioFinanceiro mesAtual={mesAtual} anoAtual={anoAtual} />
         </CardContent>
       </Card>
 

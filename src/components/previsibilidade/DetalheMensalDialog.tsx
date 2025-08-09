@@ -44,12 +44,16 @@ export const DetalheMensalDialog: React.FC<DetalheMensalDialogProps> = ({
 
   const getStatusColor = (status: PrevisaoMensal['status']) => {
     switch (status) {
-      case 'positivo':
+      case 'excelente':
         return 'text-success';
+      case 'positivo':
+        return 'text-warning';
+      case 'critico':
+        return 'text-critical';
       case 'deficit':
         return 'text-error';
-      case 'atencao':
-        return 'text-warning';
+      case 'sem-dados':
+        return 'text-neutral';
       default:
         return 'text-muted-foreground';
     }
@@ -57,12 +61,16 @@ export const DetalheMensalDialog: React.FC<DetalheMensalDialogProps> = ({
 
   const getStatusIcon = (status: PrevisaoMensal['status']) => {
     switch (status) {
-      case 'positivo':
+      case 'excelente':
         return <TrendingUp className="h-5 w-5 text-success" />;
+      case 'positivo':
+        return <TrendingUp className="h-5 w-5 text-warning" />;
+      case 'critico':
+        return <AlertTriangle className="h-5 w-5 text-critical" />;
       case 'deficit':
         return <TrendingDown className="h-5 w-5 text-error" />;
-      case 'atencao':
-        return <AlertTriangle className="h-5 w-5 text-warning" />;
+      case 'sem-dados':
+        return <AlertTriangle className="h-5 w-5 text-neutral" />;
       default:
         return null;
     }
@@ -70,12 +78,16 @@ export const DetalheMensalDialog: React.FC<DetalheMensalDialogProps> = ({
 
   const getStatusLabel = (status: PrevisaoMensal['status']) => {
     switch (status) {
+      case 'excelente':
+        return '🟢 Situação Excelente';
       case 'positivo':
-        return 'Saldo Positivo';
+        return '🟡 Situação Boa';
+      case 'critico':
+        return '🟠 Situação Crítica';
       case 'deficit':
-        return 'Déficit Projetado';
-      case 'atencao':
-        return 'Situação de Atenção';
+        return '🔴 Déficit Projetado';
+      case 'sem-dados':
+        return '⚪ Sem Dados Suficientes';
       default:
         return 'Status Indefinido';
     }
@@ -117,8 +129,11 @@ export const DetalheMensalDialog: React.FC<DetalheMensalDialogProps> = ({
               <div className="flex items-center justify-between">
                 <Badge 
                   variant={previsao.status === 'deficit' ? 'destructive' : 'secondary'}
-                  className={previsao.status === 'positivo' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 
-                            previsao.status === 'atencao' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300' : ''}
+                  className={
+                    previsao.status === 'excelente' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300' : 
+                    previsao.status === 'positivo' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-300' :
+                    previsao.status === 'critico' ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300' : ''
+                  }
                 >
                   {getStatusLabel(previsao.status)}
                 </Badge>
@@ -238,18 +253,56 @@ export const DetalheMensalDialog: React.FC<DetalheMensalDialogProps> = ({
             </Card>
           )}
 
-          {previsao.status === 'atencao' && (
+          {previsao.status === 'critico' && (
+            <Card className="border-orange-200 bg-orange-50 dark:border-orange-900 dark:bg-orange-950/10">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-orange-800 dark:text-orange-200">
+                      🟠 Situação Crítica
+                    </h4>
+                    <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                      Você tem menos de 10% da sua renda disponível após gastos fixos. 
+                      Monitore seus gastos variáveis com muito cuidado.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {previsao.status === 'positivo' && (
             <Card className="border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/10">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                  <TrendingUp className="h-5 w-5 text-yellow-600 mt-0.5" />
                   <div>
                     <h4 className="font-medium text-yellow-800 dark:text-yellow-200">
-                      Margem Apertada
+                      🟡 Situação Controlada
                     </h4>
                     <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">
-                      Seu saldo representa menos de 20% da sua renda. 
-                      Monitore seus gastos variáveis com atenção.
+                      Você tem entre 10-30% da sua renda disponível. 
+                      Boa margem de segurança, mas ainda há espaço para melhorar.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {previsao.status === 'excelente' && (
+            <Card className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/10">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <TrendingUp className="h-5 w-5 text-green-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-green-800 dark:text-green-200">
+                      🟢 Situação Excelente
+                    </h4>
+                    <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                      Você tem mais de 30% da sua renda disponível após gastos fixos. 
+                      Excelente controle financeiro! Considere investir ou criar uma reserva.
                     </p>
                   </div>
                 </div>

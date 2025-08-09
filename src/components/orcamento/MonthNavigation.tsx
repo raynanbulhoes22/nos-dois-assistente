@@ -7,7 +7,7 @@ interface MonthNavigationProps {
   currentYear: number;
   onNavigate: (direction: 'anterior' | 'proximo') => void;
   getMesNome: (mes: number) => string;
-  statusMes?: 'positivo' | 'deficit' | 'atencao';
+  statusMes?: 'excelente' | 'positivo' | 'critico' | 'deficit' | 'sem-dados';
 }
 
 export const MonthNavigation = ({
@@ -19,12 +19,16 @@ export const MonthNavigation = ({
 }: MonthNavigationProps) => {
   const getStatusStyles = () => {
     switch (statusMes) {
+      case 'excelente':
+        return 'bg-success/10 text-success border-success/20 shadow-lg shadow-success/5';
       case 'positivo':
-        return 'bg-success/10 text-success border-success/20';
+        return 'bg-warning/10 text-warning border-warning/20 shadow-lg shadow-warning/5';
+      case 'critico':
+        return 'bg-critical/10 text-critical border-critical/20 shadow-lg shadow-critical/5';
       case 'deficit':
-        return 'bg-error/10 text-error border-error/20';
-      case 'atencao':
-        return 'bg-warning/10 text-warning border-warning/20';
+        return 'bg-error/10 text-error border-error/20 shadow-lg shadow-error/5';
+      case 'sem-dados':
+        return 'bg-neutral/10 text-neutral border-neutral/20';
       default:
         return 'bg-background text-foreground border-border';
     }

@@ -55,9 +55,11 @@
     --investment: 262 83% 58%;
     --savings: 188 100% 42%;
 
-    /* Status Colors - Refined */
-    --success: 142 76% 36%;
-    --warning: 38 92% 50%;
+    /* Status Colors - Enhanced with Financial Granularity */
+    --success: 142 76% 36%;       /* Excelente (>30%) */
+    --warning: 38 92% 50%;        /* Atenção (10-30%) */
+    --critical: 25 95% 53%;       /* Crítico (0-10%) */
+    --error: 0 84% 60%;           /* Déficit (negativo) */
     --info: 221 83% 53%;
     --neutral: 215 16% 47%;
 

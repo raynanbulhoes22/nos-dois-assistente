@@ -69,6 +69,8 @@ export default {
 				// Enhanced Status Colors
 				success: 'hsl(var(--success))',
 				warning: 'hsl(var(--warning))',
+				critical: 'hsl(var(--critical))',
+				error: 'hsl(var(--error))',
 				info: 'hsl(var(--info))',
 				neutral: 'hsl(var(--neutral))',
 				sidebar: {

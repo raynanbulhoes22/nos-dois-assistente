@@ -31,12 +31,16 @@ export const PrevisaoMesAtual = ({ previsao, getMesNome }: PrevisaoMesAtualProps
 
   const getStatusIcon = () => {
     switch (previsao.status) {
-      case 'positivo':
+      case 'excelente':
         return <TrendingUp className="h-5 w-5 text-success" />;
+      case 'positivo':
+        return <TrendingUp className="h-5 w-5 text-warning" />;
+      case 'critico':
+        return <AlertTriangle className="h-5 w-5 text-critical" />;
       case 'deficit':
         return <TrendingDown className="h-5 w-5 text-error" />;
-      case 'atencao':
-        return <AlertTriangle className="h-5 w-5 text-warning" />;
+      case 'sem-dados':
+        return <AlertTriangle className="h-5 w-5 text-neutral" />;
       default:
         return null;
     }
@@ -44,12 +48,16 @@ export const PrevisaoMesAtual = ({ previsao, getMesNome }: PrevisaoMesAtualProps
 
   const getStatusBadge = () => {
     switch (previsao.status) {
+      case 'excelente':
+        return <Badge variant="default" className="bg-success/10 text-success border-success/20">🟢 Excelente</Badge>;
       case 'positivo':
-        return <Badge variant="default" className="bg-success/10 text-success border-success/20">Positivo</Badge>;
+        return <Badge variant="default" className="bg-warning/10 text-warning border-warning/20">🟡 Bom</Badge>;
+      case 'critico':
+        return <Badge variant="secondary" className="bg-critical/10 text-critical border-critical/20">🟠 Crítico</Badge>;
       case 'deficit':
-        return <Badge variant="destructive" className="bg-error/10 text-error border-error/20">Déficit</Badge>;
-      case 'atencao':
-        return <Badge variant="secondary" className="bg-warning/10 text-warning border-warning/20">Atenção</Badge>;
+        return <Badge variant="destructive" className="bg-error/10 text-error border-error/20">🔴 Déficit</Badge>;
+      case 'sem-dados':
+        return <Badge variant="secondary" className="bg-neutral/10 text-neutral border-neutral/20">⚪ Sem dados</Badge>;
       default:
         return null;
     }
@@ -57,12 +65,16 @@ export const PrevisaoMesAtual = ({ previsao, getMesNome }: PrevisaoMesAtualProps
 
   const getSaldoColor = () => {
     switch (previsao.status) {
-      case 'positivo':
+      case 'excelente':
         return 'text-success';
+      case 'positivo':
+        return 'text-warning';
+      case 'critico':
+        return 'text-critical';
       case 'deficit':
         return 'text-error';
-      case 'atencao':
-        return 'text-warning';
+      case 'sem-dados':
+        return 'text-neutral';
       default:
         return 'text-foreground';
     }

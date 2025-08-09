@@ -21,24 +21,32 @@ export const MiniTimeline = ({
     
     if (isSelected) {
       switch (status) {
+        case 'excelente':
+          return cn(baseClasses, "bg-success border-success shadow-lg shadow-success/30 animate-pulse-glow");
         case 'positivo':
-          return cn(baseClasses, "bg-success border-success shadow-lg shadow-success/30");
+          return cn(baseClasses, "bg-warning border-warning shadow-lg shadow-warning/30");
+        case 'critico':
+          return cn(baseClasses, "bg-critical border-critical shadow-lg shadow-critical/30");
         case 'deficit':
           return cn(baseClasses, "bg-error border-error shadow-lg shadow-error/30");
-        case 'atencao':
-          return cn(baseClasses, "bg-warning border-warning shadow-lg shadow-warning/30");
+        case 'sem-dados':
+          return cn(baseClasses, "bg-neutral border-neutral shadow-lg shadow-neutral/30");
         default:
           return cn(baseClasses, "bg-primary border-primary shadow-lg shadow-primary/30");
       }
     }
     
     switch (status) {
+      case 'excelente':
+        return cn(baseClasses, "bg-success/30 border-success/50 hover:bg-success/50 hover:shadow-success/20");
       case 'positivo':
-        return cn(baseClasses, "bg-success/30 border-success/50 hover:bg-success/50");
+        return cn(baseClasses, "bg-warning/30 border-warning/50 hover:bg-warning/50 hover:shadow-warning/20");
+      case 'critico':
+        return cn(baseClasses, "bg-critical/30 border-critical/50 hover:bg-critical/50 hover:shadow-critical/20");
       case 'deficit':
-        return cn(baseClasses, "bg-error/30 border-error/50 hover:bg-error/50");
-      case 'atencao':
-        return cn(baseClasses, "bg-warning/30 border-warning/50 hover:bg-warning/50");
+        return cn(baseClasses, "bg-error/30 border-error/50 hover:bg-error/50 hover:shadow-error/20");
+      case 'sem-dados':
+        return cn(baseClasses, "bg-neutral/30 border-neutral/50 hover:bg-neutral/50");
       default:
         return cn(baseClasses, "bg-muted border-border hover:bg-muted/70");
     }
@@ -84,8 +92,10 @@ export const MiniTimeline = ({
                       <span className="text-muted-foreground">Saldo:</span>
                       <span className={cn(
                         "font-medium",
-                        previsao.status === 'positivo' ? 'text-success' :
-                        previsao.status === 'deficit' ? 'text-error' : 'text-warning'
+                        previsao.status === 'excelente' ? 'text-success' :
+                        previsao.status === 'positivo' ? 'text-warning' :
+                        previsao.status === 'critico' ? 'text-critical' :
+                        previsao.status === 'deficit' ? 'text-error' : 'text-neutral'
                       )}>
                         {previsao.saldoProjetado.toLocaleString('pt-BR', { 
                           style: 'currency', 
@@ -96,13 +106,26 @@ export const MiniTimeline = ({
                     <div className="flex justify-between gap-3">
                       <span className="text-muted-foreground">Status:</span>
                       <span className={cn(
-                        "font-medium capitalize",
-                        previsao.status === 'positivo' ? 'text-success' :
-                        previsao.status === 'deficit' ? 'text-error' : 'text-warning'
+                        "font-medium",
+                        previsao.status === 'excelente' ? 'text-success' :
+                        previsao.status === 'positivo' ? 'text-warning' :
+                        previsao.status === 'critico' ? 'text-critical' :
+                        previsao.status === 'deficit' ? 'text-error' : 'text-neutral'
                       )}>
-                        {previsao.status}
+                        {previsao.status === 'excelente' ? '🟢 Excelente' :
+                         previsao.status === 'positivo' ? '🟡 Bom' :
+                         previsao.status === 'critico' ? '🟠 Crítico' :
+                         previsao.status === 'deficit' ? '🔴 Déficit' : '⚪ Sem dados'}
                       </span>
                     </div>
+                    {previsao.receitas > 0 && (
+                      <div className="flex justify-between gap-3">
+                        <span className="text-muted-foreground">Disponível:</span>
+                        <span className="font-medium text-xs">
+                          {((previsao.saldoProjetado / previsao.receitas) * 100).toFixed(1)}% da renda
+                        </span>
+                      </div>
+                    )}
                   </div>
                   {/* Arrow */}
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-border"></div>

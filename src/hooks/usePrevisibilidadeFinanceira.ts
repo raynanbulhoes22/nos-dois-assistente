@@ -10,7 +10,7 @@ export interface PrevisaoMensal {
   receitas: number;
   gastosFixos: number;
   saldoProjetado: number;
-  status: 'positivo' | 'deficit' | 'atencao';
+  status: 'excelente' | 'positivo' | 'critico' | 'deficit' | 'sem-dados';
   compromissos: CompromissoMensal[];
 }
 
@@ -106,11 +106,22 @@ export const usePrevisibilidadeFinanceira = () => {
       const gastosFixos = compromissosDoMes.reduce((total, c) => total + c.valor, 0);
       const saldoProjetado = rendaMensal - gastosFixos;
       
-      let status: 'positivo' | 'deficit' | 'atencao' = 'positivo';
-      if (saldoProjetado < 0) {
+      // Nova lógica granular baseada no percentual da renda disponível
+      let status: 'excelente' | 'positivo' | 'critico' | 'deficit' | 'sem-dados' = 'sem-dados';
+      
+      if (rendaMensal === 0) {
+        status = 'sem-dados';
+      } else if (saldoProjetado < 0) {
         status = 'deficit';
-      } else if (saldoProjetado < rendaMensal * 0.2) {
-        status = 'atencao';
+      } else {
+        const percentualDisponivel = (saldoProjetado / rendaMensal) * 100;
+        if (percentualDisponivel > 30) {
+          status = 'excelente';
+        } else if (percentualDisponivel > 10) {
+          status = 'positivo';
+        } else {
+          status = 'critico';
+        }
       }
 
       previsoesMensais.push({

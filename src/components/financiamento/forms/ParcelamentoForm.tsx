@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { RequiredLabel } from "@/components/ui/required-label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ContaParcelada } from "@/hooks/useContasParceladas";
 import { useCartoes } from "@/hooks/useCartoes";
 import { FINANCIAL_CATEGORIES } from "@/constants/categories";
+import { validateForm, getRequiredFields } from "@/lib/financial-validations";
+import { toast } from "@/hooks/use-toast";
 
 interface ParcelamentoFormProps {
   onSubmit: (conta: Omit<ContaParcelada, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<boolean>;
@@ -61,27 +63,49 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome || !formData.valor_parcela || !formData.total_parcelas || !formData.data_primeira_parcela) {
-      return;
-    }
+    try {
+      // Validate form data
+      const validationData = {
+        nome: formData.nome,
+        valor_parcela: formData.valor_parcela,
+        total_parcelas: formData.total_parcelas,
+        data_primeira_parcela: formData.data_primeira_parcela,
+        loja: formData.loja,
+        cartao_id: formData.cartao_id,
+        parcelas_pagas: formData.parcelas_pagas,
+        categoria: formData.categoria,
+        debito_automatico: formData.debito_automatico,
+        descricao: formData.descricao,
+      };
 
-    const dadosEspecificos = {
-      loja: formData.loja
-    };
+      validateForm(validationData, "parcelamento");
 
-    const success = await onSubmit({
-      ...formData,
-      dados_especificos: dadosEspecificos
-    });
-    
-    if (success) {
-      onBack();
+      const dadosEspecificos = {
+        loja: formData.loja
+      };
+
+      const success = await onSubmit({
+        ...formData,
+        dados_especificos: dadosEspecificos
+      });
+      
+      if (success) {
+        onBack();
+      }
+    } catch (error) {
+      toast({
+        title: "Erro de validação",
+        description: error instanceof Error ? error.message : "Verifique os campos obrigatórios",
+        variant: "destructive",
+      });
     }
   };
 
   const parcelasRestantes = formData.total_parcelas - formData.parcelas_pagas;
   const valorTotal = formData.valor_parcela * formData.total_parcelas;
   const valorRestante = formData.valor_parcela * parcelasRestantes;
+  
+  const requiredFields = getRequiredFields("parcelamento");
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -96,7 +120,7 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
       {/* Produto/Serviço e Loja - Mobile Vertical */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="nome" className="text-sm font-medium">Produto/Serviço *</Label>
+          <RequiredLabel htmlFor="nome" required={requiredFields.includes("nome")}>Produto/Serviço</RequiredLabel>
           <Input
             id="nome"
             value={formData.nome}
@@ -107,7 +131,7 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="loja" className="text-sm font-medium">Loja/Estabelecimento</Label>
+          <RequiredLabel htmlFor="loja" required={requiredFields.includes("loja")}>Loja/Estabelecimento</RequiredLabel>
           <Input
             id="loja"
             value={formData.loja}
@@ -121,7 +145,7 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
       {/* Valores e Parcelas - Mobile Vertical */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="valor_parcela" className="text-sm font-medium">Valor da Parcela *</Label>
+          <RequiredLabel htmlFor="valor_parcela" required={requiredFields.includes("valor_parcela")}>Valor da Parcela</RequiredLabel>
           <Input
             id="valor_parcela"
             type="number"
@@ -135,7 +159,7 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="total_parcelas" className="text-sm font-medium">Total de Parcelas *</Label>
+          <RequiredLabel htmlFor="total_parcelas" required={requiredFields.includes("total_parcelas")}>Total de Parcelas</RequiredLabel>
           <Input
             id="total_parcelas"
             type="number"
@@ -152,7 +176,7 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
       {/* Parcelas Pagas e Data - Mobile Vertical */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="parcelas_pagas" className="text-sm font-medium">Parcelas Pagas</Label>
+          <RequiredLabel htmlFor="parcelas_pagas" required={requiredFields.includes("parcelas_pagas")}>Parcelas Pagas</RequiredLabel>
           <Input
             id="parcelas_pagas"
             type="number"
@@ -165,7 +189,7 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="data_primeira_parcela" className="text-sm font-medium">Primeira Parcela *</Label>
+          <RequiredLabel htmlFor="data_primeira_parcela" required={requiredFields.includes("data_primeira_parcela")}>Primeira Parcela</RequiredLabel>
           <Input
             id="data_primeira_parcela"
             type="date"
@@ -180,7 +204,7 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
       {/* Categoria e Cartão - Mobile Vertical */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="categoria" className="text-sm font-medium">Categoria</Label>
+          <RequiredLabel htmlFor="categoria" required={requiredFields.includes("categoria")}>Categoria</RequiredLabel>
           <Select value={formData.categoria} onValueChange={(value) => setFormData(prev => ({ ...prev, categoria: value }))}>
             <SelectTrigger className="text-sm">
               <SelectValue placeholder="Selecione" />
@@ -193,7 +217,7 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="cartao" className="text-sm font-medium">Cartão Utilizado</Label>
+          <RequiredLabel htmlFor="cartao" required={requiredFields.includes("cartao_id")}>Cartão Utilizado</RequiredLabel>
           <Select value={formData.cartao_id} onValueChange={(value) => setFormData(prev => ({ ...prev, cartao_id: value }))}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione o cartão" />
@@ -212,7 +236,7 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
       {/* Débito Automático */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label htmlFor="debito_automatico">Débito Automático</Label>
+          <RequiredLabel htmlFor="debito_automatico" required={requiredFields.includes("debito_automatico")}>Débito Automático</RequiredLabel>
           <p className="text-sm text-muted-foreground">
             O pagamento é debitado automaticamente da conta
           </p>

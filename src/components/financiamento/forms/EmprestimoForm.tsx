@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { RequiredLabel } from "@/components/ui/required-label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ContaParcelada } from "@/hooks/useContasParceladas";
 import { FINANCIAL_CATEGORIES } from "@/constants/categories";
+import { validateForm, getRequiredFields } from "@/lib/financial-validations";
+import { toast } from "@/hooks/use-toast";
 
 interface EmprestimoFormProps {
   onSubmit: (conta: Omit<ContaParcelada, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<boolean>;
@@ -67,26 +69,49 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome || !formData.valor_parcela || !formData.total_parcelas || !formData.data_primeira_parcela) {
-      return;
-    }
+    try {
+      // Validate form data
+      const validationData = {
+        nome: formData.nome,
+        valor_emprestado: formData.valor_emprestado,
+        taxa_juros: formData.taxa_juros,
+        valor_parcela: formData.valor_parcela,
+        total_parcelas: formData.total_parcelas,
+        data_primeira_parcela: formData.data_primeira_parcela,
+        instituicao_financeira: formData.instituicao_financeira,
+        finalidade: formData.finalidade,
+        margem_consignavel: formData.margem_consignavel,
+        parcelas_pagas: formData.parcelas_pagas,
+        categoria: formData.categoria,
+        debito_automatico: formData.debito_automatico,
+        descricao: formData.descricao,
+      };
 
-    const dadosEspecificos: any = {
-      valor_emprestado: formData.valor_emprestado,
-      finalidade: formData.finalidade
-    };
+      validateForm(validationData, tipo);
 
-    if (tipo === "emprestimo_consignado") {
-      dadosEspecificos.margem_consignavel = formData.margem_consignavel;
-    }
+      const dadosEspecificos: any = {
+        valor_emprestado: formData.valor_emprestado,
+        finalidade: formData.finalidade
+      };
 
-    const success = await onSubmit({
-      ...formData,
-      dados_especificos: dadosEspecificos
-    });
-    
-    if (success) {
-      onBack();
+      if (tipo === "emprestimo_consignado") {
+        dadosEspecificos.margem_consignavel = formData.margem_consignavel;
+      }
+
+      const success = await onSubmit({
+        ...formData,
+        dados_especificos: dadosEspecificos
+      });
+      
+      if (success) {
+        onBack();
+      }
+    } catch (error) {
+      toast({
+        title: "Erro de validação",
+        description: error instanceof Error ? error.message : "Verifique os campos obrigatórios",
+        variant: "destructive",
+      });
     }
   };
 
@@ -96,6 +121,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
   const valorRestante = formData.valor_parcela * parcelasRestantes;
 
   const isConsignado = tipo === "emprestimo_consignado";
+  const requiredFields = getRequiredFields(tipo);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -111,7 +137,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
 
       {/* Nome/Identificação */}
       <div className="space-y-2">
-        <Label htmlFor="nome" className="text-sm font-medium">Identificação do Empréstimo *</Label>
+        <RequiredLabel htmlFor="nome" required={requiredFields.includes("nome")}>Identificação do Empréstimo</RequiredLabel>
         <Input
           id="nome"
           value={formData.nome}
@@ -125,7 +151,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
       {/* Valores Essenciais - Mobile Vertical */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="valor_emprestado" className="text-sm font-medium">Valor Emprestado</Label>
+          <RequiredLabel htmlFor="valor_emprestado" required={requiredFields.includes("valor_emprestado")}>Valor Emprestado</RequiredLabel>
           <Input
             id="valor_emprestado"
             type="number"
@@ -138,7 +164,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="taxa_juros" className="text-sm font-medium">Taxa de Juros (% ao mês) *</Label>
+          <RequiredLabel htmlFor="taxa_juros" required={requiredFields.includes("taxa_juros")}>Taxa de Juros (% ao mês)</RequiredLabel>
           <Input
             id="taxa_juros"
             type="number"
@@ -155,7 +181,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
       {/* Específicos do Consignado */}
       {isConsignado && (
         <div className="space-y-2">
-          <Label htmlFor="margem_consignavel" className="text-sm font-medium">Margem Consignável (% do salário)</Label>
+          <RequiredLabel htmlFor="margem_consignavel" required={requiredFields.includes("margem_consignavel")}>Margem Consignável (% do salário)</RequiredLabel>
           <Input
             id="margem_consignavel"
             type="number"
@@ -173,7 +199,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
       {/* Parcelas - Mobile Vertical */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="valor_parcela" className="text-sm font-medium">Valor da Parcela *</Label>
+          <RequiredLabel htmlFor="valor_parcela" required={requiredFields.includes("valor_parcela")}>Valor da Parcela</RequiredLabel>
           <Input
             id="valor_parcela"
             type="number"
@@ -187,7 +213,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="total_parcelas" className="text-sm font-medium">Total de Parcelas *</Label>
+          <RequiredLabel htmlFor="total_parcelas" required={requiredFields.includes("total_parcelas")}>Total de Parcelas</RequiredLabel>
           <Input
             id="total_parcelas"
             type="number"
@@ -204,7 +230,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
       {/* Parcelas Pagas e Data - Mobile Vertical */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="parcelas_pagas">Parcelas Pagas</Label>
+          <RequiredLabel htmlFor="parcelas_pagas" required={requiredFields.includes("parcelas_pagas")}>Parcelas Pagas</RequiredLabel>
           <Input
             id="parcelas_pagas"
             type="number"
@@ -216,7 +242,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="data_primeira_parcela">Primeira Parcela *</Label>
+          <RequiredLabel htmlFor="data_primeira_parcela" required={requiredFields.includes("data_primeira_parcela")}>Primeira Parcela</RequiredLabel>
           <Input
             id="data_primeira_parcela"
             type="date"
@@ -230,7 +256,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
       {/* Instituição e Categoria */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="instituicao_financeira">Instituição Financeira</Label>
+          <RequiredLabel htmlFor="instituicao_financeira" required={requiredFields.includes("instituicao_financeira")}>Instituição Financeira</RequiredLabel>
           <Input
             id="instituicao_financeira"
             value={formData.instituicao_financeira}
@@ -239,7 +265,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="categoria">Categoria</Label>
+          <RequiredLabel htmlFor="categoria" required={requiredFields.includes("categoria")}>Categoria</RequiredLabel>
           <Select value={formData.categoria} onValueChange={(value) => setFormData(prev => ({ ...prev, categoria: value }))}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione" />
@@ -255,7 +281,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
 
       {/* Finalidade */}
       <div className="space-y-2">
-        <Label htmlFor="finalidade">Finalidade do Empréstimo</Label>
+        <RequiredLabel htmlFor="finalidade" required={requiredFields.includes("finalidade")}>Finalidade do Empréstimo</RequiredLabel>
         <Textarea
           id="finalidade"
           value={formData.finalidade}
@@ -268,7 +294,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
       {/* Débito Automático */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label htmlFor="debito_automatico">Débito Automático</Label>
+          <RequiredLabel htmlFor="debito_automatico" required={requiredFields.includes("debito_automatico")}>Débito Automático</RequiredLabel>
           <p className="text-sm text-muted-foreground">
             {isConsignado ? "Desconto direto na folha de pagamento" : "Débito automático na conta corrente"}
           </p>

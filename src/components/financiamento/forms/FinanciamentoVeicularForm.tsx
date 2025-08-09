@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { RequiredLabel } from "@/components/ui/required-label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ContaParcelada } from "@/hooks/useContasParceladas";
 import { FINANCIAL_CATEGORIES } from "@/constants/categories";
+import { validateForm, getRequiredFields } from "@/lib/financial-validations";
+import { toast } from "@/hooks/use-toast";
 
 interface FinanciamentoVeicularFormProps {
   onSubmit: (conta: Omit<ContaParcelada, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<boolean>;
@@ -68,26 +70,51 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.nome || !formData.valor_parcela || !formData.total_parcelas || !formData.data_primeira_parcela) {
-      return;
-    }
+    try {
+      // Validate form data
+      const validationData = {
+        nome: formData.nome,
+        valor_bem: formData.valor_bem,
+        valor_entrada: formData.valor_entrada,
+        valor_financiado: formData.valor_financiado,
+        valor_parcela: formData.valor_parcela,
+        total_parcelas: formData.total_parcelas,
+        taxa_nominal_anual: formData.taxa_nominal_anual,
+        taxa_efetiva_anual: formData.taxa_efetiva_anual,
+        data_primeira_parcela: formData.data_primeira_parcela,
+        ano_veiculo: formData.ano_veiculo,
+        instituicao_financeira: formData.instituicao_financeira,
+        parcelas_pagas: formData.parcelas_pagas,
+        categoria: formData.categoria,
+        debito_automatico: formData.debito_automatico,
+        descricao: formData.descricao,
+      };
 
-    const dadosEspecificos = {
-      valor_bem: formData.valor_bem,
-      valor_entrada: formData.valor_entrada,
-      ano_veiculo: formData.ano_veiculo,
-      valor_financiado: formData.valor_financiado,
-      taxa_nominal_anual: formData.taxa_nominal_anual,
-      taxa_efetiva_anual: formData.taxa_efetiva_anual
-    };
+      validateForm(validationData, "financiamento_veicular");
 
-    const success = await onSubmit({
-      ...formData,
-      dados_especificos: dadosEspecificos
-    });
-    
-    if (success) {
-      onBack();
+      const dadosEspecificos = {
+        valor_bem: formData.valor_bem,
+        valor_entrada: formData.valor_entrada,
+        ano_veiculo: formData.ano_veiculo,
+        valor_financiado: formData.valor_financiado,
+        taxa_nominal_anual: formData.taxa_nominal_anual,
+        taxa_efetiva_anual: formData.taxa_efetiva_anual
+      };
+
+      const success = await onSubmit({
+        ...formData,
+        dados_especificos: dadosEspecificos
+      });
+      
+      if (success) {
+        onBack();
+      }
+    } catch (error) {
+      toast({
+        title: "Erro de validação",
+        description: error instanceof Error ? error.message : "Verifique os campos obrigatórios",
+        variant: "destructive",
+      });
     }
   };
 
@@ -98,6 +125,8 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
   const jurosTotal = valorTotal - valorFinanciado;
   const parcelasRestantes = formData.total_parcelas - formData.parcelas_pagas;
   const valorRestante = formData.valor_parcela * parcelasRestantes;
+  
+  const requiredFields = getRequiredFields("financiamento_veicular");
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -112,7 +141,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
       {/* Dados do Veículo - Mobile Vertical */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="nome" className="text-sm font-medium">Modelo do Veículo *</Label>
+          <RequiredLabel htmlFor="nome" required={requiredFields.includes("nome")}>Modelo do Veículo</RequiredLabel>
           <Input
             id="nome"
             value={formData.nome}
@@ -123,7 +152,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="ano_veiculo" className="text-sm font-medium">Ano de Fabricação</Label>
+          <RequiredLabel htmlFor="ano_veiculo" required={requiredFields.includes("ano_veiculo")}>Ano de Fabricação</RequiredLabel>
           <Input
             id="ano_veiculo"
             type="number"
@@ -143,7 +172,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <div className="space-y-2">
-            <Label htmlFor="valor_bem" className="text-sm font-medium">Valor do Veículo *</Label>
+            <RequiredLabel htmlFor="valor_bem" required={requiredFields.includes("valor_bem")}>Valor do Veículo</RequiredLabel>
             <Input
               id="valor_bem"
               type="number"
@@ -166,7 +195,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="valor_entrada" className="text-sm font-medium">Valor da Entrada</Label>
+            <RequiredLabel htmlFor="valor_entrada" required={requiredFields.includes("valor_entrada")}>Valor da Entrada</RequiredLabel>
             <Input
               id="valor_entrada"
               type="number"
@@ -189,7 +218,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
           </div>
           
           <div className="space-y-2 col-span-1 sm:col-span-2 lg:col-span-1">
-            <Label htmlFor="valor_financiado" className="text-sm font-medium">Valor Financiado *</Label>
+            <RequiredLabel htmlFor="valor_financiado" required={requiredFields.includes("valor_financiado")}>Valor Financiado</RequiredLabel>
             <Input
               id="valor_financiado"
               type="number"
@@ -212,7 +241,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
       {/* Financiamento - Mobile Vertical */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="valor_parcela" className="text-sm font-medium">Valor da Parcela *</Label>
+          <RequiredLabel htmlFor="valor_parcela" required={requiredFields.includes("valor_parcela")}>Valor da Parcela</RequiredLabel>
           <Input
             id="valor_parcela"
             type="number"
@@ -226,7 +255,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="total_parcelas" className="text-sm font-medium">Total de Parcelas *</Label>
+          <RequiredLabel htmlFor="total_parcelas" required={requiredFields.includes("total_parcelas")}>Total de Parcelas</RequiredLabel>
           <Input
             id="total_parcelas"
             type="number"
@@ -246,7 +275,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-2">
-            <Label htmlFor="taxa_nominal_anual" className="text-sm font-medium">Taxa Nominal Anual (%) *</Label>
+            <RequiredLabel htmlFor="taxa_nominal_anual" required={requiredFields.includes("taxa_nominal_anual")}>Taxa Nominal Anual (%)</RequiredLabel>
             <Input
               id="taxa_nominal_anual"
               type="number"
@@ -263,7 +292,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="taxa_efetiva_anual" className="text-sm font-medium">Taxa Efetiva Anual (%) *</Label>
+            <RequiredLabel htmlFor="taxa_efetiva_anual" required={requiredFields.includes("taxa_efetiva_anual")}>Taxa Efetiva Anual (%)</RequiredLabel>
             <Input
               id="taxa_efetiva_anual"
               type="number"
@@ -281,7 +310,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="instituicao_financeira" className="text-sm font-medium">Instituição Financeira</Label>
+          <RequiredLabel htmlFor="instituicao_financeira" required={requiredFields.includes("instituicao_financeira")}>Instituição Financeira</RequiredLabel>
           <Input
             id="instituicao_financeira"
             value={formData.instituicao_financeira}
@@ -295,7 +324,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
       {/* Parcelas Pagas e Data */}
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="parcelas_pagas">Parcelas Pagas</Label>
+          <RequiredLabel htmlFor="parcelas_pagas" required={requiredFields.includes("parcelas_pagas")}>Parcelas Pagas</RequiredLabel>
           <Input
             id="parcelas_pagas"
             type="number"
@@ -307,7 +336,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="data_primeira_parcela">Primeira Parcela *</Label>
+          <RequiredLabel htmlFor="data_primeira_parcela" required={requiredFields.includes("data_primeira_parcela")}>Primeira Parcela</RequiredLabel>
           <Input
             id="data_primeira_parcela"
             type="date"
@@ -320,7 +349,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
 
       {/* Categoria */}
       <div className="space-y-2">
-        <Label htmlFor="categoria">Categoria</Label>
+        <RequiredLabel htmlFor="categoria" required={requiredFields.includes("categoria")}>Categoria</RequiredLabel>
         <Select value={formData.categoria} onValueChange={(value) => setFormData(prev => ({ ...prev, categoria: value }))}>
           <SelectTrigger>
             <SelectValue placeholder="Selecione" />
@@ -336,7 +365,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
       {/* Débito Automático */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <Label htmlFor="debito_automatico">Débito Automático</Label>
+          <RequiredLabel htmlFor="debito_automatico" required={requiredFields.includes("debito_automatico")}>Débito Automático</RequiredLabel>
           <p className="text-sm text-muted-foreground">
             O pagamento é debitado automaticamente da conta
           </p>

@@ -98,32 +98,34 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
   const isConsignado = tipo === "emprestimo_consignado";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex items-center gap-3 pb-4 border-b">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Header Mobile-First */}
+      <div className="flex items-center gap-2 pb-3 border-b">
         <Button type="button" variant="outline" size="sm" onClick={onBack}>
           ← Voltar
         </Button>
-        <h3 className="text-lg font-semibold">
+        <h3 className="text-base font-semibold">
           {isConsignado ? "Empréstimo Consignado" : "Empréstimo Pessoal"}
         </h3>
       </div>
 
       {/* Nome/Identificação */}
       <div className="space-y-2">
-        <Label htmlFor="nome">Identificação do Empréstimo *</Label>
+        <Label htmlFor="nome" className="text-sm font-medium">Identificação do Empréstimo *</Label>
         <Input
           id="nome"
           value={formData.nome}
           onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
           placeholder={isConsignado ? "Ex: Consignado - Pagamento de Dívidas" : "Ex: Empréstimo - Capital de Giro"}
           required
+          className="text-sm"
         />
       </div>
 
-      {/* Valores Essenciais */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Valores Essenciais - Mobile Vertical */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="valor_emprestado">Valor Emprestado</Label>
+          <Label htmlFor="valor_emprestado" className="text-sm font-medium">Valor Emprestado</Label>
           <Input
             id="valor_emprestado"
             type="number"
@@ -132,10 +134,11 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
             value={formData.valor_emprestado}
             onChange={(e) => setFormData(prev => ({ ...prev, valor_emprestado: parseFloat(e.target.value) || 0 }))}
             placeholder="R$ 0,00"
+            className="text-sm"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="taxa_juros">Taxa de Juros (% ao mês) *</Label>
+          <Label htmlFor="taxa_juros" className="text-sm font-medium">Taxa de Juros (% ao mês) *</Label>
           <Input
             id="taxa_juros"
             type="number"
@@ -144,6 +147,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
             value={formData.taxa_juros}
             onChange={(e) => setFormData(prev => ({ ...prev, taxa_juros: parseFloat(e.target.value) || 0 }))}
             placeholder={isConsignado ? "1.50" : "3.50"}
+            className="text-sm"
           />
         </div>
       </div>
@@ -151,7 +155,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
       {/* Específicos do Consignado */}
       {isConsignado && (
         <div className="space-y-2">
-          <Label htmlFor="margem_consignavel">Margem Consignável (% do salário)</Label>
+          <Label htmlFor="margem_consignavel" className="text-sm font-medium">Margem Consignável (% do salário)</Label>
           <Input
             id="margem_consignavel"
             type="number"
@@ -161,14 +165,15 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
             value={formData.margem_consignavel}
             onChange={(e) => setFormData(prev => ({ ...prev, margem_consignavel: parseFloat(e.target.value) || 0 }))}
             placeholder="30.0"
+            className="text-sm"
           />
         </div>
       )}
 
-      {/* Parcelas */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Parcelas - Mobile Vertical */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="valor_parcela">Valor da Parcela *</Label>
+          <Label htmlFor="valor_parcela" className="text-sm font-medium">Valor da Parcela *</Label>
           <Input
             id="valor_parcela"
             type="number"
@@ -178,10 +183,11 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
             onChange={(e) => setFormData(prev => ({ ...prev, valor_parcela: parseFloat(e.target.value) || 0 }))}
             placeholder="R$ 0,00"
             required
+            className="text-sm"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="total_parcelas">Total de Parcelas *</Label>
+          <Label htmlFor="total_parcelas" className="text-sm font-medium">Total de Parcelas *</Label>
           <Input
             id="total_parcelas"
             type="number"
@@ -190,12 +196,13 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
             onChange={(e) => setFormData(prev => ({ ...prev, total_parcelas: parseInt(e.target.value) || 0 }))}
             placeholder="36"
             required
+            className="text-sm"
           />
         </div>
       </div>
 
-      {/* Parcelas Pagas e Data */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Parcelas Pagas e Data - Mobile Vertical */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label htmlFor="parcelas_pagas">Parcelas Pagas</Label>
           <Input

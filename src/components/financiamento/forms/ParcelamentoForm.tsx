@@ -84,41 +84,44 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
   const valorRestante = formData.valor_parcela * parcelasRestantes;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex items-center gap-3 pb-4 border-b">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Header Mobile-First */}
+      <div className="flex items-center gap-2 pb-3 border-b">
         <Button type="button" variant="outline" size="sm" onClick={onBack}>
           ← Voltar
         </Button>
-        <h3 className="text-lg font-semibold">Parcelamento</h3>
+        <h3 className="text-base font-semibold">Parcelamento</h3>
       </div>
 
-      {/* Produto/Serviço e Loja */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Produto/Serviço e Loja - Mobile Vertical */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="nome">Produto/Serviço *</Label>
+          <Label htmlFor="nome" className="text-sm font-medium">Produto/Serviço *</Label>
           <Input
             id="nome"
             value={formData.nome}
             onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
             placeholder="Ex: iPhone 15, Sofá da sala"
             required
+            className="text-sm"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="loja">Loja/Estabelecimento</Label>
+          <Label htmlFor="loja" className="text-sm font-medium">Loja/Estabelecimento</Label>
           <Input
             id="loja"
             value={formData.loja}
             onChange={(e) => setFormData(prev => ({ ...prev, loja: e.target.value }))}
             placeholder="Ex: Magazine Luiza, Apple Store"
+            className="text-sm"
           />
         </div>
       </div>
 
-      {/* Valores e Parcelas */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Valores e Parcelas - Mobile Vertical */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="valor_parcela">Valor da Parcela *</Label>
+          <Label htmlFor="valor_parcela" className="text-sm font-medium">Valor da Parcela *</Label>
           <Input
             id="valor_parcela"
             type="number"
@@ -128,10 +131,11 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
             onChange={(e) => setFormData(prev => ({ ...prev, valor_parcela: parseFloat(e.target.value) || 0 }))}
             placeholder="R$ 0,00"
             required
+            className="text-sm"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="total_parcelas">Total de Parcelas *</Label>
+          <Label htmlFor="total_parcelas" className="text-sm font-medium">Total de Parcelas *</Label>
           <Input
             id="total_parcelas"
             type="number"
@@ -140,14 +144,15 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
             onChange={(e) => setFormData(prev => ({ ...prev, total_parcelas: parseInt(e.target.value) || 0 }))}
             placeholder="12"
             required
+            className="text-sm"
           />
         </div>
       </div>
 
-      {/* Parcelas Pagas e Data */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Parcelas Pagas e Data - Mobile Vertical */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="parcelas_pagas">Parcelas Pagas</Label>
+          <Label htmlFor="parcelas_pagas" className="text-sm font-medium">Parcelas Pagas</Label>
           <Input
             id="parcelas_pagas"
             type="number"
@@ -156,26 +161,28 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
             value={formData.parcelas_pagas}
             onChange={(e) => setFormData(prev => ({ ...prev, parcelas_pagas: parseInt(e.target.value) || 0 }))}
             placeholder="0"
+            className="text-sm"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="data_primeira_parcela">Primeira Parcela *</Label>
+          <Label htmlFor="data_primeira_parcela" className="text-sm font-medium">Primeira Parcela *</Label>
           <Input
             id="data_primeira_parcela"
             type="date"
             value={formData.data_primeira_parcela}
             onChange={(e) => setFormData(prev => ({ ...prev, data_primeira_parcela: e.target.value }))}
             required
+            className="text-sm"
           />
         </div>
       </div>
 
-      {/* Categoria e Cartão */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Categoria e Cartão - Mobile Vertical */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="categoria">Categoria</Label>
+          <Label htmlFor="categoria" className="text-sm font-medium">Categoria</Label>
           <Select value={formData.categoria} onValueChange={(value) => setFormData(prev => ({ ...prev, categoria: value }))}>
-            <SelectTrigger>
+            <SelectTrigger className="text-sm">
               <SelectValue placeholder="Selecione" />
             </SelectTrigger>
             <SelectContent>
@@ -186,7 +193,7 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="cartao">Cartão Utilizado</Label>
+          <Label htmlFor="cartao" className="text-sm font-medium">Cartão Utilizado</Label>
           <Select value={formData.cartao_id} onValueChange={(value) => setFormData(prev => ({ ...prev, cartao_id: value }))}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione o cartão" />

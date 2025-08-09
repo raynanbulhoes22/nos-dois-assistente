@@ -92,28 +92,30 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
   const valorRestante = formData.valor_parcela * parcelasRestantes;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex items-center gap-3 pb-4 border-b">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Header Mobile-First */}
+      <div className="flex items-center gap-2 pb-3 border-b">
         <Button type="button" variant="outline" size="sm" onClick={onBack}>
           ← Voltar
         </Button>
-        <h3 className="text-lg font-semibold">Financiamento Veicular</h3>
+        <h3 className="text-base font-semibold">Financiamento Veicular</h3>
       </div>
 
-      {/* Dados do Veículo */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Dados do Veículo - Mobile Vertical */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="nome">Modelo do Veículo *</Label>
+          <Label htmlFor="nome" className="text-sm font-medium">Modelo do Veículo *</Label>
           <Input
             id="nome"
             value={formData.nome}
             onChange={(e) => setFormData(prev => ({ ...prev, nome: e.target.value }))}
             placeholder="Ex: Honda Civic EXL, Toyota Corolla"
             required
+            className="text-sm"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="ano_veiculo">Ano de Fabricação</Label>
+          <Label htmlFor="ano_veiculo" className="text-sm font-medium">Ano de Fabricação</Label>
           <Input
             id="ano_veiculo"
             type="number"
@@ -122,14 +124,15 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
             value={formData.ano_veiculo}
             onChange={(e) => setFormData(prev => ({ ...prev, ano_veiculo: parseInt(e.target.value) || new Date().getFullYear() }))}
             placeholder={new Date().getFullYear().toString()}
+            className="text-sm"
           />
         </div>
       </div>
 
-      {/* Valores Essenciais */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Valores - Mobile Vertical */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="valor_bem">Valor do Veículo *</Label>
+          <Label htmlFor="valor_bem" className="text-sm font-medium">Valor do Veículo *</Label>
           <Input
             id="valor_bem"
             type="number"
@@ -138,10 +141,11 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
             value={formData.valor_bem}
             onChange={(e) => setFormData(prev => ({ ...prev, valor_bem: parseFloat(e.target.value) || 0 }))}
             placeholder="R$ 0,00"
+            className="text-sm"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="valor_entrada">Valor da Entrada</Label>
+          <Label htmlFor="valor_entrada" className="text-sm font-medium">Valor da Entrada</Label>
           <Input
             id="valor_entrada"
             type="number"
@@ -151,20 +155,21 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
             value={formData.valor_entrada}
             onChange={(e) => setFormData(prev => ({ ...prev, valor_entrada: parseFloat(e.target.value) || 0 }))}
             placeholder="R$ 0,00"
+            className="text-sm"
           />
         </div>
-        <div className="space-y-2">
-          <Label>Valor Financiado</Label>
+        <div className="space-y-2 col-span-1 sm:col-span-2 lg:col-span-1">
+          <Label className="text-sm font-medium">Valor Financiado</Label>
           <div className="h-10 px-3 py-2 border border-input bg-background rounded-md flex items-center text-sm">
             R$ {valorFinanciado.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
           </div>
         </div>
       </div>
 
-      {/* Financiamento */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Financiamento - Mobile Vertical */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="valor_parcela">Valor da Parcela *</Label>
+          <Label htmlFor="valor_parcela" className="text-sm font-medium">Valor da Parcela *</Label>
           <Input
             id="valor_parcela"
             type="number"
@@ -174,10 +179,11 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
             onChange={(e) => setFormData(prev => ({ ...prev, valor_parcela: parseFloat(e.target.value) || 0 }))}
             placeholder="R$ 0,00"
             required
+            className="text-sm"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="total_parcelas">Total de Parcelas *</Label>
+          <Label htmlFor="total_parcelas" className="text-sm font-medium">Total de Parcelas *</Label>
           <Input
             id="total_parcelas"
             type="number"
@@ -186,12 +192,13 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
             onChange={(e) => setFormData(prev => ({ ...prev, total_parcelas: parseInt(e.target.value) || 0 }))}
             placeholder="60"
             required
+            className="text-sm"
           />
         </div>
       </div>
 
-      {/* Taxa de Juros */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Taxa e Instituição - Mobile Vertical */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label htmlFor="taxa_juros">Taxa de Juros (% ao mês) *</Label>
           <Input

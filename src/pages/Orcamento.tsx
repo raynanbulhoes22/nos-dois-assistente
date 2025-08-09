@@ -23,7 +23,7 @@ import { ContaParceladaForm } from "@/components/ContaParceladaForm";
 import { AlertaFluxo } from "@/components/previsibilidade/AlertaFluxo";
 import { DetalheMensalDialog } from "@/components/previsibilidade/DetalheMensalDialog";
 import { PrevisaoMesAtual } from "@/components/orcamento/PrevisaoMesAtual";
-import { QuickActions } from "@/components/orcamento/QuickActions";
+
 import { MetricCard } from "@/components/orcamento/MetricCard";
 import { MonthNavigation } from "@/components/orcamento/MonthNavigation";
 import { TabSection } from "@/components/orcamento/TabSection";
@@ -406,14 +406,6 @@ export const Orcamento = () => {
           />
           </div>
 
-          {/* Ações Rápidas */}
-          <QuickActions
-            onAddFonte={() => setShowFonteModal(true)}
-            onAddCartao={() => setShowCartaoModal(true)}
-            onAddParcelamento={() => setShowContaParceladaModal(true)}
-            onCreateOrcamento={!orcamentoAtual ? () => setShowOrcamentoModal(true) : undefined}
-            hasOrcamento={!!orcamentoAtual}
-          />
 
           {/* Seções Organizadas em Tabs */}
           <TabSection

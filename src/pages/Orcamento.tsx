@@ -6,6 +6,7 @@ import { useOrcamentos } from "@/hooks/useOrcamentos";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 import { useContasParceladas } from "@/hooks/useContasParceladas";
 import { usePrevisibilidadeFinanceira } from "@/hooks/usePrevisibilidadeFinanceira";
+import { useGastosFixos } from "@/hooks/useGastosFixos";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Loader2, Plus, Edit2, Target, TrendingUp, TrendingDown, DollarSign, AlertTriangle, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { ContaParceladaForm } from "@/components/ContaParceladaForm";
+import { GastoFixoForm } from "@/components/GastoFixoForm";
 import { MiniTimeline } from "@/components/orcamento/MiniTimeline";
 import { AlertaFluxo } from "@/components/previsibilidade/AlertaFluxo";
 import { DetalheMensalDialog } from "@/components/previsibilidade/DetalheMensalDialog";
@@ -58,6 +60,8 @@ export const Orcamento = () => {
   const [editingFonte, setEditingFonte] = useState<any>(null);
   const [editingCartao, setEditingCartao] = useState<any>(null);
   const [editingContaParcelada, setEditingContaParcelada] = useState<any>(null);
+  const [editingGastoFixo, setEditingGastoFixo] = useState<any>(null);
+  const [showGastoFixoModal, setShowGastoFixoModal] = useState(false);
   const [detalheMensalData, setDetalheMensalData] = useState<any>(null);
 
   // Form states
@@ -136,6 +140,14 @@ export const Orcamento = () => {
     getMesNome: getMesNomeHook
   } = usePrevisibilidadeFinanceira();
 
+  const { 
+    gastosFixos, 
+    createGastoFixo, 
+    updateGastoFixo, 
+    deleteGastoFixo, 
+    getTotalGastosFixosAtivos 
+  } = useGastosFixos();
+
   // Loading state
   const isLoading = fontesLoading || cartoesLoading || orcamentosLoading || movimentacoesLoading || contasLoading;
 
@@ -143,6 +155,7 @@ export const Orcamento = () => {
   const totalRendaAtiva = getTotalRendaAtiva();
   const totalLimiteCartoes = getTotalLimite();
   const totalParcelasAtivas = getTotalParcelasAtivas();
+  const totalGastosFixos = getTotalGastosFixosAtivos();
   const orcamentoAtual = orcamentos.find(o => o.mes === mesAtual && o.ano === anoAtual);
   const previsibilidadeStatus = 'sem-dados';
 
@@ -309,6 +322,21 @@ export const Orcamento = () => {
     setShowContaParceladaModal(true);
   };
 
+  // Handlers para gastos fixos
+  const handleEditGastoFixo = (gasto: any) => {
+    setEditingGastoFixo(gasto);
+    setShowGastoFixoModal(true);
+  };
+
+  const handleDeleteGastoFixo = async (id: string) => {
+    try {
+      await deleteGastoFixo(id);
+      toast.success('Gasto fixo removido com sucesso!');
+    } catch (error) {
+      toast.error('Erro ao remover gasto fixo');
+    }
+  };
+
   const resetFonteForm = () => {
     setFonteForm({
       tipo: '',
@@ -337,7 +365,7 @@ export const Orcamento = () => {
 
   // Cálculos para métricas
   const totalGastosOrcamento = 0; // orcamentoAtual?.categorias?.reduce((total: number, cat: any) => total + (cat.valor_orcado || 0), 0) || 0;
-  const saldoProjetado = totalRendaAtiva - totalParcelasAtivas;
+  const saldoProjetado = totalRendaAtiva - totalParcelasAtivas - totalGastosFixos;
 
   if (isLoading) {
     return (
@@ -397,7 +425,7 @@ export const Orcamento = () => {
             
             <MetricCard
               title="Gastos Previstos"
-              value={formatCurrency(totalParcelasAtivas)}
+              value={formatCurrency(totalParcelasAtivas + totalGastosFixos)}
               icon={TrendingDown}
               variant="error"
               isLoading={contasLoading}
@@ -436,19 +464,24 @@ export const Orcamento = () => {
                 fontes={fontes}
                 cartoes={cartoes}
                 contas={contas}
+                gastosFixos={gastosFixos}
                 formatCurrency={formatCurrency}
                 totalRendaAtiva={totalRendaAtiva}
                 totalLimiteCartoes={totalLimiteCartoes}
                 totalParcelasAtivas={totalParcelasAtivas}
+                totalGastosFixosAtivos={totalGastosFixos}
                 onEditFonte={handleEditFonte}
                 onDeleteFonte={deleteFonte}
                 onEditCartao={handleEditCartao}
                 onDeleteCartao={deleteCartao}
                 onEditContaParcelada={handleEditContaParcelada}
                 onDeleteContaParcelada={deleteConta}
+                onEditGastoFixo={handleEditGastoFixo}
+                onDeleteGastoFixo={handleDeleteGastoFixo}
                 onAddFonte={() => setShowFonteModal(true)}
                 onAddCartao={() => setShowCartaoModal(true)}
                 onAddParcelamento={() => setShowContaParceladaModal(true)}
+                onAddGastoFixo={() => setShowGastoFixoModal(true)}
               />
             </CardContent>
           </Card>
@@ -594,11 +627,34 @@ export const Orcamento = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Modal Conta Parcelada */}
-      {/* TODO: Fix ContaParceladaForm props */}
-      
-      {/* Modal Detalhes Mensais */}
-      {/* TODO: Fix DetalheMensalDialog props */}
+      {/* Modal Gasto Fixo */}
+      <Dialog open={showGastoFixoModal} onOpenChange={setShowGastoFixoModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingGastoFixo ? 'Editar' : 'Novo'} Gasto Fixo</DialogTitle>
+          </DialogHeader>
+          <GastoFixoForm
+            gastoFixo={editingGastoFixo}
+            onSubmit={async (data) => {
+              try {
+                if (editingGastoFixo) {
+                  await updateGastoFixo(editingGastoFixo.id, data as any);
+                } else {
+                  await createGastoFixo(data as any);
+                }
+                setShowGastoFixoModal(false);
+                setEditingGastoFixo(null);
+              } catch (error) {
+                // Error handled in hook
+              }
+            }}
+            onCancel={() => {
+              setShowGastoFixoModal(false);
+              setEditingGastoFixo(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -191,6 +191,45 @@ export type Database = {
         }
         Relationships: []
       }
+      gastos_fixos: {
+        Row: {
+          ativo: boolean
+          categoria: string | null
+          created_at: string
+          data_inicio: string
+          id: string
+          nome: string
+          observacoes: string | null
+          updated_at: string
+          user_id: string
+          valor_mensal: number
+        }
+        Insert: {
+          ativo?: boolean
+          categoria?: string | null
+          created_at?: string
+          data_inicio?: string
+          id?: string
+          nome: string
+          observacoes?: string | null
+          updated_at?: string
+          user_id: string
+          valor_mensal: number
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string | null
+          created_at?: string
+          data_inicio?: string
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          updated_at?: string
+          user_id?: string
+          valor_mensal?: number
+        }
+        Relationships: []
+      }
       historico_de_interacoes: {
         Row: {
           acao: string

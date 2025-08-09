@@ -51,15 +51,6 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           isCurrentDay ? "ring-1 ring-primary/40" : undefined,
           hasEvents ? "cursor-pointer hover:scale-[1.02] hover:shadow-md hover:border-primary/30" : "cursor-default"
         )}
-        role={hasEvents ? "button" : undefined}
-        tabIndex={hasEvents ? 0 : undefined}
-        onClick={hasEvents ? () => handleDayClick(data) : undefined}
-        onKeyDown={hasEvents ? (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleDayClick(data);
-          }
-        } : undefined}
         aria-label={hasEvents ? `Clique para ver detalhes dos eventos do dia ${format(data, "d 'de' MMMM", { locale: ptBR })}` : undefined}
       >
         <div
@@ -156,7 +147,12 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           mode="single"
           locale={ptBR}
           month={new Date(anoAtual, mesAtual - 1)}
-          onDayClick={handleDayClick}
+          onDayClick={(data) => {
+            const eventosDia = eventosPorDia.find(dia => isSameDay(dia.data, data));
+            if (eventosDia && eventosDia.eventos.length > 0) {
+              setSelectedDay(eventosDia);
+            }
+          }}
           className="w-full"
           classNames={{
             months: "flex w-full",

@@ -328,7 +328,7 @@
   }
 
   .list-item {
-    @apply group p-4 border border-border/50 rounded-xl hover:shadow-md transition-all duration-200 hover:border-border;
+    @apply p-4 border border-border/50 rounded-xl hover:shadow-md transition-all duration-200 hover:border-border;
   }
 
   .progress-container {

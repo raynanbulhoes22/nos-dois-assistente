@@ -43,83 +43,72 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
       }
     }
 
-    const inner = (
+    return (
       <div
         className={cn(
-          "w-full h-full min-h-[80px] p-1 rounded-md transition-all duration-200",
+          "w-full h-full min-h-[80px] p-2 rounded-md transition-all duration-200 relative",
           heatCls,
-          isCurrentDay ? "ring-1 ring-primary/40" : undefined,
-          hasEvents ? "cursor-pointer hover:scale-[1.02] hover:shadow-md hover:border-primary/30" : "cursor-default"
+          isCurrentDay ? "ring-2 ring-primary/50" : undefined,
+          hasEvents ? "cursor-pointer hover:scale-[1.02] hover:shadow-lg hover:ring-2 hover:ring-primary/30" : "cursor-default"
         )}
-        aria-label={hasEvents ? `Clique para ver detalhes dos eventos do dia ${format(data, "d 'de' MMMM", { locale: ptBR })}` : undefined}
+        onClick={(e) => {
+          if (hasEvents) {
+            e.stopPropagation();
+            setSelectedDay(eventosDia);
+          }
+        }}
       >
+        {/* Número do dia */}
         <div
           className={cn(
-            "text-center mb-1 font-medium",
+            "text-center mb-2 font-medium text-sm",
             isCurrentDay ? "text-primary font-bold" : "text-foreground"
           )}
         >
           {format(data, "d")}
         </div>
 
+        {/* Informações dos eventos */}
         {hasEvents && (
-          <div
-            className={cn(
-              "text-[11px] mt-1 text-center font-semibold truncate px-1",
-              (eventosDia!.saldo || 0) >= 0 ? "text-success" : "text-destructive",
-              "hover:text-primary transition-colors"
-            )}
-            aria-label={`Resumo do dia: ${eventosDia!.eventos.length} ${eventosDia!.eventos.length === 1 ? "evento" : "eventos"} • saldo ${(eventosDia!.saldo || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`}
-          >
-            {eventosDia!.eventos.length} {eventosDia!.eventos.length === 1 ? "evento" : "eventos"} • {eventosDia!.saldo > 0 ? "+" : ""}
-            {(eventosDia!.saldo || 0).toLocaleString("pt-BR", {
-              style: "currency",
-              currency: "BRL",
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            })}
+          <div className="space-y-1">
+            <div
+              className={cn(
+                "text-[10px] text-center font-semibold px-1 py-0.5 rounded",
+                (eventosDia!.saldo || 0) >= 0 ? "text-success bg-success/10" : "text-destructive bg-destructive/10"
+              )}
+            >
+              {eventosDia!.eventos.length} {eventosDia!.eventos.length === 1 ? "evento" : "eventos"}
+            </div>
+            
+            <div
+              className={cn(
+                "text-[10px] text-center font-bold",
+                (eventosDia!.saldo || 0) >= 0 ? "text-success" : "text-destructive"
+              )}
+            >
+              {eventosDia!.saldo > 0 ? "+" : ""}
+              {(eventosDia!.saldo || 0).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL",
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}
+            </div>
+
+            {/* Indicador visual que é clicável */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-primary/5 rounded-md">
+              <div className="text-xs text-primary font-medium bg-primary/10 px-2 py-1 rounded-full">
+                Ver detalhes
+              </div>
+            </div>
           </div>
         )}
+
+        {/* Tooltip para dias com eventos */}
+        {hasEvents && (
+          <div className="absolute inset-0" title={`Clique para ver os ${eventosDia!.eventos.length} eventos do dia ${format(data, "d 'de' MMMM", { locale: ptBR })}`} />
+        )}
       </div>
-    );
-
-    if (!hasEvents) return inner;
-
-    return (
-      <TooltipProvider delayDuration={150}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div>{inner}</div>
-          </TooltipTrigger>
-          <TooltipContent side="top" align="center" className="space-y-1 max-w-xs"
-            onPointerDownOutside={(e) => e.preventDefault()}>
-            <div className="text-xs font-medium">
-              {format(data, "PPP", { locale: ptBR })}
-            </div>
-            <div className="text-xs text-muted-foreground mb-2">
-              Clique para ver detalhes completos
-            </div>
-            <div className="flex justify-between gap-4 text-xs">
-              <span>Entradas</span>
-              <span className="text-success font-semibold">
-                {(eventosDia!.totalEntradas || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-              </span>
-            </div>
-            <div className="flex justify-between gap-4 text-xs">
-              <span>Saídas</span>
-              <span className="text-destructive font-semibold">
-                {(eventosDia!.totalSaidas || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-              </span>
-            </div>
-            <div className="flex justify-between gap-4 text-xs">
-              <span>Saldo</span>
-              <span className={cn("font-semibold", (eventosDia!.saldo || 0) >= 0 ? "text-success" : "text-destructive")}>
-                {(eventosDia!.saldo || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-              </span>
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
     );
   };
 
@@ -147,13 +136,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           mode="single"
           locale={ptBR}
           month={new Date(anoAtual, mesAtual - 1)}
-          onDayClick={(data) => {
-            const eventosDia = eventosPorDia.find(dia => isSameDay(dia.data, data));
-            if (eventosDia && eventosDia.eventos.length > 0) {
-              setSelectedDay(eventosDia);
-            }
-          }}
-          className="w-full"
+          className="w-full pointer-events-auto"
           classNames={{
             months: "flex w-full",
             month: "space-y-4 w-full",
@@ -167,10 +150,10 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
             head_row: "flex w-full",
             head_cell: "text-muted-foreground rounded-md w-full font-semibold text-sm py-2",
             row: "flex w-full",
-            cell: "relative w-full h-24 text-center text-sm focus-within:relative focus-within:z-20 border border-border/50 hover:bg-muted/50 transition-colors",
-            day: "h-full w-full p-0 font-normal relative flex flex-col cursor-pointer",
-            day_today: "bg-primary/10 border-primary/50",
-            day_selected: "bg-primary text-primary-foreground",
+            cell: "relative w-full h-24 text-center text-sm focus-within:relative focus-within:z-20 border border-border/50",
+            day: "h-full w-full p-0 font-normal relative flex flex-col",
+            day_today: "bg-primary/5",
+            day_selected: "bg-primary/10",
             day_outside: "text-muted-foreground opacity-30",
             day_disabled: "text-muted-foreground opacity-20",
           }}

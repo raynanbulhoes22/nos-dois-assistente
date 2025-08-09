@@ -28,6 +28,8 @@ import { MetricCard } from "@/components/orcamento/MetricCard";
 import { MonthNavigation } from "@/components/orcamento/MonthNavigation";
 import { TabSection } from "@/components/orcamento/TabSection";
 import { CalendarioFinanceiro } from "@/components/calendario/CalendarioFinanceiro";
+import { ValoresReaisSection } from "@/components/orcamento/ValoresReaisSection";
+import { PerformanceSection } from "@/components/orcamento/PerformanceSection";
 
 const FINANCING_TYPE_LABELS = {
   parcelamento: 'Parcelamento',
@@ -413,44 +415,63 @@ export const Orcamento = () => {
             <AlertaFluxo alertas={alertas} />
           )}
 
-          {/* Métricas Compactas */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <MetricCard
-              title="Renda Projetada"
-              value={formatCurrency(totalRendaAtiva)}
-              icon={TrendingUp}
-              variant="success"
-              isLoading={fontesLoading}
-              subtitle="Baseado nas fontes cadastradas"
-            />
-            
-            <MetricCard
-              title="Gastos Previstos"
-              value={formatCurrency(totalParcelasAtivas + totalGastosFixos)}
-              icon={TrendingDown}
-              variant="error"
-              isLoading={contasLoading}
-              subtitle="Gastos fixos + parcelamentos"
-            />
-            
-            <MetricCard
-              title="Saldo Projetado"
-              value={formatCurrency(saldoProjetado)}
-              icon={saldoProjetado >= 0 ? TrendingUp : TrendingDown}
-              variant={saldoProjetado >= 0 ? "success" : "error"}
-              isLoading={fontesLoading || contasLoading}
-              subtitle="Previsão mensal"
-            />
-            
-            <MetricCard
-              title="Limite Disponível"
-              value={formatCurrency(totalLimiteCartoes)}
-              icon={DollarSign}
-              variant="primary"
-              isLoading={cartoesLoading}
-              subtitle="Total disponível nos cartões"
-            />
-          </div>
+          {/* Seção Valores Projetados */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Valores Projetados
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Projeções baseadas nas suas configurações
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <MetricCard
+                  title="Renda Projetada"
+                  value={formatCurrency(totalRendaAtiva)}
+                  icon={TrendingUp}
+                  variant="success"
+                  isLoading={fontesLoading}
+                  subtitle="Baseado nas fontes cadastradas"
+                />
+                
+                <MetricCard
+                  title="Gastos Previstos"
+                  value={formatCurrency(totalParcelasAtivas + totalGastosFixos)}
+                  icon={TrendingDown}
+                  variant="error"
+                  isLoading={contasLoading}
+                  subtitle="Gastos fixos + parcelamentos"
+                />
+                
+                <MetricCard
+                  title="Saldo Projetado"
+                  value={formatCurrency(saldoProjetado)}
+                  icon={saldoProjetado >= 0 ? TrendingUp : TrendingDown}
+                  variant={saldoProjetado >= 0 ? "success" : "error"}
+                  isLoading={fontesLoading || contasLoading}
+                  subtitle="Previsão mensal"
+                />
+                
+                <MetricCard
+                  title="Limite Disponível"
+                  value={formatCurrency(totalLimiteCartoes)}
+                  icon={DollarSign}
+                  variant="primary"
+                  isLoading={cartoesLoading}
+                  subtitle="Total disponível nos cartões"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Seção Valores Realizados */}
+          <ValoresReaisSection mes={mesAtual} ano={anoAtual} />
+
+          {/* Seção Performance */}
+          <PerformanceSection mes={mesAtual} ano={anoAtual} />
 
           {/* Calendário Principal */}
           <CalendarioFinanceiro 

@@ -18,6 +18,7 @@ import { Relatorios } from "./pages/Relatorios";
 import { Configuracoes } from "./pages/Configuracoes";
 import PrimeirosPasos from "./pages/PrimeirosPasos";
 import NotFound from "./pages/NotFound";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { useViewportHeight } from "@/hooks/use-viewport-height";
 
 const queryClient = new QueryClient();
@@ -52,7 +53,7 @@ const App = () => {
                     <h1 className="text-base sm:text-lg font-semibold truncate">LucraAI - Gestão Financeira</h1>
                   </div>
                 </header>
-                <main className="flex-1 overflow-y-auto scroll-touch touch-pan-y">
+                <main className="flex-1 overflow-y-auto scroll-touch touch-pan-y pb-16 sm:pb-0">
                   <SubscriptionRedirect>
                     <Routes>
                       <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -94,6 +95,7 @@ const App = () => {
                 </main>
               </div>
             </div>
+            <MobileBottomNav />
             <Toaster />
             <Sonner />
           </SidebarProvider>

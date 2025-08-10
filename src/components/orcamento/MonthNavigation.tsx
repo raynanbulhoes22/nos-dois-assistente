@@ -40,46 +40,65 @@ export const MonthNavigation = ({
   };
 
   return (
-    <div className="navigation-month flex flex-col items-center gap-1">
-      <div className="flex items-center gap-2">
-        <Button 
-          size="sm" 
-          variant="ghost" 
-          onClick={() => onNavigate('anterior')}
-          className="h-8 w-8 p-0 hover:bg-muted focus-ring"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        
-        <div className={cn(
-          "px-4 py-2 min-w-[160px] text-center rounded-lg border transition-colors duration-200",
-          getStatusStyles()
-        )}>
-          <span className="font-semibold text-sm">
-            {getMesNome(currentMonth)} {currentYear}
-          </span>
+    <div className="navigation-month flex items-center justify-center gap-2 sm:gap-3">
+      <Button 
+        size="sm" 
+        variant="ghost" 
+        onClick={() => onNavigate('anterior')}
+        className="h-8 w-8 p-0 hover:bg-muted focus-ring"
+        aria-label="Mês anterior"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+
+      {/* Timeline esquerda: meses passados */}
+      {timeline && timeline.length > 0 ? (
+        <div className="hidden sm:block">
+          <MiniTimeline
+            previsoes={timeline
+              .filter((t) => (t.ano < currentYear) || (t.ano === currentYear && t.mes < currentMonth))
+              .sort((a, b) => a.ano - b.ano || a.mes - b.mes)}
+            currentMonth={currentMonth}
+            currentYear={currentYear}
+            onMonthSelect={onMonthSelect || (() => {})}
+            getMesNome={getMesNome}
+          />
         </div>
-        
-        <Button 
-          size="sm" 
-          variant="ghost" 
-          onClick={() => onNavigate('proximo')}
-          className="h-8 w-8 p-0 hover:bg-muted focus-ring"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+      ) : null}
+
+      <div className={cn(
+        "px-4 py-2 min-w-[140px] sm:min-w-[160px] text-center rounded-lg border transition-colors duration-200",
+        getStatusStyles()
+      )}>
+        <span className="font-semibold text-sm">
+          {getMesNome(currentMonth)} {currentYear}
+        </span>
       </div>
 
-      {/* Mini timeline abaixo do rótulo do mês, se houver dados */}
+      {/* Timeline direita: meses futuros */}
       {timeline && timeline.length > 0 ? (
-        <MiniTimeline
-          previsoes={timeline}
-          currentMonth={currentMonth}
-          currentYear={currentYear}
-          onMonthSelect={onMonthSelect || (() => {})}
-          getMesNome={getMesNome}
-        />
+        <div className="hidden sm:block">
+          <MiniTimeline
+            previsoes={timeline
+              .filter((t) => (t.ano > currentYear) || (t.ano === currentYear && t.mes > currentMonth))
+              .sort((a, b) => a.ano - b.ano || a.mes - b.mes)}
+            currentMonth={currentMonth}
+            currentYear={currentYear}
+            onMonthSelect={onMonthSelect || (() => {})}
+            getMesNome={getMesNome}
+          />
+        </div>
       ) : null}
+
+      <Button 
+        size="sm" 
+        variant="ghost" 
+        onClick={() => onNavigate('proximo')}
+        className="h-8 w-8 p-0 hover:bg-muted focus-ring"
+        aria-label="Próximo mês"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
     </div>
   );
 };

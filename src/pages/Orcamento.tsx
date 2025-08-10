@@ -369,6 +369,72 @@ export const Orcamento = () => {
   const totalGastosOrcamento = 0; // orcamentoAtual?.categorias?.reduce((total: number, cat: any) => total + (cat.valor_orcado || 0), 0) || 0;
   const saldoProjetado = totalRendaAtiva - totalParcelasAtivas - totalGastosFixos;
 
+  // Timeline de meses passados (dados reais) e futuros (projeção)
+  const LIMIAR_QUASE = 0.05; // 5%
+
+  const calcularStatusMes = (
+    receitas: number,
+    saldo: number
+  ): 'excelente' | 'positivo' | 'critico' | 'deficit' | 'sem-dados' | 'quase_positivo' | 'quase_negativo' => {
+    if (receitas <= 0) return 'sem-dados';
+    const ratio = saldo / receitas;
+    if (ratio < 0) return Math.abs(ratio) <= LIMIAR_QUASE ? 'quase_negativo' : 'deficit';
+    if (ratio <= LIMIAR_QUASE) return 'quase_positivo';
+    return ratio > 0.3 ? 'excelente' : 'positivo';
+  };
+
+  const getParcelasValorNoMes = (mes: number, ano: number) => {
+    return contas.reduce((total, conta) => {
+      const dataPrimeira = new Date(conta.data_primeira_parcela);
+      const mesesDecorridos = (ano - dataPrimeira.getFullYear()) * 12 + (mes - 1 - dataPrimeira.getMonth());
+      const parcelaAtual = mesesDecorridos + 1;
+      const parcelasRestantes = conta.total_parcelas - conta.parcelas_pagas;
+      const ativaNoMes = parcelaAtual > 0 && parcelaAtual <= conta.total_parcelas && parcelaAtual > conta.parcelas_pagas && parcelasRestantes > 0;
+      return ativaNoMes ? total + conta.valor_parcela : total;
+    }, 0);
+  };
+
+  const timelineMeses = useMemo(() => {
+    const dotsPerSide = isMobile ? 4 : 6;
+    const itens: { mes: number; ano: number; status: string; saldoProjetado: number; receitas: number }[] = [];
+
+    // Meses passados
+    for (let i = dotsPerSide; i >= 1; i--) {
+      const d = new Date(anoAtual, mesAtual - 1 - i, 1);
+      const m = d.getMonth() + 1;
+      const a = d.getFullYear();
+      const movsMes = movimentacoes.filter(mv => {
+        const data = new Date(mv.data);
+        return data.getMonth() + 1 === m && data.getFullYear() === a;
+      });
+      const receitas = movsMes.filter(mv => mv.isEntrada).reduce((s, mv) => s + Math.abs(mv.valor), 0);
+      const despesas = movsMes.filter(mv => !mv.isEntrada).reduce((s, mv) => s + Math.abs(mv.valor), 0);
+      const saldo = receitas - despesas;
+      const status = (receitas === 0 && despesas === 0) ? 'sem-dados' : calcularStatusMes(receitas, saldo);
+      itens.push({ mes: m, ano: a, status, saldoProjetado: saldo, receitas });
+    }
+
+    // Meses futuros
+    for (let i = 1; i <= dotsPerSide; i++) {
+      const d = new Date(anoAtual, mesAtual - 1 + i, 1);
+      const m = d.getMonth() + 1;
+      const a = d.getFullYear();
+      const receitas = totalRendaAtiva;
+      const parcelas = getParcelasValorNoMes(m, a);
+      const gastosFixos = totalGastosFixos;
+      const saldo = receitas - (parcelas + gastosFixos);
+      const status = receitas <= 0 ? 'sem-dados' : calcularStatusMes(receitas, saldo);
+      itens.push({ mes: m, ano: a, status, saldoProjetado: saldo, receitas });
+    }
+
+    return itens;
+  }, [isMobile, anoAtual, mesAtual, movimentacoes, contas, totalRendaAtiva, totalGastosFixos]);
+
+  const onMonthSelect = (mes: number, ano: number) => {
+    setMesAtual(mes);
+    setAnoAtual(ano);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
@@ -405,6 +471,8 @@ export const Orcamento = () => {
               onNavigate={navegarMes}
               getMesNome={getMesNome}
               statusMes={alertas.length > 0 ? 'critico' : previsibilidadeStatus}
+              timeline={timelineMeses}
+              onMonthSelect={onMonthSelect}
             />
           </div>
         </div>

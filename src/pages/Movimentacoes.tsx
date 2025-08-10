@@ -49,7 +49,10 @@ export const Movimentacoes = () => {
   useEffect(() => {
     const state = location.state as { openForm?: boolean; formType?: string } | null;
     if (state?.openForm && state?.formType) {
-      const type = state.formType === 'entrada' ? 'entrada' : 'saida';
+      let type: 'entrada' | 'saida' = 'entrada';
+      if (state.formType === 'entrada') type = 'entrada';
+      else if (state.formType === 'saida' || state.formType === 'transferencia') type = 'saida';
+      
       setFormType(type);
       setShowForm(true);
       // Clear the state to prevent reopening on page refresh
@@ -334,6 +337,7 @@ export const Movimentacoes = () => {
           onSuccess={handleSuccess}
           userId={user?.id || ''}
           initialType={formType}
+          transactionSubType={location.state?.formType}
           editTransaction={editingMovimentacao ? {
             id: editingMovimentacao.id,
             tipo: editingMovimentacao.isEntrada ? 'entrada_manual' : 'registro_manual',

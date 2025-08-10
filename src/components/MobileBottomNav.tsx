@@ -66,30 +66,31 @@ export function MobileBottomNav() {
         </SheetTrigger>
         <SheetContent 
           side="right" 
-          className="w-64 p-4"
+          className="w-72 p-4"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <div className="space-y-2 mt-4">
-            <h3 className="font-semibold text-sm text-muted-foreground mb-4">
-              Adicionar Movimentação
+          <div className="space-y-4 mt-4">
+            <h3 className="font-semibold text-base mb-4">
+              Novo Registro
             </h3>
-            {transactionOptions.map((option) => (
-              <button
-                key={option.type}
-                onClick={() => handleTransactionSelect(option.type)}
-                className={cn(
-                  "w-full flex items-start gap-3 p-3 rounded-lg border transition-all",
-                  "hover:scale-[1.02] active:scale-[0.98]",
-                  option.color
-                )}
-              >
-                <option.icon className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                <div className="text-left">
-                  <div className="font-medium text-sm">{option.label}</div>
-                  <div className="text-xs text-muted-foreground">{option.description}</div>
-                </div>
-              </button>
-            ))}
+            <div className="grid grid-cols-1 gap-3">
+              {transactionOptions.map((option) => (
+                <button
+                  key={option.type}
+                  onClick={() => handleTransactionSelect(option.type)}
+                  className={cn(
+                    "flex items-center gap-3 p-4 rounded-lg border-2 transition-all hover:scale-[1.02]",
+                    option.color
+                  )}
+                >
+                  <option.icon className="h-5 w-5" />
+                  <div className="text-left">
+                    <div className="font-medium">{option.label}</div>
+                    <div className="text-sm text-muted-foreground">{option.description}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
         </SheetContent>
       </Sheet>

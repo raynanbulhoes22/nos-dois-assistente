@@ -62,8 +62,8 @@ export const useMovimentacoesFilters = (movimentacoes: Movimentacao[]) => {
     };
   }, [movimentacoes]);
 
-  // Filter and sort movimentacoes
-  const filteredMovimentacoes = useMemo(() => {
+  // Base filter (ignores transactionType) and sort
+  const baseFilteredMovimentacoes = useMemo(() => {
     let filtered = [...movimentacoes];
 
     // Search filter
@@ -107,13 +107,6 @@ export const useMovimentacoesFilters = (movimentacoes: Movimentacao[]) => {
       filtered = filtered.filter(m => m.valor <= filters.valueRange.max!);
     }
 
-    // Transaction type filter
-    if (filters.transactionType === 'entradas') {
-      filtered = filtered.filter(m => m.isEntrada);
-    } else if (filters.transactionType === 'saidas') {
-      filtered = filtered.filter(m => !m.isEntrada);
-    }
-
     // Sort
     filtered.sort((a, b) => {
       let aValue: any, bValue: any;
@@ -139,7 +132,7 @@ export const useMovimentacoesFilters = (movimentacoes: Movimentacao[]) => {
           aValue = new Date(a.data).getTime();
           bValue = new Date(b.data).getTime();
       }
-
+  
       if (filters.sortOrder === 'asc') {
         return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
       } else {
@@ -149,6 +142,20 @@ export const useMovimentacoesFilters = (movimentacoes: Movimentacao[]) => {
 
     return filtered;
   }, [movimentacoes, filters]);
+
+  // Apply transaction type only for the list rendering
+  const filteredMovimentacoes = useMemo(() => {
+    let filtered = [...baseFilteredMovimentacoes];
+
+    // Transaction type filter
+    if (filters.transactionType === 'entradas') {
+      filtered = filtered.filter(m => m.isEntrada);
+    } else if (filters.transactionType === 'saidas') {
+      filtered = filtered.filter(m => !m.isEntrada);
+    }
+
+    return filtered;
+  }, [baseFilteredMovimentacoes, filters.transactionType]);
 
   // Get filtered entradas and saidas
   const filteredEntradas = useMemo(() => 
@@ -230,12 +237,12 @@ export const useMovimentacoesFilters = (movimentacoes: Movimentacao[]) => {
            filters.categories.length > 0 ||
            filters.paymentMethods.length > 0 ||
            filters.valueRange.min !== null ||
-           filters.valueRange.max !== null ||
-           filters.transactionType !== 'all';
+           filters.valueRange.max !== null;
   }, [filters]);
 
   return {
     filters,
+    baseFilteredMovimentacoes,
     filteredMovimentacoes,
     filteredEntradas,
     filteredSaidas,

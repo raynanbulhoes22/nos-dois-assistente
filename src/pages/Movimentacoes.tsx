@@ -21,6 +21,7 @@ export const Movimentacoes = () => {
   const { movimentacoes, entradas, saidas, isLoading, error, refetch } = useMovimentacoes();
   const { 
     filters,
+    baseFilteredMovimentacoes,
     filteredMovimentacoes,
     filteredEntradas,
     filteredSaidas,
@@ -112,9 +113,11 @@ export const Movimentacoes = () => {
     }).format(value);
   };
 
-  // Calculate totals based on filtered data
-  const totalEntradas = filteredEntradas.reduce((sum, item) => sum + item.valor, 0);
-  const totalSaidas = filteredSaidas.reduce((sum, item) => sum + item.valor, 0);
+  // Calculate invariant totals based on base filtered data (ignoring selected tab)
+  const baseEntradas = baseFilteredMovimentacoes.filter(m => m.isEntrada);
+  const baseSaidas = baseFilteredMovimentacoes.filter(m => !m.isEntrada);
+  const totalEntradas = baseEntradas.reduce((sum, item) => sum + item.valor, 0);
+  const totalSaidas = baseSaidas.reduce((sum, item) => sum + item.valor, 0);
   const saldo = totalEntradas - totalSaidas;
 
   if (isLoading) {
@@ -180,7 +183,7 @@ export const Movimentacoes = () => {
         </div>
 
         {/* Mobile sticky saldo */}
-        <div className="sm:hidden sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="sm:hidden sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b pt-[env(safe-area-inset-top)] shadow-sm">
           <div className="px-4 py-2 flex items-center justify-between gap-2">
             <span className={`text-sm font-semibold ${saldo >= 0 ? 'text-success' : 'text-error'}`}>
               Saldo: {formatCurrency(saldo)}
@@ -200,7 +203,7 @@ export const Movimentacoes = () => {
 
         {/* Summary Cards */}
         <div className="px-4 sm:px-6 py-3">
-          <div className="metric-grid max-w-3xl">
+          <div className="metric-grid sm:max-w-3xl mx-auto">
             <Card className="metric-card metric-card-success">
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center gap-3">
@@ -213,7 +216,7 @@ export const Movimentacoes = () => {
                       {formatCurrency(totalEntradas)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {filteredEntradas.length} de {entradas.length}
+                      {baseEntradas.length} de {entradas.length}
                     </p>
                   </div>
                 </div>
@@ -232,7 +235,7 @@ export const Movimentacoes = () => {
                       {formatCurrency(totalSaidas)}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {filteredSaidas.length} de {saidas.length}
+                      {baseSaidas.length} de {saidas.length}
                     </p>
                   </div>
                 </div>

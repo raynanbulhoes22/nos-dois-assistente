@@ -1,8 +1,15 @@
 import { cn } from "@/lib/utils";
-import { PrevisaoMensal } from "@/hooks/usePrevisibilidadeFinanceira";
+
+interface TimelineItem {
+  mes: number;
+  ano: number;
+  status: string; // 'excelente' | 'positivo' | 'critico' | 'deficit' | 'sem-dados' | 'quase_positivo' | 'quase_negativo'
+  saldoProjetado: number;
+  receitas: number;
+}
 
 interface MiniTimelineProps {
-  previsoes: PrevisaoMensal[];
+  previsoes: TimelineItem[];
   currentMonth: number;
   currentYear: number;
   onMonthSelect: (mes: number, ano: number) => void;
@@ -29,10 +36,14 @@ export const MiniTimeline = ({
           return cn(baseClasses, "bg-critical border-critical shadow-lg shadow-critical/30");
         case 'deficit':
           return cn(baseClasses, "bg-error border-error shadow-lg shadow-error/30");
-        case 'sem-dados':
-          return cn(baseClasses, "bg-neutral border-neutral shadow-lg shadow-neutral/30");
-        default:
+        case 'quase_positivo':
           return cn(baseClasses, "bg-primary border-primary shadow-lg shadow-primary/30");
+        case 'quase_negativo':
+          return cn(baseClasses, "bg-critical/80 border-critical shadow-lg shadow-critical/30");
+        case 'sem-dados':
+          return cn(baseClasses, "bg-background border-border shadow-lg shadow-border/30");
+        default:
+          return cn(baseClasses, "bg-muted border-border shadow-lg shadow-muted/30");
       }
     }
     
@@ -46,7 +57,11 @@ export const MiniTimeline = ({
       case 'deficit':
         return cn(baseClasses, "bg-error/30 border-error/50 hover:bg-error/50 hover:shadow-error/20");
       case 'sem-dados':
-        return cn(baseClasses, "bg-neutral/30 border-neutral/50 hover:bg-neutral/50");
+        return cn(baseClasses, "bg-background border-border hover:bg-muted");
+      case 'quase_positivo':
+        return cn(baseClasses, "bg-primary/40 border-primary/60 hover:bg-primary/60");
+      case 'quase_negativo':
+        return cn(baseClasses, "bg-critical/40 border-critical/60 hover:bg-critical/60");
       default:
         return cn(baseClasses, "bg-muted border-border hover:bg-muted/70");
     }
@@ -95,6 +110,8 @@ export const MiniTimeline = ({
                         previsao.status === 'excelente' ? 'text-success' :
                         previsao.status === 'positivo' ? 'text-warning' :
                         previsao.status === 'critico' ? 'text-critical' :
+                        previsao.status === 'quase_positivo' ? 'text-primary' :
+                        previsao.status === 'quase_negativo' ? 'text-critical' :
                         previsao.status === 'deficit' ? 'text-error' : 'text-neutral'
                       )}>
                         {previsao.saldoProjetado.toLocaleString('pt-BR', { 
@@ -110,11 +127,15 @@ export const MiniTimeline = ({
                         previsao.status === 'excelente' ? 'text-success' :
                         previsao.status === 'positivo' ? 'text-warning' :
                         previsao.status === 'critico' ? 'text-critical' :
+                        previsao.status === 'quase_positivo' ? 'text-primary' :
+                        previsao.status === 'quase_negativo' ? 'text-critical' :
                         previsao.status === 'deficit' ? 'text-error' : 'text-neutral'
                       )}>
                         {previsao.status === 'excelente' ? '🟢 Excelente' :
                          previsao.status === 'positivo' ? '🟡 Bom' :
                          previsao.status === 'critico' ? '🟠 Crítico' :
+                         previsao.status === 'quase_positivo' ? '🔵 Quase positivo' :
+                         previsao.status === 'quase_negativo' ? '🟠 Quase negativo' :
                          previsao.status === 'deficit' ? '🔴 Déficit' : '⚪ Sem dados'}
                       </span>
                     </div>

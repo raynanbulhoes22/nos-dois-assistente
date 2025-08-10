@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MiniTimeline } from "@/components/orcamento/MiniTimeline";
 
 interface MonthNavigationProps {
   currentMonth: number;
@@ -8,6 +9,8 @@ interface MonthNavigationProps {
   onNavigate: (direction: 'anterior' | 'proximo') => void;
   getMesNome: (mes: number) => string;
   statusMes?: 'excelente' | 'positivo' | 'critico' | 'deficit' | 'sem-dados';
+  timeline?: { mes: number; ano: number; status: string; saldoProjetado: number; receitas: number }[];
+  onMonthSelect?: (mes: number, ano: number) => void;
 }
 
 export const MonthNavigation = ({
@@ -15,7 +18,9 @@ export const MonthNavigation = ({
   currentYear,
   onNavigate,
   getMesNome,
-  statusMes
+  statusMes,
+  timeline,
+  onMonthSelect
 }: MonthNavigationProps) => {
   const getStatusStyles = () => {
     switch (statusMes) {
@@ -35,33 +40,46 @@ export const MonthNavigation = ({
   };
 
   return (
-    <div className="navigation-month">
-      <Button 
-        size="sm" 
-        variant="ghost" 
-        onClick={() => onNavigate('anterior')}
-        className="h-8 w-8 p-0 hover:bg-muted focus-ring"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
-      
-      <div className={cn(
-        "px-4 py-2 min-w-[160px] text-center rounded-lg border transition-colors duration-200",
-        getStatusStyles()
-      )}>
-        <span className="font-semibold text-sm">
-          {getMesNome(currentMonth)} {currentYear}
-        </span>
+    <div className="navigation-month flex flex-col items-center gap-1">
+      <div className="flex items-center gap-2">
+        <Button 
+          size="sm" 
+          variant="ghost" 
+          onClick={() => onNavigate('anterior')}
+          className="h-8 w-8 p-0 hover:bg-muted focus-ring"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        
+        <div className={cn(
+          "px-4 py-2 min-w-[160px] text-center rounded-lg border transition-colors duration-200",
+          getStatusStyles()
+        )}>
+          <span className="font-semibold text-sm">
+            {getMesNome(currentMonth)} {currentYear}
+          </span>
+        </div>
+        
+        <Button 
+          size="sm" 
+          variant="ghost" 
+          onClick={() => onNavigate('proximo')}
+          className="h-8 w-8 p-0 hover:bg-muted focus-ring"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
-      
-      <Button 
-        size="sm" 
-        variant="ghost" 
-        onClick={() => onNavigate('proximo')}
-        className="h-8 w-8 p-0 hover:bg-muted focus-ring"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
+
+      {/* Mini timeline abaixo do rótulo do mês, se houver dados */}
+      {timeline && timeline.length > 0 ? (
+        <MiniTimeline
+          previsoes={timeline}
+          currentMonth={currentMonth}
+          currentYear={currentYear}
+          onMonthSelect={onMonthSelect || (() => {})}
+          getMesNome={getMesNome}
+        />
+      ) : null}
     </div>
   );
 };

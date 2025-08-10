@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import type { Movimentacao as MovType } from "@/hooks/useMovimentacoes";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 import { useMovimentacoesFilters } from "@/hooks/useMovimentacoesFilters";
@@ -19,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 export const Movimentacoes = () => {
   const { user } = useAuth();
+  const location = useLocation();
   const { movimentacoes, entradas, saidas, isLoading, error, refetch } = useMovimentacoes();
   const { 
     filters,
@@ -42,6 +44,18 @@ export const Movimentacoes = () => {
   const [editingMovimentacao, setEditingMovimentacao] = useState<MovType | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [movimentacaoToDelete, setMovimentacaoToDelete] = useState<MovType | null>(null);
+
+  // Handle navigation state for opening form
+  useEffect(() => {
+    const state = location.state as { openForm?: boolean; formType?: string } | null;
+    if (state?.openForm && state?.formType) {
+      const type = state.formType === 'entrada' ? 'entrada' : 'saida';
+      setFormType(type);
+      setShowForm(true);
+      // Clear the state to prevent reopening on page refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const handleSuccess = () => {
     setShowForm(false);
@@ -319,9 +333,10 @@ export const Movimentacoes = () => {
           }}
           onSuccess={handleSuccess}
           userId={user?.id || ''}
+          initialType={formType}
           editTransaction={editingMovimentacao ? {
             id: editingMovimentacao.id,
-            tipo: editingMovimentacao.isEntrada ? 'Receita' : 'Despesa',
+            tipo: editingMovimentacao.isEntrada ? 'entrada_manual' : 'registro_manual',
             valor: editingMovimentacao.valor,
             data: editingMovimentacao.data,
             categoria: editingMovimentacao.categoria || '',

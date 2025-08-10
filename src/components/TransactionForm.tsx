@@ -38,6 +38,7 @@ interface TransactionFormProps {
   onSuccess: () => void;
   editTransaction?: Transaction | null;
   userId: string;
+  initialType?: 'entrada' | 'saida';
 }
 
 export const TransactionForm = ({ 
@@ -45,11 +46,20 @@ export const TransactionForm = ({
   onOpenChange, 
   onSuccess, 
   editTransaction,
-  userId 
+  userId,
+  initialType
 }: TransactionFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  // Map initialType to the expected transaction type format
+  const getInitialTipo = () => {
+    if (editTransaction?.tipo) return editTransaction.tipo;
+    if (initialType === 'entrada') return 'entrada_manual';
+    if (initialType === 'saida') return 'registro_manual';
+    return "";
+  };
+
   const [formData, setFormData] = useState({
-    tipo: editTransaction?.tipo || "",
+    tipo: getInitialTipo(),
     valor: editTransaction?.valor?.toString() || "",
     data: editTransaction ? new Date(editTransaction.data) : new Date(),
     categoria: editTransaction?.categoria || "",

@@ -68,7 +68,7 @@ export const DashboardFilters = ({ isOpen, onClose, onApplyFilters }: DashboardF
   if (!isOpen) return null;
 
   return (
-    <Card className="border shadow-lg bg-card/95 backdrop-blur-sm">
+    <Card className="border shadow-lg bg-card backdrop-blur-sm z-50">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -99,12 +99,12 @@ export const DashboardFilters = ({ isOpen, onClose, onApplyFilters }: DashboardF
           {/* Category */}
           <div className="space-y-2">
             <Label className="text-xs font-medium">Categoria</Label>
-            <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
+            <Select value={filters.category || "all"} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value === "all" ? "" : value }))}>
               <SelectTrigger className="h-8 text-xs">
                 <SelectValue placeholder="Todas" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Todas</SelectItem>
+              <SelectContent className="bg-card border border-border shadow-lg z-[100]">
+                <SelectItem value="all">Todas</SelectItem>
                 <SelectItem value="alimentacao">Alimentação</SelectItem>
                 <SelectItem value="transporte">Transporte</SelectItem>
                 <SelectItem value="moradia">Moradia</SelectItem>
@@ -119,12 +119,12 @@ export const DashboardFilters = ({ isOpen, onClose, onApplyFilters }: DashboardF
           {/* Payment Method */}
           <div className="space-y-2">
             <Label className="text-xs font-medium">Forma de Pagamento</Label>
-            <Select value={filters.paymentMethod} onValueChange={(value) => setFilters(prev => ({ ...prev, paymentMethod: value }))}>
+            <Select value={filters.paymentMethod || "all"} onValueChange={(value) => setFilters(prev => ({ ...prev, paymentMethod: value === "all" ? "" : value }))}>
               <SelectTrigger className="h-8 text-xs">
                 <SelectValue placeholder="Todas" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">Todas</SelectItem>
+              <SelectContent className="bg-card border border-border shadow-lg z-[100]">
+                <SelectItem value="all">Todas</SelectItem>
                 <SelectItem value="pix">PIX</SelectItem>
                 <SelectItem value="debito">Cartão de Débito</SelectItem>
                 <SelectItem value="credito">Cartão de Crédito</SelectItem>
@@ -165,12 +165,12 @@ export const DashboardFilters = ({ isOpen, onClose, onApplyFilters }: DashboardF
         {/* Transaction Type */}
         <div className="space-y-2">
           <Label className="text-xs font-medium">Tipo de Transação</Label>
-          <Select value={filters.transactionType} onValueChange={(value) => setFilters(prev => ({ ...prev, transactionType: value }))}>
+          <Select value={filters.transactionType || "all"} onValueChange={(value) => setFilters(prev => ({ ...prev, transactionType: value === "all" ? "" : value }))}>
             <SelectTrigger className="h-8 text-xs">
               <SelectValue placeholder="Todas" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Todas</SelectItem>
+            <SelectContent className="bg-card border border-border shadow-lg z-[100]">
+              <SelectItem value="all">Todas</SelectItem>
               <SelectItem value="entrada">Receitas</SelectItem>
               <SelectItem value="saida">Despesas</SelectItem>
             </SelectContent>

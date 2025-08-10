@@ -203,7 +203,7 @@ export const Movimentacoes = () => {
 
         {/* Summary Cards */}
         <div className="px-4 sm:px-6 py-3">
-          <div className="metric-grid sm:max-w-3xl mx-auto">
+          <div className="metric-grid">
             <Card className="metric-card metric-card-success">
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center gap-3">

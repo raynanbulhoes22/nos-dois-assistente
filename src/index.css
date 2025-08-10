@@ -236,7 +236,7 @@
   }
 
   .metric-card {
-    @apply border-0 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02];
+    @apply border-0 rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02];
   }
 
   .metric-card-success {
@@ -348,7 +348,7 @@
   }
 
   .metric-grid {
-    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4;
+    @apply w-full grid grid-cols-1 gap-3 sm:gap-4 max-w-md sm:max-w-3xl mx-auto md:grid-cols-2 lg:grid-cols-4;
   }
 
   .section-grid {

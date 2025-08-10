@@ -415,8 +415,6 @@ export const Orcamento = () => {
             <AlertaFluxo alertas={alertas} />
           )}
 
-          {/* Comparativo: Projetado vs Realizado */}
-          <PerformanceSection mes={mesAtual} ano={anoAtual} />
 
           {/* Calendário Principal */}
           <CalendarioFinanceiro 

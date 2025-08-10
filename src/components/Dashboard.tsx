@@ -26,6 +26,9 @@ import { useToast } from "@/hooks/use-toast";
 import { TransactionForm } from "./TransactionForm";
 import { TransactionsList } from "./TransactionsList";
 import { FinancialChart } from "./FinancialChart";
+import { FinancialOverview } from "@/components/dashboard/FinancialOverview";
+import { AdvancedCharts } from "@/components/dashboard/AdvancedCharts";
+import { MonthlyProjections } from "@/components/dashboard/MonthlyProjections";
 import { useFinancialStats } from "@/hooks/useFinancialStats";
 
 interface DashboardData {
@@ -382,41 +385,125 @@ export const Dashboard = ({ user }: { user: User }) => {
         </div>
 
         {/* Enhanced Main Content Tabs */}
-        <Tabs defaultValue="financial" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm shadow-md p-1 border border-gray-200 h-10 sm:h-auto">
+        <Tabs defaultValue="overview" className="space-y-4 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm shadow-md p-1 border border-gray-200 h-10 sm:h-auto">
             <TabsTrigger 
-              value="financial" 
+              value="overview" 
               className="gap-1 sm:gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth 
-                         min-h-[40px] text-xs sm:text-sm touch-manipulation"
+                         text-xs sm:text-sm font-medium py-2 px-1 sm:px-3"
             >
-              <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Financeiro</span>
-              <span className="xs:hidden">$</span>
+              <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Visão Geral</span>
+              <span className="sm:hidden">Geral</span>
             </TabsTrigger>
             <TabsTrigger 
-              value="tasks" 
-              className="gap-1 sm:gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth 
-                         min-h-[40px] text-xs sm:text-sm touch-manipulation"
-            >
-              <CheckSquare className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Tarefas</span>
-              <span className="xs:hidden">✓</span>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="calendar" 
-              className="gap-1 sm:gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth 
-                         min-h-[40px] text-xs sm:text-sm touch-manipulation"
+              value="projections" 
+              className="gap-1 sm:gap-2 data-[state=active]:bg-green-500 data-[state=active]:text-white transition-smooth
+                         text-xs sm:text-sm font-medium py-2 px-1 sm:px-3"
             >
               <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
-              <span className="hidden xs:inline">Agenda</span>
-              <span className="xs:hidden">📅</span>
+              <span className="hidden sm:inline">Projeções</span>
+              <span className="sm:hidden">Proj.</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="analysis" 
+              className="gap-1 sm:gap-2 data-[state=active]:bg-purple-500 data-[state=active]:text-white transition-smooth
+                         text-xs sm:text-sm font-medium py-2 px-1 sm:px-3"
+            >
+              <PieChart className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Análises</span>
+              <span className="sm:hidden">Anál.</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="transactions" 
+              className="gap-1 sm:gap-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white transition-smooth
+                         text-xs sm:text-sm font-medium py-2 px-1 sm:px-3"
+            >
+              <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Transações</span>
+              <span className="sm:hidden">Trans.</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="financial" className="space-y-4 sm:space-y-6 animate-fade-in">
+          <TabsContent value="overview" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+            {/* Performance financeira e resumo */}
+            <FinancialOverview />
+
+            {/* Resumo tradicional simplificado */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <Card className="overflow-hidden">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-green-600" />
+                    Saldo Atual
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Total Entradas:</span>
+                      <span className="font-semibold text-green-600">{formatCurrency(dashboardData.totalIncome)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Total Saídas:</span>
+                      <span className="font-semibold text-red-600">{formatCurrency(dashboardData.totalExpenses)}</span>
+                    </div>
+                    <hr />
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium">Saldo:</span>
+                      <span className={`font-bold text-lg ${dashboardData.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCurrency(dashboardData.balance)}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="overflow-hidden">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-blue-600" />
+                    Movimentações Recentes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {dashboardData.recentTransactions.slice(0, 4).map((mov: any) => (
+                      <div key={mov.id} className="flex justify-between items-center p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {mov.title || mov.nome}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(mov.data).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+                        <span className={`text-sm font-semibold ${
+                          mov.tipo === 'Receita' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {mov.tipo === 'Receita' ? '+' : '-'}{formatCurrency(mov.valor)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="projections" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+            <MonthlyProjections />
+          </TabsContent>
+
+          <TabsContent value="analysis" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
+            <AdvancedCharts />
+            <FinancialChart userId={user?.id || ''} refreshTrigger={refreshTrigger} />
+          </TabsContent>
+
+          <TabsContent value="transactions" className="space-y-4 sm:space-y-6 mt-4 sm:mt-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-              <h3 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Gestão Financeira
+              <h3 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Gestão de Transações
               </h3>
               <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
                 <Button 
@@ -446,56 +533,6 @@ export const Dashboard = ({ user }: { user: User }) => {
               userId={user.id} 
               refreshTrigger={refreshTrigger} 
             />
-
-            {/* Gráficos Financeiros */}
-            <FinancialChart 
-              userId={user.id} 
-              refreshTrigger={refreshTrigger} 
-            />
-          </TabsContent>
-
-          <TabsContent value="tasks" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-semibold">Gerenciador de Tarefas</h3>
-              <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
-                <Plus className="h-4 w-4 mr-2" />
-                Nova Tarefa
-              </Button>
-            </div>
-            
-            <Card className="shadow-lg bg-white border border-gray-200">
-              <CardContent className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <CheckSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 mb-4">Sistema de tarefas em desenvolvimento</p>
-                  <p className="text-sm text-gray-400">
-                    Em breve você poderá gerenciar suas tarefas aqui
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="calendar" className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-semibold">Agenda</h3>
-              <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Evento
-              </Button>
-            </div>
-            
-            <Card className="shadow-lg bg-white border border-gray-200">
-              <CardContent className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 mb-4">Sistema de agenda em desenvolvimento</p>
-                  <p className="text-sm text-gray-400">
-                    Em breve você poderá gerenciar seus compromissos aqui
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>

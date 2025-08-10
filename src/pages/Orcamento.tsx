@@ -423,7 +423,7 @@ export const Orcamento = () => {
           />
 
           {/* Seções Compactas em Tabs */}
-          <Card className="sm:block hidden">
+          <Card className="block">
             <CardHeader>
               <CardTitle className="text-base sm:text-lg">Configurações Financeiras</CardTitle>
             </CardHeader>

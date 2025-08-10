@@ -88,93 +88,87 @@ export const ConsolidatedKPIs = ({
   return (
     <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden">
       <CardContent className="p-0">
-        {/* Clean Header */}
-        <div className="flex items-center justify-between p-6 pb-0">
+        {/* Compact Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border/30">
           <div>
-            <h2 className="text-lg font-medium text-foreground">Resumo Financeiro</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Dados do mês atual
-            </p>
+            <h2 className="text-base font-medium text-foreground">Resumo Financeiro</h2>
+            <p className="text-xs text-muted-foreground">Dados do mês atual</p>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={onToggleBalance}
-            className="gap-2 h-8 px-3 text-muted-foreground hover:text-foreground border border-border/30 hover:border-border/60"
+            className="gap-1.5 h-7 px-2.5 text-muted-foreground hover:text-foreground border border-border/30 hover:border-border/60"
           >
-            {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            <span className="text-xs font-medium">{showBalance ? "Ocultar" : "Mostrar"}</span>
+            {showBalance ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            <span className="text-xs">{showBalance ? "Ocultar" : "Mostrar"}</span>
           </Button>
         </div>
 
-        {/* Main Balance Section */}
-        <div className="px-6 py-4">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-sm font-medium text-muted-foreground">Saldo Atual</span>
+        {/* Compact Balance Section */}
+        <div className="px-4 py-3">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-medium text-muted-foreground">Saldo Atual</span>
             <Badge 
               variant={getBalanceVariant()} 
-              className="h-5 px-2 text-xs font-medium"
+              className="h-4 px-1.5 text-xs"
             >
               {monthlyTrend === 'positive' ? 'Positivo' : 'Negativo'}
             </Badge>
           </div>
           
-          <div className="flex items-center gap-3">
-            <span className={`text-3xl font-bold tracking-tight ${balance >= 0 ? 'text-success' : 'text-error'}`}>
+          <div className="flex items-center gap-2">
+            <span className={`text-2xl font-bold tracking-tight ${balance >= 0 ? 'text-success' : 'text-error'}`}>
               {formatCurrency(balance)}
             </span>
             {balance >= 0 ? (
-              <div className="p-1.5 bg-success/10 rounded-full">
-                <TrendingUp className="h-4 w-4 text-success" />
+              <div className="p-1 bg-success/10 rounded-full">
+                <TrendingUp className="h-3.5 w-3.5 text-success" />
               </div>
             ) : (
-              <div className="p-1.5 bg-error/10 rounded-full">
-                <TrendingDown className="h-4 w-4 text-error" />
+              <div className="p-1 bg-error/10 rounded-full">
+                <TrendingDown className="h-3.5 w-3.5 text-error" />
               </div>
             )}
           </div>
         </div>
 
-        {/* Income & Expenses */}
+        {/* Compact Income & Expenses */}
         <div className="grid grid-cols-2 gap-0 border-t border-border/30">
-          <div className="p-6 border-r border-border/30">
-            <div className="space-y-1">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Receitas
-              </span>
-              <p className="text-xl font-semibold text-success">
-                {formatCurrency(totalIncome)}
-              </p>
-            </div>
+          <div className="px-4 py-3 border-r border-border/30">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-0.5">
+              Receitas
+            </span>
+            <p className="text-lg font-semibold text-success">
+              {formatCurrency(totalIncome)}
+            </p>
           </div>
           
-          <div className="p-6">
-            <div className="space-y-1">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                Despesas
-              </span>
-              <p className="text-xl font-semibold text-error">
-                {formatCurrency(totalExpenses)}
-              </p>
-            </div>
+          <div className="px-4 py-3">
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide block mb-0.5">
+              Despesas
+            </span>
+            <p className="text-lg font-semibold text-error">
+              {formatCurrency(totalExpenses)}
+            </p>
           </div>
         </div>
 
-        {/* Performance Metrics */}
-        <div className="px-6 py-4 bg-muted/20 border-t border-border/30">
-          <div className="grid grid-cols-2 gap-6">
+        {/* Compact Performance Metrics */}
+        <div className="px-4 py-3 bg-muted/20 border-t border-border/30">
+          <div className="grid grid-cols-2 gap-4">
             {/* Savings Rate */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">Taxa de Poupança</span>
                 <Badge 
                   variant={getSavingsRateVariant()} 
-                  className="h-5 px-2 text-xs font-medium"
+                  className="h-4 px-1.5 text-xs"
                 >
                   {savingsRate.toFixed(1)}%
                 </Badge>
               </div>
-              <div className="h-1.5 bg-border rounded-full overflow-hidden">
+              <div className="h-1 bg-border rounded-full overflow-hidden">
                 <div 
                   className={`h-full rounded-full transition-all duration-500 ${
                     savingsRate >= 20 ? 'bg-success' : savingsRate >= 10 ? 'bg-warning' : 'bg-error'
@@ -185,17 +179,17 @@ export const ConsolidatedKPIs = ({
             </div>
             
             {/* Budget Usage */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-muted-foreground">Uso do Orçamento</span>
                 <Badge 
                   variant={getBudgetUsageVariant()} 
-                  className="h-5 px-2 text-xs font-medium"
+                  className="h-4 px-1.5 text-xs"
                 >
                   {budgetUsage.toFixed(1)}%
                 </Badge>
               </div>
-              <div className="h-1.5 bg-border rounded-full overflow-hidden">
+              <div className="h-1 bg-border rounded-full overflow-hidden">
                 <div 
                   className={`h-full rounded-full transition-all duration-500 ${
                     budgetUsage > 90 ? 'bg-error' : budgetUsage > 70 ? 'bg-warning' : 'bg-success'
@@ -207,32 +201,32 @@ export const ConsolidatedKPIs = ({
           </div>
         </div>
 
-        {/* Financial Alerts - Clean Design */}
+        {/* Compact Financial Alerts */}
         {(balance < 0 || savingsRate < 10 || budgetUsage > 90) && (
-          <div className="px-6 py-4 bg-warning/5 border-t border-warning/20">
-            <div className="flex items-start gap-3">
-              <div className="p-1.5 bg-warning/10 rounded-full mt-0.5">
-                <AlertTriangle className="h-4 w-4 text-warning" />
+          <div className="px-4 py-2.5 bg-warning/5 border-t border-warning/20">
+            <div className="flex items-start gap-2">
+              <div className="p-1 bg-warning/10 rounded-full mt-0.5">
+                <AlertTriangle className="h-3.5 w-3.5 text-warning" />
               </div>
-              <div className="flex-1">
-                <h4 className="text-sm font-medium text-warning mb-2">Alertas Financeiros</h4>
-                <div className="space-y-1.5">
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs font-medium text-warning mb-1">Alertas Financeiros</h4>
+                <div className="space-y-1">
                   {balance < 0 && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-2">
-                      <span className="w-1 h-1 bg-error rounded-full"></span>
-                      Taxa de poupança baixa - Meta recomendada: 20%
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <span className="w-1 h-1 bg-error rounded-full flex-shrink-0"></span>
+                      <span>Saldo negativo - Revise seus gastos mensais</span>
                     </p>
                   )}
                   {savingsRate < 10 && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-2">
-                      <span className="w-1 h-1 bg-error rounded-full"></span>
-                      Taxa de poupança baixa - Meta recomendada: 20%
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <span className="w-1 h-1 bg-error rounded-full flex-shrink-0"></span>
+                      <span>Taxa de poupança baixa - Meta recomendada: 20%</span>
                     </p>
                   )}
                   {budgetUsage > 90 && (
-                    <p className="text-xs text-muted-foreground flex items-center gap-2">
-                      <span className="w-1 h-1 bg-warning rounded-full"></span>
-                      Orçamento quase esgotado - Monitore gastos adicionais
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <span className="w-1 h-1 bg-warning rounded-full flex-shrink-0"></span>
+                      <span>Orçamento quase esgotado - Monitore gastos adicionais</span>
                     </p>
                   )}
                 </div>

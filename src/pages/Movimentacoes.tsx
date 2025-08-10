@@ -179,11 +179,30 @@ export const Movimentacoes = () => {
           </div>
         </div>
 
+        {/* Mobile sticky saldo */}
+        <div className="sm:hidden sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+          <div className="px-4 py-2 flex items-center justify-between gap-2">
+            <span className={`text-sm font-semibold ${saldo >= 0 ? 'text-success' : 'text-error'}`}>
+              Saldo: {formatCurrency(saldo)}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={() => {
+                document.getElementById('filters')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+            >
+              Filtros
+            </Button>
+          </div>
+        </div>
+
         {/* Summary Cards */}
-        <div className="px-4 sm:px-6 py-4">
+        <div className="px-4 sm:px-6 py-3">
           <div className="metric-grid max-w-3xl">
             <Card className="metric-card metric-card-success">
-              <CardContent className="p-4">
+              <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center gap-3">
                   <div className="icon-container icon-success">
                     <div className="h-3 w-3 rounded-full bg-green-500"></div>
@@ -202,7 +221,7 @@ export const Movimentacoes = () => {
             </Card>
 
             <Card className="metric-card metric-card-error">
-              <CardContent className="p-4">
+              <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center gap-3">
                   <div className="icon-container icon-error">
                     <div className="h-3 w-3 rounded-full bg-red-500"></div>
@@ -221,7 +240,7 @@ export const Movimentacoes = () => {
             </Card>
 
             <Card className="metric-card">
-              <CardContent className="p-4">
+              <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center gap-3">
                   <div className={`icon-container ${saldo >= 0 ? 'icon-success' : 'icon-error'}`}>
                     <div className={`h-3 w-3 rounded-full ${saldo >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
@@ -242,7 +261,7 @@ export const Movimentacoes = () => {
         </div>
 
         {/* Filters */}
-        <div className="px-4 sm:px-6">
+        <div id="filters" className="px-4 sm:px-6">
           <MovimentacoesFilters
             filters={filters}
             availableCategories={availableCategories}

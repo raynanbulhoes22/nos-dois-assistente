@@ -48,69 +48,84 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
     return (
       <div
         className={cn(
-          "w-full h-full min-h-[48px] sm:min-h-[72px] p-1 sm:p-2 rounded-md transition-all duration-200 relative",
+          "w-full h-full p-0.5 sm:p-2 rounded-md transition-all duration-200 relative",
           heatCls,
-          hasEvents && (isMobile ? "cursor-pointer active:opacity-80" : "cursor-pointer hover:scale-105 hover:shadow-lg hover:z-10 active:scale-95"),
-          isCurrentDay && "ring-1 sm:ring-2 ring-primary ring-opacity-50"
+          hasEvents && (isMobile ? "cursor-pointer active:opacity-80" : "cursor-pointer hover:scale-105 hover:shadow-lg hover:z-10 active:scale-95")
         )}
         onClick={hasEvents ? () => handleDayClick(data) : undefined}
       >
         <div className="flex flex-col h-full">
-          <div className="text-xs sm:text-sm font-medium mb-1">
-            {format(data, "d")}
-          </div>
+          {isCurrentDay && (
+            <span className="absolute top-1 right-1 h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-primary" aria-label="Hoje" />
+          )}
+          <div className="text-xs sm:text-sm font-medium mb-1">{format(data, "d")}</div>
           
           {hasEvents && (
-            <div className="flex-1 space-y-0.5 sm:space-y-1 overflow-hidden">
-              {eventosDia?.eventos.slice(0, 1).map((evento, index) => {
-                const pill = (
-                  <div
-                    className={cn(
-                      "text-[11px] p-0.5 sm:p-1 rounded truncate",
-                      evento.isEntrada ? "bg-success/20 text-success-foreground" : "bg-destructive/20 text-destructive-foreground"
-                    )}
-                  >
-                    <span className="hidden sm:inline">{evento.titulo}</span>
-                    <span className="sm:hidden">{evento.titulo.substring(0, 8)}...</span>
-                  </div>
-                );
+            <div className="relative flex-1 overflow-hidden">
+              {isMobile ? (
+                <div className="flex items-center gap-1">
+                  {eventosDia?.eventos.slice(0, 3).map((evento, index) => (
+                    <span
+                      key={index}
+                      className={cn(
+                        "block rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2",
+                        evento.isEntrada ? "bg-success" : "bg-destructive"
+                      )}
+                    />
+                  ))}
+                  {(eventosDia?.eventos.length ?? 0) > 3 && (
+                    <span className="text-[10px] text-muted-foreground font-medium">
+                      +{(eventosDia?.eventos.length ?? 0) - 3}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {eventosDia?.eventos.slice(0, 1).map((evento, index) => {
+                    const pill = (
+                      <div
+                        className={cn(
+                          "text-[11px] p-0.5 sm:p-1 rounded truncate",
+                          evento.isEntrada ? "bg-success/20 text-success-foreground" : "bg-destructive/20 text-destructive-foreground"
+                        )}
+                      >
+                        <span className="hidden sm:inline">{evento.titulo}</span>
+                        <span className="sm:hidden">{evento.titulo.substring(0, 8)}...</span>
+                      </div>
+                    );
 
-                if (isMobile) {
-                  return <div key={index}>{pill}</div>;
-                }
-
-                return (
-                  <TooltipProvider key={index}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>{pill}</TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          {evento.titulo}: {evento.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                );
-              })}
-              
-              {(eventosDia?.eventos.length ?? 0) > 1 && (
-                <div className="text-xs text-muted-foreground font-medium">
-                  <span className="hidden sm:inline">+{(eventosDia?.eventos.length ?? 0) - 1} mais</span>
-                  <span className="sm:hidden">+{(eventosDia?.eventos.length ?? 0) - 1}</span>
+                    return (
+                      <TooltipProvider key={index}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>{pill}</TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              {evento.titulo}: {evento.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    );
+                  })}
+                  {(eventosDia?.eventos.length ?? 0) > 1 && (
+                    <div className="text-xs text-muted-foreground font-medium">
+                      <span className="hidden sm:inline">+{(eventosDia?.eventos.length ?? 0) - 1} mais</span>
+                      <span className="sm:hidden">+{(eventosDia?.eventos.length ?? 0) - 1}</span>
+                    </div>
+                  )}
                 </div>
               )}
-              
+
               {saldo !== 0 && (
-                <div className={cn(
-                  "text-[11px] font-semibold mt-auto",
-                  saldo > 0 ? "text-success" : "text-destructive"
-                )}>
-                  <span className="hidden sm:inline">
-                    {saldo > 0 ? "+" : ""}{saldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                  </span>
-                  <span className="sm:hidden">
-                    {saldo > 0 ? "+" : ""}{Math.abs(saldo) > 1000 ? `${(saldo/1000).toFixed(1)}k` : saldo.toFixed(0)}
-                  </span>
+                <div
+                  className={cn(
+                    "absolute bottom-1 right-1 text-[10px] sm:text-xs font-semibold px-1 py-px rounded bg-background/60",
+                    saldo > 0 ? "text-success" : "text-destructive"
+                  )}
+                >
+                  {isMobile
+                    ? `${saldo > 0 ? "+" : ""}${Math.abs(saldo) > 1000 ? `${(saldo / 1000).toFixed(1)}k` : saldo.toFixed(0)}`
+                    : `${saldo > 0 ? "+" : ""}${saldo.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`}
                 </div>
               )}
             </div>
@@ -165,7 +180,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
             head_row: "flex w-full",
             head_cell: "text-muted-foreground rounded-md w-full font-semibold text-xs sm:text-sm py-1 sm:py-2",
             row: "flex w-full",
-            cell: "relative w-full h-12 sm:h-20 text-center text-sm focus-within:relative focus-within:z-20 border border-border/50",
+            cell: "relative w-full h-10 sm:h-20 text-center text-sm focus-within:relative focus-within:z-20 border border-border/50",
             day: "h-full w-full p-0 font-normal relative flex flex-col",
             day_today: "bg-primary/5",
             day_selected: "bg-primary/10",
@@ -175,7 +190,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           components={{
             DayContent: ({ date }) => getDayContent(date),
           }}
-          showOutsideDays={false}
+          showOutsideDays={true}
         />
       </div>
 

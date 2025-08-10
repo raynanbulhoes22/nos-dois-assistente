@@ -162,14 +162,14 @@ export const FloatingSearchFilters = ({
               <Search className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-80">
-            <SheetHeader>
+          <SheetContent side="right" className="w-80 flex flex-col max-h-screen">
+            <SheetHeader className="flex-shrink-0">
               <SheetTitle className="text-lg flex items-center gap-2">
                 <Search className="h-5 w-5" />
                 Buscar
               </SheetTitle>
             </SheetHeader>
-            <div className="mt-6 space-y-6">
+            <div className="flex-1 overflow-y-auto mt-6 space-y-6 pr-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -189,7 +189,7 @@ export const FloatingSearchFilters = ({
                     <Calendar className="h-4 w-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-50">
                     {periodPresets.map(preset => (
                       <SelectItem key={preset.value} value={preset.value}>
                         {preset.label}
@@ -211,7 +211,7 @@ export const FloatingSearchFilters = ({
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-50">
                     <SelectItem value="all">Todas</SelectItem>
                     <SelectItem value="entradas">
                       <div className="flex items-center gap-2">
@@ -340,7 +340,7 @@ export const FloatingSearchFilters = ({
                     onFilterChange('search', '');
                     onClearFilters();
                   }}
-                  className="w-full"
+                  className="w-full mb-4"
                 >
                   Limpar Tudo
                 </Button>
@@ -368,14 +368,14 @@ export const FloatingSearchFilters = ({
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-80">
-            <SheetHeader>
+          <SheetContent side="right" className="w-80 flex flex-col max-h-screen">
+            <SheetHeader className="flex-shrink-0">
               <SheetTitle className="text-lg flex items-center gap-2">
                 <SlidersHorizontal className="h-5 w-5" />
                 Filtros Avançados
               </SheetTitle>
             </SheetHeader>
-            <div className="mt-6 space-y-6">
+            <div className="flex-1 overflow-y-auto mt-6 space-y-6 pr-2">
               {/* Categories */}
               <div className="space-y-3">
                 <div className="font-medium">Categorias</div>
@@ -431,7 +431,7 @@ export const FloatingSearchFilters = ({
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-50">
                       <SelectItem value="data">Data</SelectItem>
                       <SelectItem value="valor">Valor</SelectItem>
                       <SelectItem value="nome">Nome</SelectItem>
@@ -442,7 +442,7 @@ export const FloatingSearchFilters = ({
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-50">
                       <SelectItem value="desc">Mais recente</SelectItem>
                       <SelectItem value="asc">Mais antigo</SelectItem>
                     </SelectContent>
@@ -454,7 +454,7 @@ export const FloatingSearchFilters = ({
                 <Button 
                   variant="outline" 
                   onClick={onClearFilters}
-                  className="w-full"
+                  className="w-full mb-4"
                 >
                   Limpar Todos os Filtros
                 </Button>

@@ -5,14 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { 
   Search, 
   SlidersHorizontal,
   Calendar, 
-  Tag, 
-  CreditCard, 
-  ArrowUpDown,
   X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -43,6 +39,7 @@ export const FloatingSearchFilters = ({
   resultCount
 }: FloatingSearchFiltersProps) => {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const periodPresets = [
     { value: 'all', label: 'Todos' },
@@ -68,7 +65,6 @@ export const FloatingSearchFilters = ({
 
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (filters.search) count++;
     if (filters.period.preset !== 'all') count++;
     if (filters.categories.length > 0) count++;
     if (filters.paymentMethods.length > 0) count++;
@@ -151,8 +147,8 @@ export const FloatingSearchFilters = ({
       {/* Floating Action Buttons */}
       <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-3">
         {/* Search Button */}
-        <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-          <DialogTrigger asChild>
+        <Sheet open={searchOpen} onOpenChange={setSearchOpen}>
+          <SheetTrigger asChild>
             <Button
               variant="outline"
               size="icon"
@@ -160,12 +156,15 @@ export const FloatingSearchFilters = ({
             >
               <Search className="h-5 w-5" />
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Buscar Movimentações</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
+          </SheetTrigger>
+          <SheetContent side="right" className="w-80">
+            <SheetHeader>
+              <SheetTitle className="text-lg flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                Buscar
+              </SheetTitle>
+            </SheetHeader>
+            <div className="mt-6 space-y-6">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -178,7 +177,7 @@ export const FloatingSearchFilters = ({
               </div>
               
               {/* Quick Period Filter */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <label className="text-sm font-medium">Período</label>
                 <Select value={filters.period.preset} onValueChange={onPeriodPresetChange}>
                   <SelectTrigger>
@@ -195,15 +194,25 @@ export const FloatingSearchFilters = ({
                 </Select>
               </div>
 
-              <div className="text-xs text-muted-foreground">
+              <div className="text-sm text-muted-foreground">
                 {resultCount} {resultCount === 1 ? 'resultado encontrado' : 'resultados encontrados'}
               </div>
+
+              {filters.search && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => onFilterChange('search', '')}
+                  className="w-full"
+                >
+                  Limpar Busca
+                </Button>
+              )}
             </div>
-          </DialogContent>
-        </Dialog>
+          </SheetContent>
+        </Sheet>
 
         {/* Advanced Filters Button */}
-        <Sheet>
+        <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
           <SheetTrigger asChild>
             <Button
               variant="outline"
@@ -223,7 +232,10 @@ export const FloatingSearchFilters = ({
           </SheetTrigger>
           <SheetContent side="right" className="w-80">
             <SheetHeader>
-              <SheetTitle className="text-lg">Filtros Avançados</SheetTitle>
+              <SheetTitle className="text-lg flex items-center gap-2">
+                <SlidersHorizontal className="h-5 w-5" />
+                Filtros Avançados
+              </SheetTitle>
             </SheetHeader>
             <div className="mt-6 space-y-6">
               {/* Categories */}

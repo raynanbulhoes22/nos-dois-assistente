@@ -416,6 +416,10 @@
   .card-hover {
     @apply transition-smooth hover:shadow-lg hover:-translate-y-1;
   }
+
+  /* Mobile scrolling utilities */
+  .scroll-touch { -webkit-overflow-scrolling: touch; }
+  .touch-pan-y { touch-action: pan-y; }
 }
 
 /* Keyframes */

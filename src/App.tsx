@@ -52,7 +52,7 @@ const App = () => {
                     <h1 className="text-base sm:text-lg font-semibold truncate">LucraAI - Gestão Financeira</h1>
                   </div>
                 </header>
-                <main className="flex-1 overflow-auto overscroll-contain">
+                <main className="flex-1 overflow-y-auto scroll-touch touch-pan-y">
                   <SubscriptionRedirect>
                     <Routes>
                       <Route path="/" element={<Navigate to="/dashboard" replace />} />

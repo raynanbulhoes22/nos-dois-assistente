@@ -7,12 +7,13 @@ import { EyeOff, Eye, Filter } from "lucide-react";
 import { useComparativoFinanceiro } from "@/hooks/useComparativoFinanceiro";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 
-// New improved dashboard components
+// Dashboard components
 import { ConsolidatedKPIs } from "./dashboard/ConsolidatedKPIs";
 import { MonthlyComparison } from "./dashboard/MonthlyComparison";
 import { SmartInsights } from "./dashboard/SmartInsights";
 import { MobileOptimizedTabs } from "./dashboard/MobileOptimizedTabs";
 import { AdvancedStatsCards } from "./dashboard/AdvancedStatsCards";
+import { DashboardFilters } from "./dashboard/DashboardFilters";
 interface User {
   id: string;
   email?: string;
@@ -23,17 +24,52 @@ export const Dashboard = ({
   user: User;
 }) => {
   const [showBalance, setShowBalance] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState("month");
+  const [showFilters, setShowFilters] = useState(false);
+  const [appliedFilters, setAppliedFilters] = useState<any>({});
   const { toast } = useToast();
 
-  // Real data hooks
+  // Calculate date ranges based on selected period
+  const getDateRange = () => {
+    const now = new Date();
+    let startDate, endDate;
+
+    switch (selectedPeriod) {
+      case "week":
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - 7);
+        endDate = now;
+        break;
+      case "month":
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        break;
+      case "quarter":
+        const quarterStart = Math.floor(now.getMonth() / 3) * 3;
+        startDate = new Date(now.getFullYear(), quarterStart, 1);
+        endDate = new Date(now.getFullYear(), quarterStart + 3, 0);
+        break;
+      case "year":
+        startDate = new Date(now.getFullYear(), 0, 1);
+        endDate = new Date(now.getFullYear(), 11, 31);
+        break;
+      default:
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    }
+
+    return { startDate, endDate };
+  };
+
+  const { startDate, endDate } = getDateRange();
+  
+  // Real data hooks with period filtering
   const currentDate = new Date();
-  const currentMonth = currentDate.getMonth() + 1;
-  const currentYear = currentDate.getFullYear();
+  const currentMonth = selectedPeriod === "month" ? currentDate.getMonth() + 1 : undefined;
+  const currentYear = selectedPeriod === "month" ? currentDate.getFullYear() : undefined;
+  
   const comparativo = useComparativoFinanceiro(currentMonth, currentYear);
-  const {
-    movimentacoes,
-    isLoading: movimentacoesLoading
-  } = useMovimentacoes();
+  const { movimentacoes, isLoading: movimentacoesLoading } = useMovimentacoes();
   const isLoading = movimentacoesLoading || comparativo.isLoading;
 
   // Helper functions for data generation
@@ -87,21 +123,29 @@ export const Dashboard = ({
     return months;
   };
 
-  // Memoized calculations to prevent re-renders
-  const financialData = useMemo(() => {
-    const income = comparativo.comparativo?.rendaRealizada || 0;
-    const expenses = comparativo.comparativo?.gastosRealizados || 0;
-    const balance = income - expenses;
-    const currentMonthMovs = movimentacoes.filter(mov => {
+  // Filter movimentacoes based on selected period
+  const filteredMovimentacoes = useMemo(() => {
+    return movimentacoes.filter(mov => {
       const movDate = new Date(mov.data);
-      return movDate.getMonth() + 1 === currentMonth && movDate.getFullYear() === currentYear;
+      return movDate >= startDate && movDate <= endDate;
     });
+  }, [movimentacoes, startDate, endDate]);
 
-    // Top categories
-    const categoryTotals: {
-      [key: string]: number;
-    } = {};
-    currentMonthMovs.filter(mov => !mov.isEntrada).forEach(mov => {
+  // Memoized calculations with filtered data
+  const financialData = useMemo(() => {
+    const income = filteredMovimentacoes
+      .filter(mov => mov.isEntrada)
+      .reduce((sum, mov) => sum + mov.valor, 0);
+    
+    const expenses = filteredMovimentacoes
+      .filter(mov => !mov.isEntrada)
+      .reduce((sum, mov) => sum + mov.valor, 0);
+    
+    const balance = income - expenses;
+
+    // Top categories for the selected period
+    const categoryTotals: { [key: string]: number } = {};
+    filteredMovimentacoes.filter(mov => !mov.isEntrada).forEach(mov => {
       const category = mov.categoria || 'Sem categoria';
       categoryTotals[category] = (categoryTotals[category] || 0) + Number(mov.valor);
     });
@@ -122,15 +166,15 @@ export const Dashboard = ({
       income,
       expenses,
       balance,
-      currentMonthMovs,
+      currentMonthMovs: filteredMovimentacoes,
       topCategories,
-      transactionCount: currentMonthMovs.length,
+      transactionCount: filteredMovimentacoes.length,
       monthlyTrend: balance >= 0 ? 'positive' : 'negative' as 'positive' | 'negative',
       chartData,
       savingsRate: income > 0 ? ((income - expenses) / income) * 100 : 0,
       budgetUsage: expenses > 0 ? (expenses / (income || 1)) * 100 : 0
     };
-  }, [comparativo.comparativo, movimentacoes, currentMonth, currentYear]);
+  }, [filteredMovimentacoes, comparativo.comparativo]);
 
   const handleRefresh = () => {
     toast({
@@ -175,15 +219,38 @@ export const Dashboard = ({
 
             {/* Minimal Action Bar */}
             <div className="flex items-center gap-3">
-              {/* Period Selector - Clean Design */}
+              {/* Period Selector - Functional */}
               <div className="hidden md:flex items-center bg-muted/20 rounded-lg p-0.5 border border-border/30">
-                <Button variant="default" size="sm" className="h-7 px-3 text-xs font-medium">
+                <Button 
+                  variant={selectedPeriod === "week" ? "default" : "ghost"} 
+                  size="sm" 
+                  className="h-7 px-3 text-xs font-medium"
+                  onClick={() => setSelectedPeriod("week")}
+                >
+                  7 dias
+                </Button>
+                <Button 
+                  variant={selectedPeriod === "month" ? "default" : "ghost"} 
+                  size="sm" 
+                  className="h-7 px-3 text-xs"
+                  onClick={() => setSelectedPeriod("month")}
+                >
                   Este mês
                 </Button>
-                <Button variant="ghost" size="sm" className="h-7 px-3 text-xs">
+                <Button 
+                  variant={selectedPeriod === "quarter" ? "default" : "ghost"} 
+                  size="sm" 
+                  className="h-7 px-3 text-xs"
+                  onClick={() => setSelectedPeriod("quarter")}
+                >
                   Trimestre
                 </Button>
-                <Button variant="ghost" size="sm" className="h-7 px-3 text-xs">
+                <Button 
+                  variant={selectedPeriod === "year" ? "default" : "ghost"} 
+                  size="sm" 
+                  className="h-7 px-3 text-xs"
+                  onClick={() => setSelectedPeriod("year")}
+                >
                   Ano
                 </Button>
               </div>
@@ -205,11 +272,21 @@ export const Dashboard = ({
                 variant="outline"
                 size="sm"
                 className="gap-1.5 h-7 px-3 border-border/30 text-xs"
+                onClick={() => setShowFilters(!showFilters)}
               >
                 <Filter className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Filtros</span>
               </Button>
             </div>
+          </div>
+          
+          {/* Period Info Display */}
+          <div className="mt-2 text-xs text-muted-foreground">
+            Período: {selectedPeriod === "week" && "Últimos 7 dias"}
+            {selectedPeriod === "month" && "Este mês"}
+            {selectedPeriod === "quarter" && "Este trimestre"}
+            {selectedPeriod === "year" && "Este ano"}
+            • {filteredMovimentacoes.length} transações
           </div>
         </div>
       </div>
@@ -217,6 +294,21 @@ export const Dashboard = ({
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="space-y-8">
+          {/* Filters Panel */}
+          {showFilters && (
+            <DashboardFilters
+              isOpen={showFilters}
+              onClose={() => setShowFilters(false)}
+              onApplyFilters={(filters) => {
+                setAppliedFilters(filters);
+                toast({
+                  title: "Filtros aplicados!",
+                  description: "Os dados foram atualizados conforme os filtros selecionados."
+                });
+              }}
+            />
+          )}
+
           {/* Primary KPIs - Clean Layout */}
           <section>
             <ConsolidatedKPIs

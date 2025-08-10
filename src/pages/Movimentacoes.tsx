@@ -13,7 +13,7 @@ import { TransactionForm } from "@/components/TransactionForm";
 import { useAuth } from "@/hooks/useAuth";
 import { MovimentacoesList } from "@/components/MovimentacoesList";
 import { MovimentacaoDetailsDialog } from "@/components/MovimentacaoDetailsDialog";
-import { MovimentacoesFilters } from "@/components/MovimentacoesFilters";
+import { FloatingSearchFilters } from "@/components/movimentacoes/FloatingSearchFilters";
 import { MovimentacaoMetrics } from "@/components/movimentacoes/MovimentacaoMetrics";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -179,20 +179,18 @@ export const Movimentacoes = () => {
           formatCurrency={formatCurrency}
         />
 
-        {/* Filters */}
-        <div id="filters" className="px-4 sm:px-6">
-          <MovimentacoesFilters
-            filters={filters}
-            availableCategories={availableCategories}
-            availablePaymentMethods={availablePaymentMethods}
-            valueRange={valueRange}
-            onFilterChange={updateFilter}
-            onPeriodPresetChange={setPeriodPreset}
-            onClearFilters={clearFilters}
-            hasActiveFilters={hasActiveFilters}
-            resultCount={filteredMovimentacoes.length}
-          />
-        </div>
+        {/* Floating Search and Filters */}
+        <FloatingSearchFilters
+          filters={filters}
+          availableCategories={availableCategories}
+          availablePaymentMethods={availablePaymentMethods}
+          valueRange={valueRange}
+          onFilterChange={updateFilter}
+          onPeriodPresetChange={setPeriodPreset}
+          onClearFilters={clearFilters}
+          hasActiveFilters={hasActiveFilters}
+          resultCount={filteredMovimentacoes.length}
+        />
 
         {/* Main Content Area */}
         <div className="flex-1 overflow-hidden">

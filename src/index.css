@@ -347,6 +347,18 @@
     @apply p-6 bg-gradient-to-r from-muted/30 to-muted/10 rounded-xl;
   }
 
+  .movimentacao-metric-card {
+    @apply border border-border/50 bg-card/80 backdrop-blur-sm transition-all duration-200 hover:shadow-md hover:border-border;
+  }
+
+  .movimentacao-metric-success {
+    @apply bg-green-50/80 border-green-200/50 dark:bg-green-950/30 dark:border-green-800/30;
+  }
+
+  .movimentacao-metric-error {
+    @apply bg-red-50/80 border-red-200/50 dark:bg-red-950/30 dark:border-red-800/30;
+  }
+
   .metric-grid {
     @apply w-full grid grid-cols-3 gap-2 sm:gap-4 mx-auto md:grid-cols-2 lg:grid-cols-4;
   }

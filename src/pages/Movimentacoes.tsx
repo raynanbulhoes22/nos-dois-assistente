@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { MovimentacoesList } from "@/components/MovimentacoesList";
 import { MovimentacaoDetailsDialog } from "@/components/MovimentacaoDetailsDialog";
 import { MovimentacoesFilters } from "@/components/MovimentacoesFilters";
+import { MovimentacaoMetrics } from "@/components/movimentacoes/MovimentacaoMetrics";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 export const Movimentacoes = () => {
@@ -202,66 +203,16 @@ export const Movimentacoes = () => {
         </div>
 
         {/* Summary Cards */}
-        <div className="px-4 sm:px-6 py-3">
-          <div className="metric-grid">
-            <Card className="metric-card metric-card-success">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center gap-3">
-                  <div className="icon-container icon-success">
-                    <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-success">Entradas</p>
-                    <p className="text-xl font-bold text-success">
-                      {formatCurrency(totalEntradas)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {baseEntradas.length} de {entradas.length}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="metric-card metric-card-error">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center gap-3">
-                  <div className="icon-container icon-error">
-                    <div className="h-3 w-3 rounded-full bg-red-500"></div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-error">Saídas</p>
-                    <p className="text-xl font-bold text-error">
-                      {formatCurrency(totalSaidas)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {baseSaidas.length} de {saidas.length}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="metric-card">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center gap-3">
-                  <div className={`icon-container ${saldo >= 0 ? 'icon-success' : 'icon-error'}`}>
-                    <div className={`h-3 w-3 rounded-full ${saldo >= 0 ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-muted-foreground">Saldo</p>
-                    <p className={`text-xl font-bold ${saldo >= 0 ? 'text-success' : 'text-error'}`}>
-                      {formatCurrency(saldo)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Total geral
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <MovimentacaoMetrics
+          totalEntradas={totalEntradas}
+          totalSaidas={totalSaidas}
+          saldo={saldo}
+          entradasCount={baseEntradas.length}
+          saidasCount={baseSaidas.length}
+          totalEntradasCount={entradas.length}
+          totalSaidasCount={saidas.length}
+          formatCurrency={formatCurrency}
+        />
 
         {/* Filters */}
         <div id="filters" className="px-4 sm:px-6">

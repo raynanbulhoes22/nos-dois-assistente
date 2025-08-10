@@ -53,7 +53,7 @@ export const MonthNavigation = ({
 
       {/* Timeline esquerda: meses passados */}
       {timeline && timeline.length > 0 ? (
-        <div className="hidden sm:block">
+        <div className="block">
           <MiniTimeline
             previsoes={timeline
               .filter((t) => (t.ano < currentYear) || (t.ano === currentYear && t.mes < currentMonth))
@@ -77,7 +77,7 @@ export const MonthNavigation = ({
 
       {/* Timeline direita: meses futuros */}
       {timeline && timeline.length > 0 ? (
-        <div className="hidden sm:block">
+        <div className="block">
           <MiniTimeline
             previsoes={timeline
               .filter((t) => (t.ano > currentYear) || (t.ano === currentYear && t.mes > currentMonth))

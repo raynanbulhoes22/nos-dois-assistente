@@ -46,7 +46,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
     return (
       <div
         className={cn(
-          "w-full h-full min-h-[60px] sm:min-h-[80px] p-1 sm:p-2 rounded-md transition-all duration-200 relative",
+          "w-full h-full min-h-[48px] sm:min-h-[72px] p-1 sm:p-2 rounded-md transition-all duration-200 relative",
           heatCls,
           hasEvents && "cursor-pointer hover:scale-105 hover:shadow-lg hover:z-10 active:scale-95",
           isCurrentDay && "ring-1 sm:ring-2 ring-primary ring-opacity-50"
@@ -65,7 +65,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className={cn(
-                        "text-xs p-0.5 sm:p-1 rounded truncate",
+                        "text-[11px] p-0.5 sm:p-1 rounded truncate",
                         evento.isEntrada 
                           ? "bg-success/20 text-success-foreground" 
                           : "bg-destructive/20 text-destructive-foreground"
@@ -90,7 +90,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
               
               {saldo !== 0 && (
                 <div className={cn(
-                  "text-xs font-bold mt-auto",
+                  "text-[11px] font-semibold mt-auto",
                   saldo > 0 ? "text-success" : "text-destructive"
                 )}>
                   <span className="hidden sm:inline">
@@ -153,7 +153,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
             head_row: "flex w-full",
             head_cell: "text-muted-foreground rounded-md w-full font-semibold text-xs sm:text-sm py-1 sm:py-2",
             row: "flex w-full",
-            cell: "relative w-full h-16 sm:h-24 text-center text-sm focus-within:relative focus-within:z-20 border border-border/50",
+            cell: "relative w-full h-12 sm:h-20 text-center text-sm focus-within:relative focus-within:z-20 border border-border/50",
             day: "h-full w-full p-0 font-normal relative flex flex-col",
             day_today: "bg-primary/5",
             day_selected: "bg-primary/10",

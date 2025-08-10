@@ -200,7 +200,7 @@ export const Dashboard = ({ user }: { user: User }) => {
         {/* Enhanced Hero Section */}
         <div className="relative overflow-hidden rounded-xl sm:rounded-2xl mb-6 sm:mb-8 group">
           <div 
-            className="h-48 sm:h-72 bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 relative"
+            className="h-36 sm:h-72 bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 relative"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 via-purple-600/70 to-green-600/80 flex items-center transition-smooth group-hover:from-blue-600/95 group-hover:via-purple-600/75 group-hover:to-green-600/85">
               <div className="container mx-auto px-4 sm:px-6">
@@ -383,7 +383,7 @@ export const Dashboard = ({ user }: { user: User }) => {
 
         {/* Enhanced Main Content Tabs */}
         <Tabs defaultValue="financial" className="space-y-4 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm shadow-md p-1 border border-gray-200 h-12 sm:h-auto">
+          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm shadow-md p-1 border border-gray-200 h-10 sm:h-auto">
             <TabsTrigger 
               value="financial" 
               className="gap-1 sm:gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white transition-smooth 

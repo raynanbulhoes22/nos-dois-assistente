@@ -261,7 +261,7 @@ export const TransactionForm = ({
           {/* Seleção de Tipo - Destacada */}
           <div className="space-y-4">
             <Label className="text-base font-semibold">Tipo de Transação *</Label>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 md:gap-3">
               {[
                 { value: "entrada_manual", label: "Entrada", desc: "Receitas e recebimentos" },
                 { value: "registro_manual", label: "Saída", desc: "Gastos e despesas" },
@@ -272,15 +272,15 @@ export const TransactionForm = ({
                   type="button"
                   onClick={() => updateFormData("tipo", option.value)}
                   className={cn(
-                    "flex flex-col items-center p-4 rounded-lg border-2 transition-all hover:scale-[1.02]",
+                    "flex flex-col items-center p-2 md:p-4 rounded-lg border-2 transition-all hover:scale-[1.02]",
                     formData.tipo === option.value 
                       ? getTypeColor(option.value)
                       : "border-border bg-background hover:bg-accent"
                   )}
                 >
                   {getTypeIcon(option.value)}
-                  <span className="font-medium mt-2">{option.label}</span>
-                  <span className="text-xs text-muted-foreground text-center">{option.desc}</span>
+                  <span className="font-medium mt-1 md:mt-2 text-xs md:text-sm text-center">{option.label}</span>
+                  <span className="text-[10px] md:text-xs text-muted-foreground text-center hidden md:block">{option.desc}</span>
                 </button>
               ))}
             </div>

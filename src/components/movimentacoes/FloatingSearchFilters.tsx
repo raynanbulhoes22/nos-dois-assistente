@@ -5,11 +5,16 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
 import { 
   Search, 
   SlidersHorizontal,
   Calendar, 
-  X
+  X,
+  TrendingUp,
+  TrendingDown,
+  DollarSign
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getCategoryColorClass } from '@/lib/categoryColors';
@@ -178,7 +183,7 @@ export const FloatingSearchFilters = ({
               
               {/* Quick Period Filter */}
               <div className="space-y-3">
-                <label className="text-sm font-medium">Período</label>
+                <Label className="text-sm font-medium">Período</Label>
                 <Select value={filters.period.preset} onValueChange={onPeriodPresetChange}>
                   <SelectTrigger>
                     <Calendar className="h-4 w-4 mr-2" />
@@ -194,17 +199,150 @@ export const FloatingSearchFilters = ({
                 </Select>
               </div>
 
+              <Separator />
+
+              {/* Transaction Type Filter */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Tipo de Transação</Label>
+                <Select 
+                  value={filters.transactionType} 
+                  onValueChange={(value) => onFilterChange('transactionType', value as any)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    <SelectItem value="entradas">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-green-600" />
+                        Entradas
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="saidas">
+                      <div className="flex items-center gap-2">
+                        <TrendingDown className="h-4 w-4 text-red-600" />
+                        Saídas
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Value Range Filter */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Faixa de Valores</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Mínimo</Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                      <Input
+                        type="number"
+                        placeholder="0,00"
+                        value={filters.valueRange.min || ''}
+                        onChange={(e) => onFilterChange('valueRange', {
+                          ...filters.valueRange,
+                          min: e.target.value ? Number(e.target.value) : undefined
+                        })}
+                        className="pl-7"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Máximo</Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                      <Input
+                        type="number"
+                        placeholder="999,99"
+                        value={filters.valueRange.max || ''}
+                        onChange={(e) => onFilterChange('valueRange', {
+                          ...filters.valueRange,
+                          max: e.target.value ? Number(e.target.value) : undefined
+                        })}
+                        className="pl-7"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Categories Filter */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Categorias</Label>
+                <div className="max-h-32 overflow-y-auto space-y-2">
+                  {availableCategories.slice(0, 5).map(category => (
+                    <div key={category} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`search-cat-${category}`}
+                        checked={filters.categories.includes(category)}
+                        onCheckedChange={() => handleCategoryToggle(category)}
+                      />
+                      <label 
+                        htmlFor={`search-cat-${category}`}
+                        className={cn(
+                          "text-sm cursor-pointer flex-1 px-2 py-1 rounded-md border font-medium text-xs",
+                          getCategoryColorClass(category)
+                        )}
+                      >
+                        {category}
+                      </label>
+                    </div>
+                  ))}
+                  {availableCategories.length > 5 && (
+                    <div className="text-xs text-muted-foreground text-center py-1">
+                      +{availableCategories.length - 5} categorias nos filtros avançados
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Payment Methods Filter */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Formas de Pagamento</Label>
+                <div className="max-h-24 overflow-y-auto space-y-2">
+                  {availablePaymentMethods.slice(0, 3).map(method => (
+                    <div key={method} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`search-pay-${method}`}
+                        checked={filters.paymentMethods.includes(method)}
+                        onCheckedChange={() => handlePaymentMethodToggle(method)}
+                      />
+                      <label 
+                        htmlFor={`search-pay-${method}`}
+                        className="text-sm cursor-pointer flex-1"
+                      >
+                        {method}
+                      </label>
+                    </div>
+                  ))}
+                  {availablePaymentMethods.length > 3 && (
+                    <div className="text-xs text-muted-foreground text-center py-1">
+                      +{availablePaymentMethods.length - 3} métodos nos filtros avançados
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <Separator />
+
               <div className="text-sm text-muted-foreground">
                 {resultCount} {resultCount === 1 ? 'resultado encontrado' : 'resultados encontrados'}
               </div>
 
-              {filters.search && (
+              {(filters.search || hasActiveFilters) && (
                 <Button 
                   variant="outline" 
-                  onClick={() => onFilterChange('search', '')}
+                  onClick={() => {
+                    onFilterChange('search', '');
+                    onClearFilters();
+                  }}
                   className="w-full"
                 >
-                  Limpar Busca
+                  Limpar Tudo
                 </Button>
               )}
             </div>

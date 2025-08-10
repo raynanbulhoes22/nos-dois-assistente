@@ -57,38 +57,38 @@ export function MovimentacoesList({ items, onItemClick, onEdit, onDelete, onDupl
                   className="min-w-0 flex-1 cursor-pointer" 
                   onClick={() => onItemClick?.(item)}
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="font-medium truncate max-w-[45vw] sm:max-w-[55vw]">
+                  {/* Título */}
+                  <div className="mb-2">
+                    <span className="font-medium text-foreground truncate block">
                       {item.nome || "Sem descrição"}
                     </span>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {new Date(item.data).toLocaleDateString("pt-BR")}
-                    </span>
                   </div>
-                  <div className="mt-1 text-xs text-muted-foreground flex items-center gap-2 min-w-0">
-                    {item.categoria && (
-                      <span 
-                        className={cn(
-                          "px-2 py-1 rounded-md text-xs font-medium border",
-                          getCategoryColorClass(item.categoria)
-                        )}
-                      >
-                        {item.categoria}
+                  
+                  {/* Categoria, Data e Valor */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {item.categoria && (
+                        <Badge variant="secondary" className="text-xs">
+                          {item.categoria}
+                        </Badge>
+                      )}
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(item.data).toLocaleDateString("pt-BR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                        })}
                       </span>
-                    )}
-                    {item.forma_pagamento && <span>{item.forma_pagamento}</span>}
-                    {item.estabelecimento && (
-                      <span className="truncate">• {item.estabelecimento}</span>
-                    )}
+                    </div>
+                    
+                    <div
+                      className={`font-semibold whitespace-nowrap ${item.isEntrada ? "text-income" : "text-expense"}`}
+                    >
+                      {item.isEntrada ? "+" : "-"} {formatCurrency(item.valor)}
+                    </div>
                   </div>
                 </div>
                 
                 <div className="flex items-center gap-2 ml-2">
-                  <div
-                    className={`font-semibold whitespace-nowrap ${item.isEntrada ? "text-income" : "text-expense"}`}
-                  >
-                    {item.isEntrada ? "+" : "-"} {formatCurrency(item.valor)}
-                  </div>
                   
                   {(onEdit || onDelete || onDuplicate) && (
                     <DropdownMenu>

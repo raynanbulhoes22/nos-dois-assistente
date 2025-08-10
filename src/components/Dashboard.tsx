@@ -42,6 +42,57 @@ export const Dashboard = ({
   } = useMovimentacoes();
   const isLoading = movimentacoesLoading || comparativo.isLoading;
 
+  // Helper functions for data generation
+  const generateMonthlyData = () => {
+    const months = [];
+    const now = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthStr = date.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+      
+      // Filter movimentacoes for this month
+      const monthMovs = movimentacoes.filter(mov => {
+        const movDate = new Date(mov.data);
+        return movDate.getMonth() === date.getMonth() && movDate.getFullYear() === date.getFullYear();
+      });
+      
+      const entradas = monthMovs.filter(mov => mov.isEntrada).reduce((sum, mov) => sum + mov.valor, 0);
+      const saidas = monthMovs.filter(mov => !mov.isEntrada).reduce((sum, mov) => sum + mov.valor, 0);
+      
+      months.push({
+        month: monthStr,
+        entradas,
+        saidas,
+        saldo: entradas - saidas
+      });
+    }
+    
+    return months;
+  };
+
+  const generateProjectionData = () => {
+    const months = [];
+    const now = new Date();
+    const avgIncome = comparativo.comparativo?.rendaRealizada || 0;
+    const avgExpenses = comparativo.comparativo?.gastosRealizados || 0;
+    
+    for (let i = 1; i <= 3; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const monthStr = date.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+      
+      months.push({
+        month: monthStr,
+        entradas: avgIncome * 0.95, // 5% de variação
+        saidas: avgExpenses * 1.05, // 5% de aumento
+        saldo: (avgIncome * 0.95) - (avgExpenses * 1.05),
+        isProjection: true
+      });
+    }
+    
+    return months;
+  };
+
   // Memoized calculations to prevent re-renders
   const financialData = useMemo(() => {
     const income = comparativo.comparativo?.rendaRealizada || 0;
@@ -86,58 +137,6 @@ export const Dashboard = ({
       budgetUsage: expenses > 0 ? (expenses / (income || 1)) * 100 : 0
     };
   }, [comparativo.comparativo, movimentacoes, currentMonth, currentYear]);
-
-  // Generate monthly data for charts
-  const generateMonthlyData = () => {
-    const months = [];
-    const now = new Date();
-    
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthStr = date.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
-      
-      // Filter movimentacoes for this month
-      const monthMovs = movimentacoes.filter(mov => {
-        const movDate = new Date(mov.data);
-        return movDate.getMonth() === date.getMonth() && movDate.getFullYear() === date.getFullYear();
-      });
-      
-      const entradas = monthMovs.filter(mov => mov.isEntrada).reduce((sum, mov) => sum + mov.valor, 0);
-      const saidas = monthMovs.filter(mov => !mov.isEntrada).reduce((sum, mov) => sum + mov.valor, 0);
-      
-      months.push({
-        month: monthStr,
-        entradas,
-        saidas,
-        saldo: entradas - saidas
-      });
-    }
-    
-    return months;
-  };
-
-  // Generate projection data
-  const generateProjectionData = () => {
-    const months = [];
-    const now = new Date();
-    const avgIncome = financialData.income;
-    const avgExpenses = financialData.expenses;
-    
-    for (let i = 1; i <= 3; i++) {
-      const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
-      const monthStr = date.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
-      
-      months.push({
-        month: monthStr,
-        entradas: avgIncome * 0.95, // 5% de variação
-        saidas: avgExpenses * 1.05, // 5% de aumento
-        saldo: (avgIncome * 0.95) - (avgExpenses * 1.05),
-        isProjection: true
-      });
-    }
-    
-    return months;
-  };
   const handleTransactionAdded = () => {
     setShowTransactionForm(false);
     toast({

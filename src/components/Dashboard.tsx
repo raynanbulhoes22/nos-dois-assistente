@@ -159,48 +159,61 @@ export const Dashboard = ({
     );
   }
   return (
-    <div className="min-h-screen bg-background">
-      {/* Quick Actions Header */}
-      <QuickActionsHeader 
-        user={user}
-        showBalance={showBalance}
-        onToggleBalance={() => setShowBalance(!showBalance)}
-        onRefresh={handleRefresh}
-      />
-
-      <div className="page-content space-y-6">
-        {/* Consolidated KPIs */}
-        <ConsolidatedKPIs
-          totalIncome={financialData.income}
-          totalExpenses={financialData.expenses}
-          balance={financialData.balance}
-          savingsRate={financialData.savingsRate}
-          budgetUsage={financialData.budgetUsage}
-          monthlyTrend={financialData.monthlyTrend}
-          showBalance={showBalance}
-          onToggleBalance={() => setShowBalance(!showBalance)}
-          isLoading={isLoading}
-        />
-
-        {/* Main Dashboard Grid */}
-        <div className="section-grid">
-          {/* Monthly Comparison */}
-          <MonthlyComparison />
-          
-          {/* Smart Insights */}
-          <SmartInsights />
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
+      {/* Clean Header */}
+      <div className="border-b bg-card/50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Visão geral das suas finanças
+              </p>
+            </div>
+            <QuickActionsHeader 
+              user={user}
+              showBalance={showBalance}
+              onToggleBalance={() => setShowBalance(!showBalance)}
+              onRefresh={handleRefresh}
+            />
+          </div>
         </div>
+      </div>
 
-        {/* Advanced Statistics */}
-        <AdvancedStatsCards />
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="space-y-8">
+          {/* Primary KPIs - Clean Layout */}
+          <section>
+            <ConsolidatedKPIs
+              totalIncome={financialData.income}
+              totalExpenses={financialData.expenses}
+              balance={financialData.balance}
+              savingsRate={financialData.savingsRate}
+              budgetUsage={financialData.budgetUsage}
+              monthlyTrend={financialData.monthlyTrend}
+              showBalance={showBalance}
+              onToggleBalance={() => setShowBalance(!showBalance)}
+              isLoading={isLoading}
+            />
+          </section>
 
-        {/* Mobile-Optimized Tabs */}
-        <MobileOptimizedTabs
-          user={user}
-          chartData={financialData.chartData}
-          currentMonthMovs={financialData.currentMonthMovs}
-          isLoading={isLoading}
-        />
+          {/* Secondary Metrics - Two Column Grid */}
+          <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <MonthlyComparison />
+            <SmartInsights />
+          </section>
+
+          {/* Advanced Analytics - Clean Tabs */}
+          <section>
+            <MobileOptimizedTabs
+              user={user}
+              chartData={financialData.chartData}
+              currentMonthMovs={financialData.currentMonthMovs}
+              isLoading={isLoading}
+            />
+          </section>
+        </div>
       </div>
     </div>
   );

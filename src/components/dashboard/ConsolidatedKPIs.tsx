@@ -86,96 +86,98 @@ export const ConsolidatedKPIs = ({
   }
 
   return (
-    <Card className="card-modern">
-      <CardContent className="p-6">
-        <div className="space-y-6">
-          {/* Header */}
+    <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+      <CardContent className="p-8">
+        <div className="space-y-8">
+          {/* Clean Header */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="icon-container icon-primary">
-                <DollarSign className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold">Visão Geral Financeira</h2>
-                <p className="text-sm text-muted-foreground">
-                  Resumo do mês atual
-                </p>
-              </div>
+            <div>
+              <h2 className="text-lg font-medium text-foreground">Resumo Financeiro</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Dados do mês atual
+              </p>
             </div>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={onToggleBalance}
-              className="gap-2"
+              className="gap-2 h-8 px-3 text-muted-foreground hover:text-foreground"
             >
               {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              {showBalance ? "Ocultar" : "Mostrar"}
+              <span className="text-xs">{showBalance ? "Ocultar" : "Mostrar"}</span>
             </Button>
           </div>
 
-          {/* Main KPIs */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Balance */}
-            <div className="space-y-2">
+          {/* Minimal KPIs Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Balance - Main Focus */}
+            <div className="md:col-span-2 space-y-2">
               <div className="flex items-center gap-2">
-                {balance >= 0 ? (
-                  <TrendingUp className="h-4 w-4 text-success" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-error" />
-                )}
                 <span className="text-sm font-medium text-muted-foreground">
                   Saldo Atual
                 </span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className={`text-2xl font-bold ${balance >= 0 ? 'text-success' : 'text-error'}`}>
-                  {formatCurrency(balance)}
-                </span>
-                <Badge variant={getBalanceVariant()}>
+                <Badge variant={getBalanceVariant()} className="text-xs">
                   {monthlyTrend === 'positive' ? 'Positivo' : 'Negativo'}
                 </Badge>
               </div>
-            </div>
-
-            {/* Income vs Expenses */}
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-success">Receitas</span>
-                  <span className="text-sm font-semibold text-success">
+              <div className="flex items-baseline gap-3">
+                <span className={`text-3xl font-bold tracking-tight ${balance >= 0 ? 'text-success' : 'text-error'}`}>
+                  {formatCurrency(balance)}
+                </span>
+                {balance >= 0 ? (
+                  <TrendingUp className="h-5 w-5 text-success" />
+                ) : (
+                  <TrendingDown className="h-5 w-5 text-error" />
+                )}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">Receitas</p>
+                  <p className="text-lg font-semibold text-success">
                     {formatCurrency(totalIncome)}
-                  </span>
+                  </p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-error">Despesas</span>
-                  <span className="text-sm font-semibold text-error">
+                <div>
+                  <p className="text-xs text-muted-foreground">Despesas</p>
+                  <p className="text-lg font-semibold text-error">
                     {formatCurrency(totalExpenses)}
-                  </span>
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Performance Metrics */}
-            <div className="space-y-3">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <PiggyBank className="h-4 w-4 text-accent" />
-                    <span className="text-sm text-muted-foreground">Taxa de Poupança</span>
-                  </div>
-                  <Badge variant={getSavingsRateVariant()}>
+            <div className="space-y-6">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-muted-foreground">Taxa de Poupança</span>
+                  <Badge variant={getSavingsRateVariant()} className="text-xs">
                     {savingsRate.toFixed(1)}%
                   </Badge>
                 </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4 text-warning" />
-                    <span className="text-sm text-muted-foreground">Uso do Orçamento</span>
-                  </div>
-                  <Badge variant={getBudgetUsageVariant()}>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-success rounded-full transition-all"
+                    style={{ width: `${Math.min(savingsRate, 100)}%` }}
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-muted-foreground">Uso do Orçamento</span>
+                  <Badge variant={getBudgetUsageVariant()} className="text-xs">
                     {budgetUsage.toFixed(1)}%
                   </Badge>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full rounded-full transition-all ${
+                      budgetUsage > 90 ? 'bg-error' : budgetUsage > 70 ? 'bg-warning' : 'bg-success'
+                    }`}
+                    style={{ width: `${Math.min(budgetUsage, 100)}%` }}
+                  />
                 </div>
               </div>
             </div>

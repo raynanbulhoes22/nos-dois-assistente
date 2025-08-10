@@ -39,44 +39,32 @@ export const QuickActionsHeader = ({
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-card border-b">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold">Dashboard Financeiro</h1>
-          </div>
-          <Badge variant="secondary" className="hidden sm:flex">
-            Tempo real
-          </Badge>
+      <div className="flex items-center gap-3">
+        {/* Period Filter - Clean Design */}
+        <div className="hidden md:flex items-center bg-muted/30 rounded-lg p-1">
+          {periods.map((period) => (
+            <Button
+              key={period.id}
+              variant={selectedPeriod === period.id ? "default" : "ghost"}
+              size="sm"
+              className="h-8 px-3 text-xs font-medium"
+              onClick={() => setSelectedPeriod(period.id)}
+            >
+              {period.label}
+            </Button>
+          ))}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Period Filter */}
-          <div className="flex items-center border rounded-lg p-1 bg-muted/30">
-            {periods.map((period) => (
-              <Button
-                key={period.id}
-                variant={selectedPeriod === period.id ? "default" : "ghost"}
-                size="sm"
-                className="h-8 px-3 text-xs"
-                onClick={() => setSelectedPeriod(period.id)}
-              >
-                {period.label}
-              </Button>
-            ))}
-          </div>
-
-          <Separator orientation="vertical" className="h-8" />
-
-          {/* Quick Actions */}
+        {/* Quick Actions - Minimal Icons */}
+        <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
             onClick={onToggleBalance}
-            className="gap-2"
+            className="gap-2 border-border/50"
           >
             {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            <span className="hidden sm:inline">
+            <span className="hidden sm:inline text-xs">
               {showBalance ? "Ocultar" : "Mostrar"}
             </span>
           </Button>
@@ -84,28 +72,19 @@ export const QuickActionsHeader = ({
           <Button
             variant="outline"
             size="sm"
-            className="gap-2"
-          >
-            <Download className="h-4 w-4" />
-            <span className="hidden sm:inline">Exportar</span>
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
+            className="gap-2 border-border/50"
           >
             <Filter className="h-4 w-4" />
-            <span className="hidden sm:inline">Filtros</span>
+            <span className="hidden sm:inline text-xs">Filtros</span>
           </Button>
 
           <Button
             onClick={() => setShowTransactionForm(true)}
-            className="gap-2 button-gradient"
+            className="gap-2 h-8 px-4 bg-primary hover:bg-primary/90"
             size="sm"
           >
             <Plus className="h-4 w-4" />
-            Nova Transação
+            <span className="text-xs font-medium">Nova Transação</span>
           </Button>
         </div>
       </div>

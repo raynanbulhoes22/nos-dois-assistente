@@ -77,43 +77,43 @@ export const MonthlyComparison = () => {
   }
 
   return (
-    <Card className="card-modern">
-      <CardHeader className="pb-3">
-        <div className="flex items-center gap-2">
+    <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-lg font-medium flex items-center gap-2">
           <Calendar className="h-5 w-5 text-primary" />
-          <CardTitle className="text-lg">Comparativo Mensal</CardTitle>
-        </div>
+          Comparativo Mensal
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Main Comparison Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Income Comparison */}
+        {/* Clean Comparison Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Income - Minimal Design */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="font-medium text-success">Receitas</h4>
-            <div className="flex items-center gap-2">
-              <span className={getGrowthColor(comparison.growth.income)}>
-                {getGrowthIcon(comparison.growth.income)}
-              </span>
-              <Badge variant={getBadgeVariant(comparison.growth.income)}>
-                {formatPercentage(comparison.growth.income)}
-              </Badge>
+              <span className="text-sm font-medium text-success">Receitas</span>
+              <div className="flex items-center gap-2">
+                <span className={getGrowthColor(comparison.growth.income)}>
+                  {getGrowthIcon(comparison.growth.income)}
+                </span>
+                <Badge variant={getBadgeVariant(comparison.growth.income)} className="text-xs">
+                  {formatPercentage(comparison.growth.income)}
+                </Badge>
+              </div>
             </div>
-          </div>
-          
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Este mês</span>
-              <span className="font-semibold">
-                {formatCurrency(comparison.currentMonth.income)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Mês anterior</span>
-              <span className="font-medium">
-                {formatCurrency(comparison.previousMonth.income)}
-              </span>
-            </div>
+            
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Este mês</span>
+                <span className="font-medium">
+                  {formatCurrency(comparison.currentMonth.income)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Anterior</span>
+                <span className="text-muted-foreground">
+                  {formatCurrency(comparison.previousMonth.income)}
+                </span>
+              </div>
             </div>
           </div>
 

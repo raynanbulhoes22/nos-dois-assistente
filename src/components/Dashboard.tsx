@@ -36,7 +36,7 @@ export const Dashboard = ({ user }: { user: User }) => {
   const comparativo = useComparativoFinanceiro(currentMonth, currentYear);
   const { movimentacoes, isLoading: movimentacoesLoading } = useMovimentacoes();
   const stats = useFinancialStats();
-  const { contasParceladas } = useContasParceladas();
+  const { contas } = useContasParceladas();
 
   const isLoading = movimentacoesLoading || comparativo.isLoading;
 
@@ -50,7 +50,7 @@ export const Dashboard = ({ user }: { user: User }) => {
     // Category data
     const categoryTotals: { [key: string]: number } = {};
     currentMonthMovs
-      .filter(mov => mov.tipo === 'Despesa')
+      .filter(mov => !mov.isEntrada)
       .forEach(mov => {
         const category = mov.categoria || 'Sem categoria';
         categoryTotals[category] = (categoryTotals[category] || 0) + Number(mov.valor);
@@ -70,8 +70,8 @@ export const Dashboard = ({ user }: { user: User }) => {
         return movDate.getMonth() === date.getMonth() && movDate.getFullYear() === date.getFullYear();
       });
       
-      const entradas = monthMovs.filter(m => m.tipo === 'Receita').reduce((sum, m) => sum + Number(m.valor), 0);
-      const saidas = monthMovs.filter(m => m.tipo === 'Despesa').reduce((sum, m) => sum + Number(m.valor), 0);
+      const entradas = monthMovs.filter(m => m.isEntrada).reduce((sum, m) => sum + Number(m.valor), 0);
+      const saidas = monthMovs.filter(m => !m.isEntrada).reduce((sum, m) => sum + Number(m.valor), 0);
       
       monthlyData.push({
         month: date.toLocaleDateString('pt-BR', { month: 'short' }),
@@ -119,7 +119,7 @@ export const Dashboard = ({ user }: { user: User }) => {
   const generateInsights = () => {
     const insights = [];
     
-    if (stats.balance < 0) {
+    if (stats.saldoAtual < 0) {
       insights.push({
         type: 'negative' as const,
         title: 'Saldo Negativo',
@@ -128,11 +128,11 @@ export const Dashboard = ({ user }: { user: User }) => {
       });
     }
 
-    if (stats.savingsGoalProgress && stats.savingsGoalProgress < 50) {
+    if (stats.percentualMetaEconomia && stats.percentualMetaEconomia < 50) {
       insights.push({
         type: 'warning' as const,
         title: 'Meta de Poupança',
-        description: `Você está com ${stats.savingsGoalProgress.toFixed(1)}% da meta atingida.`,
+        description: `Você está com ${stats.percentualMetaEconomia.toFixed(1)}% da meta atingida.`,
         action: 'Ajustar meta'
       });
     }
@@ -142,18 +142,33 @@ export const Dashboard = ({ user }: { user: User }) => {
 
   // Generate upcoming commitments
   const getUpcomingCommitments = () => {
+    if (!contas || contas.length === 0) return [];
+    
     const next30Days = new Date();
     next30Days.setDate(next30Days.getDate() + 30);
     
-    return contasParceladas
-      .filter(conta => new Date(conta.proxima_parcela) <= next30Days)
+    // Use data_primeira_parcela to calculate next due date
+    return contas
+      .filter(conta => {
+        // Calculate next due date based on first installment date and paid installments
+        const firstDate = new Date(conta.data_primeira_parcela);
+        const nextMonth = new Date(firstDate);
+        nextMonth.setMonth(nextMonth.getMonth() + conta.parcelas_pagas);
+        return nextMonth <= next30Days && conta.parcelas_pagas < conta.total_parcelas;
+      })
       .slice(0, 5)
-      .map(conta => ({
-        description: conta.descricao,
-        value: conta.valor_parcela,
-        dueDate: conta.proxima_parcela,
-        type: 'Parcelamento'
-      }));
+      .map(conta => {
+        const firstDate = new Date(conta.data_primeira_parcela);
+        const nextDue = new Date(firstDate);
+        nextDue.setMonth(nextDue.getMonth() + conta.parcelas_pagas);
+        
+        return {
+          description: conta.nome || 'Conta sem nome',
+          value: conta.valor_parcela,
+          dueDate: nextDue.toISOString().split('T')[0],
+          type: 'Parcelamento'
+        };
+      });
   };
 
   if (isLoading) {
@@ -227,12 +242,12 @@ export const Dashboard = ({ user }: { user: User }) => {
             <QuickInsights
               recentTransactions={movimentacoes.slice(0, 5).map(mov => ({
                 id: mov.id,
-                description: mov.descricao,
+                description: mov.nome || 'Transação sem nome',
                 value: mov.valor,
-                type: mov.tipo as 'Receita' | 'Despesa',
-                category: mov.categoria,
+                type: mov.isEntrada ? 'Receita' : 'Despesa',
+                category: mov.categoria || 'Sem categoria',
                 date: mov.data,
-                source: mov.metodo_insercao
+                source: mov.numero_wpp ? 'WhatsApp' : 'Manual'
               }))}
               upcomingCommitments={getUpcomingCommitments()}
               insights={generateInsights()}
@@ -313,8 +328,10 @@ export const Dashboard = ({ user }: { user: User }) => {
         {/* Transaction Form Modal */}
         {showTransactionForm && (
           <TransactionForm
-            onClose={() => setShowTransactionForm(false)}
-            onTransactionAdded={handleTransactionAdded}
+            open={showTransactionForm}
+            onOpenChange={setShowTransactionForm}
+            onSuccess={handleTransactionAdded}
+            userId={user.id}
           />
         )}
       </div>

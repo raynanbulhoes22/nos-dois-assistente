@@ -10,6 +10,7 @@ import { CalendarioFilters } from "./CalendarioFilters";
 import { EventosDia } from "./tipos";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CalendarioFinanceiroProps {
   mesAtual: number;
@@ -19,6 +20,7 @@ interface CalendarioFinanceiroProps {
 export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceiroProps) => {
   const { eventosPorDia, filtros, setFiltros, isLoading } = useEventosCalendario(mesAtual, anoAtual);
   const [selectedDay, setSelectedDay] = useState<EventosDia | null>(null);
+  const isMobile = useIsMobile();
 
   const handleDayClick = (data: Date) => {
     const eventosDia = eventosPorDia.find(dia => isSameDay(dia.data, data));
@@ -48,7 +50,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
         className={cn(
           "w-full h-full min-h-[48px] sm:min-h-[72px] p-1 sm:p-2 rounded-md transition-all duration-200 relative",
           heatCls,
-          hasEvents && "cursor-pointer hover:scale-105 hover:shadow-lg hover:z-10 active:scale-95",
+          hasEvents && (isMobile ? "cursor-pointer active:opacity-80" : "cursor-pointer hover:scale-105 hover:shadow-lg hover:z-10 active:scale-95"),
           isCurrentDay && "ring-1 sm:ring-2 ring-primary ring-opacity-50"
         )}
         onClick={hasEvents ? () => handleDayClick(data) : undefined}
@@ -60,26 +62,36 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           
           {hasEvents && (
             <div className="flex-1 space-y-0.5 sm:space-y-1 overflow-hidden">
-              {eventosDia?.eventos.slice(0, 1).map((evento, index) => (
-                <TooltipProvider key={index}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className={cn(
-                        "text-[11px] p-0.5 sm:p-1 rounded truncate",
-                        evento.isEntrada 
-                          ? "bg-success/20 text-success-foreground" 
-                          : "bg-destructive/20 text-destructive-foreground"
-                      )}>
-                        <span className="hidden sm:inline">{evento.titulo}</span>
-                        <span className="sm:hidden">{evento.titulo.substring(0, 8)}...</span>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{evento.titulo}: {evento.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ))}
+              {eventosDia?.eventos.slice(0, 1).map((evento, index) => {
+                const pill = (
+                  <div
+                    className={cn(
+                      "text-[11px] p-0.5 sm:p-1 rounded truncate",
+                      evento.isEntrada ? "bg-success/20 text-success-foreground" : "bg-destructive/20 text-destructive-foreground"
+                    )}
+                  >
+                    <span className="hidden sm:inline">{evento.titulo}</span>
+                    <span className="sm:hidden">{evento.titulo.substring(0, 8)}...</span>
+                  </div>
+                );
+
+                if (isMobile) {
+                  return <div key={index}>{pill}</div>;
+                }
+
+                return (
+                  <TooltipProvider key={index}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>{pill}</TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          {evento.titulo}: {evento.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                );
+              })}
               
               {(eventosDia?.eventos.length ?? 0) > 1 && (
                 <div className="text-xs text-muted-foreground font-medium">
@@ -143,9 +155,9 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           classNames={{
             months: "flex w-full",
             month: "space-y-4 w-full",
-            caption: "flex justify-center pt-2 pb-4 relative items-center",
+            caption: "hidden sm:flex justify-center pt-2 pb-4 relative items-center",
             caption_label: "text-lg font-semibold",
-            nav: "space-x-1 flex items-center",
+            nav: "hidden sm:flex space-x-1 items-center",
             nav_button: "h-8 w-8 bg-transparent p-0 opacity-70 hover:opacity-100 hover:bg-muted rounded-md",
             nav_button_previous: "absolute left-4",
             nav_button_next: "absolute right-4",

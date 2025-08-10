@@ -162,44 +162,9 @@ export const Movimentacoes = () => {
   return (
     <div className="page-container">
       <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="p-4 sm:p-6 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-            <div className="page-header">
-              <h1 className="page-title">Movimentações</h1>
-              <p className="page-subtitle">
-                {filteredMovimentacoes.length} de {movimentacoes.length} transações
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <Button onClick={refetch} variant="outline" size="sm" className="hover-lift">
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-              <Button onClick={() => setShowForm(true)} size="sm" className="button-gradient gap-2">
-                <Plus className="h-4 w-4" />
-                <span className="hidden xs:inline">Nova</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile sticky saldo */}
-        <div className="sm:hidden sticky top-0 z-30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b pt-[env(safe-area-inset-top)] shadow-sm">
-          <div className="px-4 py-2 flex items-center justify-between gap-2">
-            <span className={`text-sm font-semibold ${saldo >= 0 ? 'text-success' : 'text-error'}`}>
-              Saldo: {formatCurrency(saldo)}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 px-2 text-xs"
-              onClick={() => {
-                document.getElementById('filters')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
-            >
-              Filtros
-            </Button>
-          </div>
+        {/* Page Header */}
+        <div className="px-4 sm:px-6 pt-4 pb-2">
+          <h1 className="page-title">Movimentações</h1>
         </div>
 
         {/* Summary Cards */}

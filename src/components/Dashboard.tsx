@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { EyeOff, Eye, Filter } from "lucide-react";
 
 // Hooks for real data
 import { useComparativoFinanceiro } from "@/hooks/useComparativoFinanceiro";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 
 // New improved dashboard components
-import { QuickActionsHeader } from "./dashboard/QuickActionsHeader";
 import { ConsolidatedKPIs } from "./dashboard/ConsolidatedKPIs";
 import { MonthlyComparison } from "./dashboard/MonthlyComparison";
 import { SmartInsights } from "./dashboard/SmartInsights";
@@ -160,22 +161,55 @@ export const Dashboard = ({
   }
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      {/* Clean Header */}
-      <div className="border-b bg-card/50 backdrop-blur-sm">
+      {/* Minimal Professional Header */}
+      <div className="border-b bg-card/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
+            {/* Clean Title Section */}
             <div>
-              <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
-              <p className="text-sm text-muted-foreground mt-1">
+              <h1 className="text-xl font-medium text-foreground tracking-tight">Dashboard</h1>
+              <p className="text-sm text-muted-foreground">
                 Visão geral das suas finanças
               </p>
             </div>
-            <QuickActionsHeader 
-              user={user}
-              showBalance={showBalance}
-              onToggleBalance={() => setShowBalance(!showBalance)}
-              onRefresh={handleRefresh}
-            />
+
+            {/* Minimal Action Bar */}
+            <div className="flex items-center gap-3">
+              {/* Period Selector - Clean Design */}
+              <div className="hidden md:flex items-center bg-muted/20 rounded-lg p-0.5 border border-border/30">
+                <Button variant="default" size="sm" className="h-7 px-3 text-xs font-medium">
+                  Este mês
+                </Button>
+                <Button variant="ghost" size="sm" className="h-7 px-3 text-xs">
+                  Trimestre
+                </Button>
+                <Button variant="ghost" size="sm" className="h-7 px-3 text-xs">
+                  Ano
+                </Button>
+              </div>
+
+              {/* Minimal Actions */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowBalance(!showBalance)}
+                className="gap-1.5 h-7 px-3 border-border/30 text-xs"
+              >
+                {showBalance ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                <span className="hidden sm:inline">
+                  {showBalance ? "Ocultar" : "Mostrar"}
+                </span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 h-7 px-3 border-border/30 text-xs"
+              >
+                <Filter className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Filtros</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

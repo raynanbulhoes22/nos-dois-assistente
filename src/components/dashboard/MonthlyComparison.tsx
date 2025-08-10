@@ -20,19 +20,21 @@ export const MonthlyComparison = () => {
     }).format(value);
   };
 
-  const formatPercentage = (value: number) => {
+  const formatPercentage = (value: number | undefined) => {
+    if (value === undefined || value === null || isNaN(value)) return '0.0%';
     const sign = value >= 0 ? '+' : '';
     return `${sign}${value.toFixed(1)}%`;
   };
 
-  const getGrowthIcon = (value: number) => {
+  const getGrowthIcon = (value: number | undefined) => {
+    if (value === undefined || value === null || isNaN(value)) return <Minus className="h-4 w-4" />;
     if (value > 0) return <ArrowUpRight className="h-4 w-4" />;
     if (value < 0) return <ArrowDownRight className="h-4 w-4" />;
     return <Minus className="h-4 w-4" />;
   };
 
-  const getGrowthColor = (value: number, isExpense = false) => {
-    if (value === 0) return 'text-neutral';
+  const getGrowthColor = (value: number | undefined, isExpense = false) => {
+    if (value === undefined || value === null || isNaN(value) || value === 0) return 'text-neutral';
     
     // Para despesas, crescimento é ruim (vermelho), redução é boa (verde)
     if (isExpense) {
@@ -43,8 +45,8 @@ export const MonthlyComparison = () => {
     return value > 0 ? 'text-success' : 'text-error';
   };
 
-  const getBadgeVariant = (value: number, isExpense = false) => {
-    if (value === 0) return 'secondary';
+  const getBadgeVariant = (value: number | undefined, isExpense = false) => {
+    if (value === undefined || value === null || isNaN(value) || value === 0) return 'secondary';
     
     if (isExpense) {
       return value > 0 ? 'destructive' : 'default';
@@ -54,6 +56,25 @@ export const MonthlyComparison = () => {
   };
 
   const comparison = stats.monthlyComparison;
+
+  // Add safety check for comparison data
+  if (!comparison || !comparison.currentMonth || !comparison.previousMonth || !comparison.growth) {
+    return (
+      <Card className="card-modern">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-primary" />
+            <CardTitle className="text-lg">Comparativo Mensal</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-muted-foreground">
+            <p>Carregando dados do comparativo...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="card-modern">

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, TrendingUp, TrendingDown, Eye, EyeOff, DollarSign, Target, Calendar, BarChart3, Activity, AlertTriangle, PieChart, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Plus, TrendingUp, TrendingDown, Eye, EyeOff, DollarSign, Target, Calendar, BarChart3, Activity, AlertTriangle, PieChart, ArrowUpRight, ArrowDownRight, CreditCard } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TransactionForm } from "./TransactionForm";
 
@@ -16,6 +16,10 @@ import { FinancialChart } from "./FinancialChart";
 import { AdvancedCharts } from "./dashboard/AdvancedCharts";
 import { InteractiveCharts } from "./dashboard/InteractiveCharts";
 import { FinancialKPIs } from "./dashboard/FinancialKPIs";
+import { AdvancedStatsCards } from "./dashboard/AdvancedStatsCards";
+import { CategoryAnalysisCard } from "./dashboard/CategoryAnalysisCard";
+import { PaymentMethodAnalysisCard } from "./dashboard/PaymentMethodAnalysisCard";
+import { BehaviorAnalysisCard } from "./dashboard/BehaviorAnalysisCard";
 interface User {
   id: string;
   email?: string;
@@ -254,9 +258,12 @@ export const Dashboard = ({
           </Card>
         </div>
 
+        {/* Advanced Statistics */}
+        <AdvancedStatsCards />
+
         {/* Charts and Analytics */}
         <Tabs defaultValue="charts" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="charts">
               <BarChart3 className="h-4 w-4 mr-2" />
               Gráficos
@@ -265,13 +272,21 @@ export const Dashboard = ({
               <Activity className="h-4 w-4 mr-2" />
               Análises
             </TabsTrigger>
-            <TabsTrigger value="transactions">
-              <Calendar className="h-4 w-4 mr-2" />
-              Transações
-            </TabsTrigger>
             <TabsTrigger value="categories">
               <PieChart className="h-4 w-4 mr-2" />
               Categorias
+            </TabsTrigger>
+            <TabsTrigger value="payments">
+              <CreditCard className="h-4 w-4 mr-2" />
+              Pagamentos
+            </TabsTrigger>
+            <TabsTrigger value="behavior">
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Comportamento
+            </TabsTrigger>
+            <TabsTrigger value="transactions">
+              <Calendar className="h-4 w-4 mr-2" />
+              Transações
             </TabsTrigger>
           </TabsList>
 
@@ -284,6 +299,18 @@ export const Dashboard = ({
               data={financialData.chartData}
               isLoading={isLoading}
             />
+          </TabsContent>
+
+          <TabsContent value="categories" className="space-y-4">
+            <CategoryAnalysisCard />
+          </TabsContent>
+
+          <TabsContent value="payments" className="space-y-4">
+            <PaymentMethodAnalysisCard />
+          </TabsContent>
+
+          <TabsContent value="behavior" className="space-y-4">
+            <BehaviorAnalysisCard />
           </TabsContent>
 
           <TabsContent value="transactions" className="space-y-4">
@@ -317,36 +344,6 @@ export const Dashboard = ({
             </Card>
           </TabsContent>
 
-          <TabsContent value="categories" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Top Categorias de Gastos</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {financialData.topCategories.length === 0 ? <div className="text-center py-8 text-muted-foreground">
-                    <PieChart className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                    <p>Nenhuma categoria de gasto este mês</p>
-                  </div> : <div className="space-y-3">
-                    {financialData.topCategories.map((category, index) => {
-                  const percentage = category.value / financialData.expenses * 100;
-                  return <div key={category.name} className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium text-sm">{category.name}</span>
-                            <span className="text-sm font-semibold">
-                              {formatCurrency(category.value)} ({percentage.toFixed(1)}%)
-                            </span>
-                          </div>
-                          <div className="w-full bg-muted rounded-full h-2">
-                            <div className="bg-primary h-2 rounded-full transition-all duration-300" style={{
-                        width: `${percentage}%`
-                      }} />
-                          </div>
-                        </div>;
-                })}
-                  </div>}
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
 
         {/* Transaction Form Modal */}

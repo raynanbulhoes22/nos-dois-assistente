@@ -10,6 +10,12 @@ import { TransactionForm } from "./TransactionForm";
 // Hooks for real data
 import { useComparativoFinanceiro } from "@/hooks/useComparativoFinanceiro";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
+
+// Dashboard components
+import { FinancialChart } from "./FinancialChart";
+import { AdvancedCharts } from "./dashboard/AdvancedCharts";
+import { InteractiveCharts } from "./dashboard/InteractiveCharts";
+import { FinancialKPIs } from "./dashboard/FinancialKPIs";
 interface User {
   id: string;
   email?: string;
@@ -57,7 +63,16 @@ export const Dashboard = ({
     const topCategories = Object.entries(categoryTotals).map(([name, value]) => ({
       name,
       value
-    })).sort((a, b) => b.value - a.value).slice(0, 5);
+    })).sort((a, b) => b.value - a.value).slice(0, 6);
+
+    // Advanced chart data
+    const chartData = {
+      categoryData: topCategories,
+      monthlyData: generateMonthlyData(),
+      projectionData: generateProjectionData(),
+      comparativeData: []
+    };
+
     return {
       income,
       expenses,
@@ -65,9 +80,64 @@ export const Dashboard = ({
       currentMonthMovs,
       topCategories,
       transactionCount: currentMonthMovs.length,
-      monthlyTrend: balance >= 0 ? 'positive' : 'negative' as 'positive' | 'negative'
+      monthlyTrend: balance >= 0 ? 'positive' : 'negative' as 'positive' | 'negative',
+      chartData,
+      savingsRate: income > 0 ? ((income - expenses) / income) * 100 : 0,
+      budgetUsage: expenses > 0 ? (expenses / (income || 1)) * 100 : 0
     };
   }, [comparativo.comparativo, movimentacoes, currentMonth, currentYear]);
+
+  // Generate monthly data for charts
+  const generateMonthlyData = () => {
+    const months = [];
+    const now = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthStr = date.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+      
+      // Filter movimentacoes for this month
+      const monthMovs = movimentacoes.filter(mov => {
+        const movDate = new Date(mov.data);
+        return movDate.getMonth() === date.getMonth() && movDate.getFullYear() === date.getFullYear();
+      });
+      
+      const entradas = monthMovs.filter(mov => mov.isEntrada).reduce((sum, mov) => sum + mov.valor, 0);
+      const saidas = monthMovs.filter(mov => !mov.isEntrada).reduce((sum, mov) => sum + mov.valor, 0);
+      
+      months.push({
+        month: monthStr,
+        entradas,
+        saidas,
+        saldo: entradas - saidas
+      });
+    }
+    
+    return months;
+  };
+
+  // Generate projection data
+  const generateProjectionData = () => {
+    const months = [];
+    const now = new Date();
+    const avgIncome = financialData.income;
+    const avgExpenses = financialData.expenses;
+    
+    for (let i = 1; i <= 3; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() + i, 1);
+      const monthStr = date.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+      
+      months.push({
+        month: monthStr,
+        entradas: avgIncome * 0.95, // 5% de variação
+        saidas: avgExpenses * 1.05, // 5% de aumento
+        saldo: (avgIncome * 0.95) - (avgExpenses * 1.05),
+        isProjection: true
+      });
+    }
+    
+    return months;
+  };
   const handleTransactionAdded = () => {
     setShowTransactionForm(false);
     toast({
@@ -103,58 +173,16 @@ export const Dashboard = ({
         {/* Header */}
         
 
-        {/* Main Balance Card */}
-        <Card className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10"></div>
-          <CardContent className="relative p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Visão Geral Financeira</h2>
-              <Button variant="ghost" size="sm" onClick={() => setShowBalance(!showBalance)} className="text-muted-foreground hover:text-foreground">
-                {showBalance ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-              </Button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Balance */}
-              <div className="text-center p-4 rounded-lg bg-background/50 border">
-                <p className="text-sm text-muted-foreground mb-2">Saldo Atual</p>
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <p className={`text-2xl sm:text-3xl font-bold ${financialData.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {showBalance ? formatCurrency(financialData.balance) : '••••••'}
-                  </p>
-                  {financialData.balance >= 0 ? <TrendingUp className="h-5 w-5 text-green-600" /> : <TrendingDown className="h-5 w-5 text-red-600" />}
-                </div>
-                <Badge variant={financialData.balance >= 0 ? "default" : "destructive"} className="text-xs">
-                  {financialData.monthlyTrend === 'positive' ? 'Positivo' : 'Negativo'}
-                </Badge>
-              </div>
-              
-              {/* Income */}
-              <div className="text-center p-4 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
-                <p className="text-sm text-muted-foreground mb-2">Receitas</p>
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <ArrowUpRight className="h-4 w-4 text-green-600" />
-                  <p className="text-xl font-bold text-green-600">
-                    {showBalance ? formatCurrency(financialData.income) : '••••••'}
-                  </p>
-                </div>
-                <p className="text-xs text-green-600">Este mês</p>
-              </div>
-              
-              {/* Expenses */}
-              <div className="text-center p-4 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800">
-                <p className="text-sm text-muted-foreground mb-2">Despesas</p>
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <ArrowDownRight className="h-4 w-4 text-red-600" />
-                  <p className="text-xl font-bold text-red-600">
-                    {showBalance ? formatCurrency(financialData.expenses) : '••••••'}
-                  </p>
-                </div>
-                <p className="text-xs text-red-600">Este mês</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Financial KPIs Card */}
+        <FinancialKPIs
+          totalIncome={financialData.income}
+          totalExpenses={financialData.expenses}
+          balance={financialData.balance}
+          savingsRate={financialData.savingsRate}
+          budgetUsage={financialData.budgetUsage}
+          monthlyTrend={financialData.monthlyTrend}
+          isLoading={isLoading}
+        />
 
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -227,12 +255,16 @@ export const Dashboard = ({
           </Card>
         </div>
 
-        {/* Content Tabs */}
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="overview">
+        {/* Charts and Analytics */}
+        <Tabs defaultValue="charts" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="charts">
               <BarChart3 className="h-4 w-4 mr-2" />
-              Visão Geral
+              Gráficos
+            </TabsTrigger>
+            <TabsTrigger value="analytics">
+              <Activity className="h-4 w-4 mr-2" />
+              Análises
             </TabsTrigger>
             <TabsTrigger value="transactions">
               <Calendar className="h-4 w-4 mr-2" />
@@ -244,61 +276,15 @@ export const Dashboard = ({
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Performance Summary */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Resumo de Performance</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                    <span className="text-sm font-medium">Renda Realizada</span>
-                    <span className="font-bold text-green-600">
-                      {formatCurrency(financialData.income)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                    <span className="text-sm font-medium">Gastos Realizados</span>
-                    <span className="font-bold text-red-600">
-                      {formatCurrency(financialData.expenses)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                    <span className="text-sm font-medium">Saldo Final</span>
-                    <span className={`font-bold ${financialData.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatCurrency(financialData.balance)}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+          <TabsContent value="charts" className="space-y-4">
+            <FinancialChart userId={user.id} refreshTrigger={Date.now()} />
+          </TabsContent>
 
-              {/* Alerts */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Alertas Financeiros</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {financialData.balance < 0 ? <div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg">
-                      <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-red-800 dark:text-red-200">Saldo Negativo</p>
-                        <p className="text-sm text-red-600 dark:text-red-300">
-                          Seus gastos estão maiores que sua renda este mês.
-                        </p>
-                      </div>
-                    </div> : <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-lg">
-                      <TrendingUp className="h-5 w-5 text-green-500 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-green-800 dark:text-green-200">Situação Positiva</p>
-                        <p className="text-sm text-green-600 dark:text-green-300">
-                          Suas finanças estão equilibradas este mês.
-                        </p>
-                      </div>
-                    </div>}
-                </CardContent>
-              </Card>
-            </div>
+          <TabsContent value="analytics" className="space-y-4">
+            <InteractiveCharts 
+              data={financialData.chartData}
+              isLoading={isLoading}
+            />
           </TabsContent>
 
           <TabsContent value="transactions" className="space-y-4">

@@ -195,6 +195,16 @@
   h6 { @apply text-base lg:text-lg font-medium; }
 }
 
+/* Mobile viewport height fixes */
+:root{ --vh: 1vh; }
+@supports (height: 100dvh) {
+  .min-h-screen { min-height: 100dvh; }
+}
+@supports not (height: 100dvh) {
+  .min-h-screen { min-height: calc(var(--vh, 1vh) * 100); }
+}
+.use-safe-vh { min-height: calc(var(--vh, 1vh) * 100); }
+
 @layer components {
   /* Global Design System Components */
   .page-container {

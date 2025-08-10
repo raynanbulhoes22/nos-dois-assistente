@@ -18,11 +18,13 @@ import { Relatorios } from "./pages/Relatorios";
 import { Configuracoes } from "./pages/Configuracoes";
 import PrimeirosPasos from "./pages/PrimeirosPasos";
 import NotFound from "./pages/NotFound";
+import { useViewportHeight } from "@/hooks/use-viewport-height";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const { user, loading } = useAuth();
+  useViewportHeight();
 
   if (loading) {
     return (

@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+
 import {
   CalendarDays,
   MapPin,
@@ -17,6 +18,11 @@ import {
   Building2,
   Repeat,
   MessageCircle,
+  Edit,
+  Trash2,
+  TrendingUp,
+  TrendingDown,
+  ArrowRightLeft,
 } from "lucide-react";
 import { Movimentacao } from "@/hooks/useMovimentacoes";
 
@@ -74,106 +80,175 @@ export const MovimentacaoCard = ({ movimentacao, onEdit, onDelete, onDuplicate }
 
   const maskCard = (last4?: string) => (last4 ? `•••• ${last4}` : "");
 
+  const getTransactionIcon = () => {
+    if (movimentacao.isEntrada) return <TrendingUp className="h-5 w-5 text-income" />;
+    return <TrendingDown className="h-5 w-5 text-expense" />;
+  };
+
+  const getIconBackground = () => {
+    return movimentacao.isEntrada 
+      ? "bg-income/10 text-income" 
+      : "bg-expense/10 text-expense";
+  };
+
   return (
-    <Card className={`hover:shadow-md transition-shadow border-l-4 ${borderClass}`}>
+    <Card className="hover:shadow-lg transition-all duration-200 border-0 bg-card/50 backdrop-blur-sm">
       <CardContent className="p-4">
-        <div className="flex justify-between items-start mb-3">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-lg mb-1 truncate">{movimentacao.nome || "Sem descrição"}</h3>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-              <CalendarDays className="h-4 w-4" />
-              <span>{formatDate(movimentacao.data)}</span>
-            </div>
+        <div className="flex items-center gap-4">
+          {/* Avatar/Ícone */}
+          <div className={`p-3 rounded-full ${getIconBackground()}`}>
+            {getTransactionIcon()}
           </div>
 
-          <div className="flex items-start gap-2 ml-2">
-            <p className={`font-bold text-lg whitespace-nowrap ${amountClass}`}>
+          {/* Conteúdo Principal */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-1">
+              <h3 className="font-semibold text-base truncate pr-2">
+                {movimentacao.nome || "Sem descrição"}
+              </h3>
+              
+              {/* Ações sempre visíveis */}
+              <div className="flex items-center gap-1 ml-2">
+                {onEdit && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 hover:bg-primary/10"
+                    onClick={() => onEdit(movimentacao)}
+                    aria-label="Editar movimentação"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                    onClick={() => onDelete(movimentacao)}
+                    aria-label="Excluir movimentação"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    {onDuplicate && (
+                      <DropdownMenuItem onClick={() => onDuplicate(movimentacao)}>
+                        Duplicar
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={() => copyToClipboard(formatCurrency(movimentacao.valor), "valor")}>
+                      Copiar valor
+                    </DropdownMenuItem>
+                    {movimentacao.id && (
+                      <DropdownMenuItem onClick={() => copyToClipboard(movimentacao.id, "ID")}>
+                        Copiar ID
+                      </DropdownMenuItem>
+                    )}
+                    {movimentacao.numero_wpp && (
+                      <DropdownMenuItem onClick={handleOpenWhatsApp}>
+                        Abrir no WhatsApp
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+
+            {/* Data e Categoria */}
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <CalendarDays className="h-3.5 w-3.5" />
+                <span>{formatDate(movimentacao.data)}</span>
+              </div>
+              {movimentacao.categoria && (
+                <Badge variant="secondary" className="text-xs h-5">
+                  {movimentacao.categoria}
+                </Badge>
+              )}
+            </div>
+
+            {/* Valor */}
+            <p className={`font-bold text-lg ${amountClass} mb-2`}>
               {movimentacao.isEntrada ? "+" : "-"} {formatCurrency(movimentacao.valor)}
             </p>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" aria-label="Ações da movimentação">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44">
-                {onEdit && <DropdownMenuItem onClick={() => onEdit(movimentacao)}>Editar</DropdownMenuItem>}
-                {onDuplicate && <DropdownMenuItem onClick={() => onDuplicate(movimentacao)}>Duplicar</DropdownMenuItem>}
-                {onDelete && <DropdownMenuItem className="text-destructive" onClick={() => onDelete(movimentacao)}>Excluir</DropdownMenuItem>}
-                <DropdownMenuItem onClick={() => copyToClipboard(formatCurrency(movimentacao.valor), "valor")}>Copiar valor</DropdownMenuItem>
-                {movimentacao.id && (
-                  <DropdownMenuItem onClick={() => copyToClipboard(movimentacao.id, "ID")}>Copiar ID</DropdownMenuItem>
+
+            {/* Informações Adicionais */}
+            <div className="space-y-1">
+              {movimentacao.estabelecimento && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5" />
+                  <span className="truncate">{movimentacao.estabelecimento}</span>
+                </div>
+              )}
+
+              {movimentacao.forma_pagamento && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CreditCard className="h-3.5 w-3.5" />
+                  <span>{movimentacao.forma_pagamento}</span>
+                </div>
+              )}
+
+              {/* Badges extras compactas */}
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                <Badge variant="outline" className="text-xs h-5 flex items-center gap-1">
+                  {originLabel === "WhatsApp" ? (
+                    <MessageCircle className="h-3 w-3" />
+                  ) : (
+                    <Building2 className="h-3 w-3" />
+                  )}
+                  {originLabel}
+                </Badge>
+                
+                {movimentacao.recorrente && (
+                  <Badge variant="outline" className="text-xs h-5 flex items-center gap-1">
+                    <Repeat className="h-3 w-3" />
+                    Recorrente
+                  </Badge>
                 )}
-                {movimentacao.numero_wpp && (
-                  <DropdownMenuItem onClick={handleOpenWhatsApp}>Abrir no WhatsApp</DropdownMenuItem>
+                
+                {(movimentacao.instituicao || movimentacao.cartao_final) && (
+                  <Badge variant="outline" className="text-xs h-5 flex items-center gap-1">
+                    <Building2 className="h-3 w-3" />
+                    <span className="truncate max-w-[120px]">
+                      {movimentacao.instituicao || "Instituição"}
+                      {movimentacao.cartao_final ? ` • ${maskCard(movimentacao.cartao_final)}` : ""}
+                    </span>
+                  </Badge>
                 )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </div>
+
+              {/* Observação expandível */}
+              {movimentacao.observacao && (
+                <div className="mt-2 p-2 bg-muted/30 rounded-md">
+                  <div className="flex items-start gap-2 text-sm">
+                    <FileText className="h-3.5 w-3.5 mt-0.5 text-muted-foreground" />
+                    <div className="flex-1">
+                      <span className="italic text-muted-foreground">
+                        {shortObs(movimentacao.observacao)}
+                      </span>
+                      {movimentacao.observacao.length > 120 && (
+                        <button
+                          type="button"
+                          onClick={() => setShowMore((s) => !s)}
+                          className="ml-2 text-xs underline text-primary hover:text-primary/80"
+                          aria-label={showMore ? "Mostrar menos" : "Ver mais"}
+                        >
+                          {showMore ? "ver menos" : "ver mais"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-
-        {/* Badges and chips */}
-        <div className="flex flex-wrap gap-2 mb-3">
-          {movimentacao.categoria && (
-            <Badge variant={movimentacao.isEntrada ? "default" : "secondary"}>{movimentacao.categoria}</Badge>
-          )}
-          <Badge variant="outline" className="flex items-center gap-1">
-            {originLabel === "WhatsApp" ? (
-              <MessageCircle className="h-3.5 w-3.5" />
-            ) : (
-              <Building2 className="h-3.5 w-3.5" />
-            )}
-            {originLabel}
-          </Badge>
-          {movimentacao.recorrente && (
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Repeat className="h-3.5 w-3.5" /> Recorrente
-            </Badge>
-          )}
-          {(movimentacao.instituicao || movimentacao.cartao_final) && (
-            <Badge variant="outline" className="flex items-center gap-1">
-              <Building2 className="h-3.5 w-3.5" />
-              <span className="truncate">
-                {movimentacao.instituicao || "Instituição"}
-                {movimentacao.cartao_final ? ` • ${maskCard(movimentacao.cartao_final)}` : ""}
-              </span>
-            </Badge>
-          )}
-        </div>
-
-        <div className="space-y-2 text-sm text-muted-foreground">
-          {movimentacao.estabelecimento && (
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              <span>{movimentacao.estabelecimento}</span>
-            </div>
-          )}
-
-          {movimentacao.forma_pagamento && (
-            <div className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
-              <span>{movimentacao.forma_pagamento}</span>
-            </div>
-          )}
-
-          {movimentacao.observacao && (
-            <div className="flex items-start gap-2">
-              <FileText className="h-4 w-4 mt-0.5" />
-              <span className="italic">
-                {shortObs(movimentacao.observacao)}
-                {movimentacao.observacao.length > 120 && (
-                  <button
-                    type="button"
-                    onClick={() => setShowMore((s) => !s)}
-                    className="ml-2 underline text-foreground/80 hover:text-foreground"
-                    aria-label={showMore ? "Mostrar menos" : "Ver mais"}
-                  >
-                    {showMore ? "ver menos" : "ver mais"}
-                  </button>
-                )}
-              </span>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>

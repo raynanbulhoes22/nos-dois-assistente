@@ -41,14 +41,12 @@ export const OnboardingStep2 = ({ data, setData, onNext, onPrev, subscriptionTie
               <span className="text-green-500">📱</span>
               Seu Telefone/WhatsApp *
             </Label>
-            <div className="relative">
-              <PhoneInput
-                value={data.numero_wpp}
-                onChange={(value) => setData({ ...data, numero_wpp: value })}
-                placeholder="Digite seu número"
-                className="text-base sm:text-sm" // Larger text on mobile
-              />
-            </div>
+            <PhoneInput
+              value={data.numero_wpp}
+              onChange={(value) => setData({ ...data, numero_wpp: value })}
+              placeholder="Digite seu número"
+              className="text-base sm:text-sm"
+            />
           </div>
 
           {/* Casal Plan Fields */}
@@ -82,27 +80,6 @@ export const OnboardingStep2 = ({ data, setData, onNext, onPrev, subscriptionTie
               </div>
             </div>
           )}
-
-          {/* Notification Preferences */}
-          <div className="space-y-3">
-            <Label className="text-sm font-medium flex items-center gap-2">
-              <span>🔔</span>
-              Preferência de Notificações
-            </Label>
-            <Select
-              value={data.preferenciasNotificacao}
-              onValueChange={(value) => setData({ ...data, preferenciasNotificacao: value })}
-            >
-              <SelectTrigger className="h-12 sm:h-10 text-base sm:text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="whatsapp">📱 WhatsApp</SelectItem>
-                <SelectItem value="email">✉️ Email</SelectItem>
-                <SelectItem value="ambos">📱✉️ WhatsApp e Email</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
 
           {/* Navigation Buttons - Mobile Optimized */}
           <div className="flex gap-3 pt-4">

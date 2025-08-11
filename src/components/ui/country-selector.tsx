@@ -95,7 +95,7 @@ export function CountrySelector({ value, onSelect, disabled }: CountrySelectorPr
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[180px] justify-between"
+          className="w-[100px] sm:w-[120px] justify-between shrink-0"
           disabled={disabled}
         >
           {value ? (

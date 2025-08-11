@@ -20,10 +20,28 @@ export const OnboardingStep2 = ({
 }: OnboardingStep2Props) => {
   const { status } = useSubscription();
   const isCasalPlan = status?.subscription_tier === 'Casal';
+  
+  console.log('OnboardingStep2 - status:', status);
+  console.log('OnboardingStep2 - isCasalPlan:', isCasalPlan);
+  console.log('OnboardingStep2 - data.numero_wpp:', data.numero_wpp);
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!data.numero_wpp) return;
-    if (isCasalPlan && (!data.nomeConjuge || !data.telefoneConjuge)) return;
+    console.log('handleSubmit called');
+    console.log('data.numero_wpp:', data.numero_wpp);
+    console.log('isCasalPlan:', isCasalPlan);
+    console.log('data.nomeConjuge:', data.nomeConjuge);
+    console.log('data.telefoneConjuge:', data.telefoneConjuge);
+    
+    if (!data.numero_wpp) {
+      console.log('Validation failed: numero_wpp missing');
+      return;
+    }
+    if (isCasalPlan && (!data.nomeConjuge || !data.telefoneConjuge)) {
+      console.log('Validation failed: couple data missing');
+      return;
+    }
+    console.log('Calling onNext');
     onNext();
   };
   return <Card className="border-0 sm:border shadow-none sm:shadow-sm bg-card/80 sm:bg-card backdrop-blur-sm sm:backdrop-blur-none">

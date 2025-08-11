@@ -19,6 +19,7 @@ interface ReportsFiltersProps {
   onExportPDF: () => void;
   onExportExcel: () => void;
   onExportCSV: () => void;
+  exportLoading?: 'pdf' | 'excel' | 'csv' | null;
 }
 
 export const ReportsFilters = ({
@@ -28,7 +29,8 @@ export const ReportsFilters = ({
   availablePaymentMethods,
   onExportPDF,
   onExportExcel,
-  onExportCSV
+  onExportCSV,
+  exportLoading
 }: ReportsFiltersProps) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -100,24 +102,27 @@ export const ReportsFilters = ({
                     size="sm" 
                     className="w-full justify-start"
                     onClick={onExportPDF}
+                    disabled={exportLoading === 'pdf'}
                   >
-                    Relatório PDF
+                    {exportLoading === 'pdf' ? 'Gerando PDF...' : 'Relatório PDF'}
                   </Button>
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     className="w-full justify-start"
                     onClick={onExportExcel}
+                    disabled={exportLoading === 'excel'}
                   >
-                    Planilha Excel
+                    {exportLoading === 'excel' ? 'Gerando Excel...' : 'Planilha Excel'}
                   </Button>
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     className="w-full justify-start"
                     onClick={onExportCSV}
+                    disabled={exportLoading === 'csv'}
                   >
-                    Dados CSV
+                    {exportLoading === 'csv' ? 'Gerando CSV...' : 'Dados CSV'}
                   </Button>
                 </div>
               </PopoverContent>

@@ -47,6 +47,18 @@ serve(async (req) => {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    log("ERRO no portal", { message });
+    
+    // Erro específico para configuração do Customer Portal
+    if (message.includes("No configuration provided")) {
+      return new Response(JSON.stringify({ 
+        error: "Customer Portal não configurado no Stripe. Acesse https://dashboard.stripe.com/test/settings/billing/portal para configurar." 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+    
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

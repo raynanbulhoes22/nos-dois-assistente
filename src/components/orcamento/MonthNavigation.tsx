@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MiniTimeline } from "@/components/orcamento/MiniTimeline";
-import { TimelineLegend } from "@/components/orcamento/TimelineLegend";
+import { TimelineLegendPopover } from "@/components/orcamento/TimelineLegendPopover";
 
 interface MonthNavigationProps {
   currentMonth: number;
@@ -79,7 +79,7 @@ export const MonthNavigation = ({
 
         {/* Timeline direita: meses futuros */}
         {timeline && timeline.length > 0 ? (
-          <div className="block">
+          <div className="flex items-center gap-2">
             <MiniTimeline
               previsoes={timeline
                 .filter((t) => (t.ano > currentYear) || (t.ano === currentYear && t.mes > currentMonth))
@@ -89,6 +89,7 @@ export const MonthNavigation = ({
               onMonthSelect={onMonthSelect || (() => {})}
               getMesNome={getMesNome}
             />
+            <TimelineLegendPopover />
           </div>
         ) : null}
 
@@ -103,13 +104,6 @@ export const MonthNavigation = ({
         </Button>
       </div>
 
-      {/* Legend - only show if there's timeline data */}
-      {timeline && timeline.length > 0 && (
-        <TimelineLegend 
-          compact={true} 
-          collapsible={true}
-        />
-      )}
     </div>
   );
 };

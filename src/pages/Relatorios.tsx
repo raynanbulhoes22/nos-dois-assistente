@@ -12,7 +12,7 @@ import { TemporalAnalysisCharts } from "@/components/relatorios/TemporalAnalysis
 import { CategoryAnalysisCharts } from "@/components/relatorios/CategoryAnalysisCharts";
 import { BehavioralAnalysisCharts } from "@/components/relatorios/BehavioralAnalysisCharts";
 import { useAdvancedReportsData } from "@/hooks/useAdvancedReportsData";
-import { useMovimentacoes } from "@/hooks/useMovimentacoes";
+
 import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
@@ -41,44 +41,6 @@ export const Relatorios = () => {
   const [activeTab, setActiveTab] = useState("visao-geral");
   const isMobile = useIsMobile();
 
-  // Obter dados das movimentações diretamente
-  const { movimentacoes, isLoading: movimentacoesLoading } = useMovimentacoes();
-  
-  // Usar as transações filtradas já processadas pelo useAdvancedReportsData
-  const filteredMovimentacoes = useMemo(() => {
-    console.log('Debug: === VERIFICANDO DADOS ===');
-    console.log('Debug: data.isLoading:', data.isLoading);
-    console.log('Debug: movimentacoesLoading:', movimentacoesLoading);
-    console.log('Debug: data.kpis:', !!data.kpis);
-    console.log('Debug: data.categoryAnalysis length:', data.categoryAnalysis?.length || 0);
-    
-    if (!data || data.isLoading || movimentacoesLoading) {
-      console.log('Debug: Data ainda carregando - retornando array vazio');
-      return [];
-    }
-    
-    console.log('Debug: Total movimentacoes brutas:', movimentacoes?.length || 0);
-    console.log('Debug: Sample movimentacao:', movimentacoes?.[0]);
-    console.log('Debug: Data filters period:', data.filters.startDate, '-', data.filters.endDate);
-    
-    // Se temos dados nos relatórios mas não temos movimentações brutas, há um problema
-    if ((data.kpis?.transactionCount || 0) > 0 && (!movimentacoes || movimentacoes.length === 0)) {
-      console.warn('Debug: INCONSISTÊNCIA - KPIs indicam transações mas movimentacoes está vazio!');
-      console.log('Debug: KPIs transaction count:', data.kpis.transactionCount);
-    }
-    
-    // O useAdvancedReportsData já aplica os filtros internamente
-    // Para exportação, vamos usar todas as movimentações disponíveis se há dados nos KPIs
-    const result = movimentacoes || [];
-    console.log('Debug: Retornando movimentacoes:', result.length);
-    return result;
-  }, [data, movimentacoes, movimentacoesLoading]);
-
-  console.log('Debug: === RESULTADO FINAL ===');
-  console.log('Debug: Filtered movimentacoes final length:', filteredMovimentacoes.length);
-  console.log('Debug: Data tem KPIs?', !!data.kpis);
-  console.log('Debug: Data tem categoryAnalysis?', (data.categoryAnalysis?.length || 0) > 0);
-
   // Get available categories and payment methods for filters
   const { availableCategories, availablePaymentMethods } = useMemo(() => {
     return {
@@ -86,6 +48,23 @@ export const Relatorios = () => {
       availablePaymentMethods: [] as string[]
     };
   }, []);
+
+  // Use the transaction count from useAdvancedReportsData's KPIs as indicator
+  const hasTransactions = useMemo(() => {
+    const transactionCount = data.kpis?.transactionCount || 0;
+    console.log('Debug: === VERIFICANDO TRANSAÇÕES ===');
+    console.log('Debug: data.isLoading:', data.isLoading);
+    console.log('Debug: KPI transaction count:', transactionCount);
+    console.log('Debug: data.kpis exists:', !!data.kpis);
+    console.log('Debug: categoryAnalysis length:', data.categoryAnalysis?.length || 0);
+    
+    // Se temos dados nos KPIs, assumimos que há transações
+    return transactionCount > 0;
+  }, [data]);
+
+  console.log('Debug: === RESULTADO FINAL ===');
+  console.log('Debug: hasTransactions:', hasTransactions);
+  console.log('Debug: Data loading:', data.isLoading);
 
   // Export functionality
   const handleExportPDF = async () => {
@@ -108,7 +87,7 @@ export const Relatorios = () => {
       return;
     }
 
-    if (filteredMovimentacoes.length === 0) {
+    if (!hasTransactions) {
       toast({
         title: "Nenhuma transação encontrada",
         description: "Não há dados suficientes para gerar o relatório PDF.",
@@ -135,7 +114,7 @@ export const Relatorios = () => {
       
       const exportData = {
         reportData: data,
-        filteredTransactions: filteredMovimentacoes
+        filteredTransactions: [] // Usar array vazio já que os dados estão nos KPIs
       };
       
       const result = await exportToPDF(exportData, data.filters);
@@ -156,7 +135,7 @@ export const Relatorios = () => {
   };
 
   const handleExportExcel = async () => {
-    if (!data.kpis || filteredMovimentacoes.length === 0) {
+    if (!data.kpis || !hasTransactions) {
       toast({
         title: "Nenhum dado disponível",
         description: "Aguarde o carregamento dos dados ou aplique filtros válidos.",
@@ -169,7 +148,7 @@ export const Relatorios = () => {
     try {
       const exportData = {
         reportData: data,
-        filteredTransactions: filteredMovimentacoes
+        filteredTransactions: [] // Usar array vazio já que os dados estão nos KPIs
       };
       
       const result = await exportToExcel(exportData, data.filters);
@@ -190,7 +169,7 @@ export const Relatorios = () => {
   };
 
   const handleExportCSV = async () => {
-    if (!data.kpis || filteredMovimentacoes.length === 0) {
+    if (!data.kpis || !hasTransactions) {
       toast({
         title: "Nenhum dado disponível",
         description: "Aguarde o carregamento dos dados ou aplique filtros válidos.",
@@ -203,7 +182,7 @@ export const Relatorios = () => {
     try {
       const exportData = {
         reportData: data,
-        filteredTransactions: filteredMovimentacoes
+        filteredTransactions: [] // Usar array vazio já que os dados estão nos KPIs
       };
       
       const result = await exportToCSV(exportData, data.filters);

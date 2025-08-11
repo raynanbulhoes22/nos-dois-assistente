@@ -63,6 +63,10 @@ export function MovimentacaoDetailsDialog({ open, onOpenChange, movimentacao }: 
 
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
+                <dt className="text-muted-foreground">Responsável</dt>
+                <dd className="font-medium">{m.nome || "Não informado"}</dd>
+              </div>
+              <div>
                 <dt className="text-muted-foreground">Forma de pagamento</dt>
                 <dd>{m.forma_pagamento || "-"}</dd>
               </div>

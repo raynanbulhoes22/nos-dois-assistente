@@ -4,7 +4,7 @@ import type { Movimentacao } from "@/hooks/useMovimentacoes";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreVertical, Edit3, Trash2, Copy } from "lucide-react";
+import { MoreVertical, Edit3, Trash2, Copy, User } from "lucide-react";
 import { getCategoryColorClass } from "@/lib/categoryColors";
 import { cn } from "@/lib/utils";
 
@@ -58,10 +58,16 @@ export function MovimentacoesList({ items, onItemClick, onEdit, onDelete, onDupl
                   onClick={() => onItemClick?.(item)}
                 >
                   {/* Título */}
-                  <div className="mb-2">
-                    <span className="font-medium text-foreground truncate block">
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="font-medium text-foreground truncate">
                       {item.nome || "Sem descrição"}
                     </span>
+                    {item.nome && (
+                      <Badge variant="outline" className="text-xs px-2 py-0 h-5 shrink-0">
+                        <User className="h-3 w-3 mr-1" />
+                        {item.nome}
+                      </Badge>
+                    )}
                   </div>
                   
                   {/* Categoria, Data e Valor */}

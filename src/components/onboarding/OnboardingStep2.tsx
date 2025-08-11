@@ -1,8 +1,10 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PhoneInput } from '@/components/ui/phone-input';
 import { OnboardingData } from '../OnboardingWizard';
 
 interface OnboardingStep2Props {
@@ -18,7 +20,7 @@ export const OnboardingStep2 = ({ data, setData, onNext, onPrev, subscriptionTie
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!data.telefone) return;
+    if (!data.numero_wpp) return;
     if (isCasalPlan && (!data.nomeConjuge || !data.telefoneConjuge)) return;
     onNext();
   };
@@ -34,13 +36,11 @@ export const OnboardingStep2 = ({ data, setData, onNext, onPrev, subscriptionTie
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="telefone">Seu Telefone *</Label>
-            <Input
-              id="telefone"
-              placeholder="(11) 99999-9999"
-              value={data.telefone}
-              onChange={(e) => setData({ ...data, telefone: e.target.value })}
-              required
+            <Label htmlFor="numero_wpp">Seu Telefone/WhatsApp *</Label>
+            <PhoneInput
+              value={data.numero_wpp}
+              onChange={(value) => setData({ ...data, numero_wpp: value })}
+              placeholder="Digite seu número"
             />
           </div>
 
@@ -59,12 +59,10 @@ export const OnboardingStep2 = ({ data, setData, onNext, onPrev, subscriptionTie
 
               <div className="space-y-2">
                 <Label htmlFor="telefoneConjuge">Telefone do Cônjuge *</Label>
-                <Input
-                  id="telefoneConjuge"
-                  placeholder="(11) 99999-9999"
+                <PhoneInput
                   value={data.telefoneConjuge || ''}
-                  onChange={(e) => setData({ ...data, telefoneConjuge: e.target.value })}
-                  required
+                  onChange={(value) => setData({ ...data, telefoneConjuge: value })}
+                  placeholder="Digite o número do cônjuge"
                 />
               </div>
             </>

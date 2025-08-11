@@ -375,7 +375,6 @@ export type Database = {
           objetivo_principal: string | null
           onboarding_completed: boolean
           preferencia_notificacao: string | null
-          telefone: string | null
           telefone_conjuge: string | null
         }
         Insert: {
@@ -391,7 +390,6 @@ export type Database = {
           objetivo_principal?: string | null
           onboarding_completed?: boolean
           preferencia_notificacao?: string | null
-          telefone?: string | null
           telefone_conjuge?: string | null
         }
         Update: {
@@ -407,7 +405,6 @@ export type Database = {
           objetivo_principal?: string | null
           onboarding_completed?: boolean
           preferencia_notificacao?: string | null
-          telefone?: string | null
           telefone_conjuge?: string | null
         }
         Relationships: []

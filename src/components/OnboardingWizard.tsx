@@ -18,23 +18,31 @@ export interface OnboardingData {
   preferenciasNotificacao: string;
   objetivoPrincipal: string;
   metaEconomia?: number;
+  metaEconomiaMensal?: number;
   rendaMensal?: number;
   gastosFixos?: Array<{
     nome: string;
     valor: number;
     categoria: string;
   }>;
+  fontes: Array<{
+    tipo: string;
+    valor: number;
+    descricao?: string;
+  }>;
   cartoes?: Array<{
     apelido: string;
     limite: number;
-    vencimento: number;
+    vencimento?: number;
+    diaVencimento?: number;
     ultimosDigitos: string;
   }>;
+  categoriasSelecionadas?: string[];
 }
 
 export const OnboardingWizard = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [subscriptionTier, setSubscriptionTier] = useState<string>('');
+  const [subscriptionTier, setSubscriptionTier] = useState<string>('Solo');
   const { user, verifySubscription } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -43,6 +51,10 @@ export const OnboardingWizard = () => {
     numero_wpp: '',
     preferenciasNotificacao: 'whatsapp',
     objetivoPrincipal: '',
+    fontes: [{ tipo: 'Salário', valor: 0, descricao: '' }],
+    cartoes: [],
+    gastosFixos: [],
+    categoriasSelecionadas: []
   });
 
   const nextStep = () => setCurrentStep(prev => prev + 1);
@@ -61,7 +73,7 @@ export const OnboardingWizard = () => {
         telefone_conjuge: data.telefoneConjuge || null,
         preferencia_notificacao: data.preferenciasNotificacao || null,
         objetivo_principal: data.objetivoPrincipal || null,
-        meta_economia_mensal: data.metaEconomia || null,
+        meta_economia_mensal: (data.metaEconomia ?? data.metaEconomiaMensal) || null,
         onboarding_completed: true
       };
 
@@ -95,7 +107,7 @@ export const OnboardingWizard = () => {
           user_id: user.id,
           apelido: cartao.apelido,
           limite: cartao.limite,
-          dia_vencimento: cartao.vencimento,
+          dia_vencimento: (cartao.vencimento ?? cartao.diaVencimento),
           ultimos_digitos: cartao.ultimosDigitos
         }));
 
@@ -140,46 +152,7 @@ export const OnboardingWizard = () => {
   };
 
   useEffect(() => {
-    const checkSubscriptionStatus = async () => {
-      const session = await supabase.auth.getSession();
-      const user = session.data?.session?.user;
-
-      if (user) {
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('grupo_id')
-          .eq('id', user.id)
-          .single();
-
-        if (profileError) {
-          console.error('Erro ao buscar grupo_id:', profileError);
-          return;
-        }
-
-        if (profileData && profileData.grupo_id) {
-          // Buscar detalhes do plano com base no grupo_id
-          const { data: grupoData, error: grupoError } = await supabase
-            .from('grupos')
-            .select('nome_plano')
-            .eq('id', profileData.grupo_id)
-            .single();
-
-          if (grupoError) {
-            console.error('Erro ao buscar nome do plano:', grupoError);
-            return;
-          }
-
-          if (grupoData && grupoData.nome_plano) {
-            setSubscriptionTier(grupoData.nome_plano);
-          }
-        } else {
-          // Lógica para usuários sem grupo_id (plano Solo)
-          setSubscriptionTier('Solo');
-        }
-      }
-    };
-
-    checkSubscriptionStatus();
+    setSubscriptionTier('Solo');
   }, []);
 
   const renderStep = () => {
@@ -201,7 +174,7 @@ export const OnboardingWizard = () => {
       case 4:
         return <OnboardingStep4 data={data} setData={setData} onNext={nextStep} onPrev={prevStep} />;
       case 5:
-        return <OnboardingStep5 data={data} setData={setData} onComplete={completeOnboarding} onPrev={prevStep} />;
+        return <OnboardingStep5 data={data} setData={setData} onComplete={completeOnboarding} onPrev={prevStep} isLoading={false} />;
       default:
         return <OnboardingStep1 data={data} setData={setData} onNext={nextStep} />;
     }

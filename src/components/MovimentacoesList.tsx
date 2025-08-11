@@ -74,7 +74,7 @@ export function MovimentacoesList({ items, onItemClick, onEdit, onDelete, onDupl
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {item.categoria && (
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge className={cn("text-xs border", getCategoryColorClass(item.categoria))}>
                           {item.categoria}
                         </Badge>
                       )}

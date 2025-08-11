@@ -61,72 +61,84 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           <div className="text-xs sm:text-sm font-medium mb-1">{format(data, "d")}</div>
           
           {hasEvents && (
-            <div className="relative flex-1 overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden">
               {isMobile ? (
-                <div className="flex items-center gap-1">
-                  {eventosDia?.eventos.slice(0, 3).map((evento, index) => (
-                    <span
-                      key={index}
-                      className={cn(
-                        "block rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2",
-                        evento.isEntrada ? "bg-success" : "bg-destructive"
-                      )}
-                    />
-                  ))}
-                  {(eventosDia?.eventos.length ?? 0) > 3 && (
-                    <span className="text-[10px] text-muted-foreground font-medium">
-                      +{(eventosDia?.eventos.length ?? 0) - 3}
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-1">
-                  {eventosDia?.eventos.slice(0, 1).map((evento, index) => {
-                    const pill = (
-                      <div
+                <>
+                  <div className="flex items-center gap-1 mb-1">
+                    {eventosDia?.eventos.slice(0, 3).map((evento, index) => (
+                      <span
+                        key={index}
                         className={cn(
-                          "text-[11px] p-0.5 sm:p-1 rounded truncate",
-                          evento.isEntrada ? "bg-success/20 text-success-foreground" : "bg-destructive/20 text-destructive-foreground"
+                          "block rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2",
+                          evento.isEntrada ? "bg-success" : "bg-destructive"
                         )}
-                      >
-                        <span className="hidden sm:inline">{evento.titulo}</span>
-                        <span className="sm:hidden">{evento.titulo.substring(0, 8)}...</span>
-                      </div>
-                    );
-
-                    return (
-                      <TooltipProvider key={index}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>{pill}</TooltipTrigger>
-                          <TooltipContent>
-                            <p>
-                              {evento.titulo}: {evento.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    );
-                  })}
-                  {(eventosDia?.eventos.length ?? 0) > 1 && (
-                    <div className="text-xs text-muted-foreground font-medium">
-                      <span className="hidden sm:inline">+{(eventosDia?.eventos.length ?? 0) - 1} mais</span>
-                      <span className="sm:hidden">+{(eventosDia?.eventos.length ?? 0) - 1}</span>
+                      />
+                    ))}
+                    {(eventosDia?.eventos.length ?? 0) > 3 && (
+                      <span className="text-[10px] text-muted-foreground font-medium">
+                        +{(eventosDia?.eventos.length ?? 0) - 3}
+                      </span>
+                    )}
+                  </div>
+                  {saldo !== 0 && (
+                    <div
+                      className={cn(
+                        "text-[10px] font-semibold",
+                        saldo > 0 ? "text-success" : "text-destructive"
+                      )}
+                    >
+                      {`${saldo > 0 ? "+" : ""}${Math.abs(saldo) > 1000 ? `${(saldo / 1000).toFixed(1)}k` : saldo.toFixed(0)}`}
                     </div>
                   )}
-                </div>
-              )}
+                </>
+              ) : (
+                <>
+                  <div className="flex-1 space-y-1">
+                    {eventosDia?.eventos.slice(0, 1).map((evento, index) => {
+                      const pill = (
+                        <div
+                          className={cn(
+                            "text-[11px] p-0.5 sm:p-1 rounded truncate",
+                            evento.isEntrada ? "bg-success/20 text-success-foreground" : "bg-destructive/20 text-destructive-foreground"
+                          )}
+                        >
+                          <span className="hidden sm:inline">{evento.titulo}</span>
+                          <span className="sm:hidden">{evento.titulo.substring(0, 8)}...</span>
+                        </div>
+                      );
 
-              {saldo !== 0 && (
-                <div
-                  className={cn(
-                    "absolute bottom-1 right-1 text-[10px] sm:text-xs font-semibold px-1 py-px rounded bg-background/60",
-                    saldo > 0 ? "text-success" : "text-destructive"
+                      return (
+                        <TooltipProvider key={index}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>{pill}</TooltipTrigger>
+                            <TooltipContent>
+                              <p>
+                                {evento.titulo}: {evento.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      );
+                    })}
+                    {(eventosDia?.eventos.length ?? 0) > 1 && (
+                      <div className="text-xs text-muted-foreground font-medium">
+                        <span className="hidden sm:inline">+{(eventosDia?.eventos.length ?? 0) - 1} mais</span>
+                        <span className="sm:hidden">+{(eventosDia?.eventos.length ?? 0) - 1}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {saldo !== 0 && (
+                    <div
+                      className={cn(
+                        "text-xs font-semibold px-1 py-0.5 rounded bg-background/80 mt-1 self-end",
+                        saldo > 0 ? "text-success" : "text-destructive"
+                      )}
+                    >
+                      {`${saldo > 0 ? "+" : ""}${saldo.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`}
+                    </div>
                   )}
-                >
-                  {isMobile
-                    ? `${saldo > 0 ? "+" : ""}${Math.abs(saldo) > 1000 ? `${(saldo / 1000).toFixed(1)}k` : saldo.toFixed(0)}`
-                    : `${saldo > 0 ? "+" : ""}${saldo.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`}
-                </div>
+                </>
               )}
             </div>
           )}

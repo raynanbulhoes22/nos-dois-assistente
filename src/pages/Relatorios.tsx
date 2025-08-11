@@ -1,137 +1,31 @@
-import { useState, useEffect } from "react";
+import { useAdvancedReportsData } from "@/hooks/useAdvancedReportsData";
+import { ReportsFilters } from "@/components/relatorios/ReportsFilters";
+import { AdvancedKPICards } from "@/components/relatorios/AdvancedKPICards";
+import { TemporalAnalysisCharts } from "@/components/relatorios/TemporalAnalysisCharts";
+import { CategoryAnalysisCharts } from "@/components/relatorios/CategoryAnalysisCharts";
+import { SmartInsightsPanel } from "@/components/relatorios/SmartInsightsPanel";
+import { BehavioralAnalysisCharts } from "@/components/relatorios/BehavioralAnalysisCharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { TrendingUp, TrendingDown, Target, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Download, TrendingUp, TrendingDown, FileText } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
-
-interface ResumoMensal {
-  mes: number;
-  ano: number;
-  entradas: number;
-  saidas: number;
-  saldo: number;
-}
-
-interface CategoriaRanking {
-  categoria: string;
-  valor: number;
-  percentual: number;
-}
+import { useMovimentacoes } from "@/hooks/useMovimentacoes";
+import { useMemo } from "react";
 
 export const Relatorios = () => {
-  const { user } = useAuth();
-  const [resumoMeses, setResumoMeses] = useState<ResumoMensal[]>([]);
-  const [topCategorias, setTopCategorias] = useState<CategoriaRanking[]>([]);
-  const [insights, setInsights] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { movimentacoes } = useMovimentacoes();
+  const reportsData = useAdvancedReportsData();
 
-  const fetchRelatorios = async () => {
-    if (!user) return;
+  // Get available categories and payment methods for filters
+  const { availableCategories, availablePaymentMethods } = useMemo(() => {
+    const categories = [...new Set(movimentacoes.map(mov => mov.categoria))].filter(Boolean).sort();
+    const paymentMethods = [...new Set(movimentacoes.map(mov => mov.forma_pagamento))].filter(Boolean).sort();
     
-    try {
-      // Buscar dados dos últimos 6 meses
-      const dataAtual = new Date();
-      const meses: ResumoMensal[] = [];
-      
-      for (let i = 5; i >= 0; i--) {
-        const data = new Date(dataAtual.getFullYear(), dataAtual.getMonth() - i, 1);
-        const mes = data.getMonth() + 1;
-        const ano = data.getFullYear();
-        
-        // Entradas do mês
-        const { data: entradas } = await supabase
-          .from('registros_financeiros')
-          .select('valor')
-          .eq('user_id', user.id)
-          .eq('tipo_movimento', 'entrada')
-          .gte('data', `${ano}-${mes.toString().padStart(2, '0')}-01`)
-          .lt('data', `${ano}-${(mes + 1).toString().padStart(2, '0')}-01`);
-
-        // Saídas do mês
-        const { data: saidas } = await supabase
-          .from('registros_financeiros')
-          .select('valor')
-          .eq('user_id', user.id)
-          .eq('tipo_movimento', 'saida')
-          .gte('data', `${ano}-${mes.toString().padStart(2, '0')}-01`)
-          .lt('data', `${ano}-${(mes + 1).toString().padStart(2, '0')}-01`);
-
-        const totalEntradas = entradas?.reduce((sum, e) => sum + e.valor, 0) || 0;
-        const totalSaidas = saidas?.reduce((sum, s) => sum + s.valor, 0) || 0;
-
-        meses.push({
-          mes,
-          ano,
-          entradas: totalEntradas,
-          saidas: totalSaidas,
-          saldo: totalEntradas - totalSaidas
-        });
-      }
-
-      setResumoMeses(meses);
-
-      // Top categorias de gastos (últimos 3 meses)
-      const { data: gastosCategorias } = await supabase
-        .from('registros_financeiros')
-        .select('categoria, valor')
-        .eq('user_id', user.id)
-        .eq('tipo_movimento', 'saida')
-        .gte('data', new Date(dataAtual.getFullYear(), dataAtual.getMonth() - 2, 1).toISOString().split('T')[0]);
-
-      if (gastosCategorias) {
-        const categoriasSoma: Record<string, number> = gastosCategorias.reduce((acc, gasto) => {
-          acc[gasto.categoria] = (acc[gasto.categoria] || 0) + gasto.valor;
-          return acc;
-        }, {} as Record<string, number>);
-
-        const totalGastos = Object.values(categoriasSoma).reduce((sum, valor) => sum + valor, 0);
-        
-        const ranking = Object.entries(categoriasSoma)
-          .map(([categoria, valor]) => ({
-            categoria,
-            valor,
-            percentual: (valor / totalGastos) * 100
-          }))
-          .sort((a, b) => b.valor - a.valor)
-          .slice(0, 5);
-
-        setTopCategorias(ranking);
-      }
-
-      // Gerar insights
-      const insightsGerados = [];
-      
-      if (meses.length >= 2) {
-        const mesAtual = meses[meses.length - 1];
-        const mesAnterior = meses[meses.length - 2];
-        const diferencaSaldo = mesAtual.saldo - mesAnterior.saldo;
-        
-        if (diferencaSaldo > 0) {
-          insightsGerados.push(`Você economizou ${formatCurrency(diferencaSaldo)} a mais em relação ao mês passado! 📈`);
-        } else if (diferencaSaldo < 0) {
-          insightsGerados.push(`Seus gastos aumentaram ${formatCurrency(Math.abs(diferencaSaldo))} em relação ao mês passado 📉`);
-        }
-      }
-
-      if (topCategorias.length > 0) {
-        const categoriaTop = topCategorias[0];
-        insightsGerados.push(`${categoriaTop.categoria} representa ${categoriaTop.percentual.toFixed(1)}% dos seus gastos`);
-      }
-
-      setInsights(insightsGerados);
-
-    } catch (error) {
-      console.error('Erro ao buscar relatórios:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRelatorios();
-  }, [user]);
+    return {
+      availableCategories: categories,
+      availablePaymentMethods: paymentMethods
+    };
+  }, [movimentacoes]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -140,18 +34,47 @@ export const Relatorios = () => {
     }).format(value);
   };
 
-  const formatMes = (mes: number) => {
-    const meses = [
-      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
-    ];
-    return meses[mes - 1];
+  const handleExportPDF = () => {
+    // TODO: Implement PDF export
+    console.log('Exporting PDF...');
   };
 
-  if (isLoading) {
+  const handleExportExcel = () => {
+    // TODO: Implement Excel export
+    console.log('Exporting Excel...');
+  };
+
+  const handleExportCSV = () => {
+    // TODO: Implement CSV export
+    console.log('Exporting CSV...');
+  };
+
+  if (reportsData.isLoading) {
     return (
       <div className="container mx-auto p-6">
-        <p className="text-center">Carregando relatórios...</p>
+        <div className="space-y-6">
+          <div className="h-8 w-48 bg-muted animate-pulse rounded" />
+          <div className="h-40 bg-muted animate-pulse rounded" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-32 bg-muted animate-pulse rounded" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (reportsData.error) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">
+              <p className="text-red-600">Erro ao carregar relatórios: {reportsData.error}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -159,133 +82,200 @@ export const Relatorios = () => {
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Relatórios</h1>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar PDF
-          </Button>
-          <Button variant="outline">
-            <FileText className="h-4 w-4 mr-2" />
-            Exportar Excel
-          </Button>
+        <div>
+          <h1 className="text-3xl font-bold">Relatórios Detalhados</h1>
+          <p className="text-muted-foreground mt-2">
+            Análise completa da sua situação financeira com insights avançados
+          </p>
         </div>
       </div>
 
-      {insights.length > 0 && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Insights Inteligentes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {insights.map((insight, index) => (
-                <div key={index} className="p-3 bg-accent/50 rounded-lg">
-                  <p className="text-sm">{insight}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Filters Section */}
+      <ReportsFilters
+        filters={reportsData.filters}
+        onFiltersChange={reportsData.setFilters}
+        availableCategories={availableCategories}
+        availablePaymentMethods={availablePaymentMethods}
+        onExportPDF={handleExportPDF}
+        onExportExcel={handleExportExcel}
+        onExportCSV={handleExportCSV}
+      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Resumo dos Últimos 6 Meses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {resumoMeses.map((resumo) => (
-                <div key={`${resumo.mes}-${resumo.ano}`} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">{formatMes(resumo.mes)} {resumo.ano}</p>
-                    <div className="flex gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <TrendingUp className="h-3 w-3 text-green-600" />
-                        {formatCurrency(resumo.entradas)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <TrendingDown className="h-3 w-3 text-red-600" />
-                        {formatCurrency(resumo.saidas)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-bold ${resumo.saldo >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatCurrency(resumo.saldo)}
-                    </p>
-                    <Badge variant={resumo.saldo >= 0 ? "default" : "destructive"}>
-                      {resumo.saldo >= 0 ? "Positivo" : "Negativo"}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      {/* KPIs Overview */}
+      <AdvancedKPICards 
+        kpis={reportsData.kpis} 
+        isLoading={reportsData.isLoading}
+      />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Top 5 Categorias de Gastos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {topCategorias.map((categoria, index) => (
-                <div key={categoria.categoria} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center">
-                      {index + 1}
-                    </span>
-                    <span className="font-medium">{categoria.categoria}</span>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold">{formatCurrency(categoria.valor)}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {categoria.percentual.toFixed(1)}%
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Smart Insights */}
+      <SmartInsightsPanel 
+        insights={reportsData.smartInsights} 
+        isLoading={reportsData.isLoading}
+      />
 
-      <Card>
+      {/* Financial Projections */}
+      <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Comparativo Mensal</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Projeções Financeiras
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {resumoMeses.slice(-3).map((resumo) => (
-              <div key={`${resumo.mes}-${resumo.ano}`} className="p-4 border rounded-lg">
-                <h3 className="font-semibold text-center mb-3">
-                  {formatMes(resumo.mes)} {resumo.ano}
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Entradas:</span>
-                    <span className="text-green-600 font-medium">
-                      {formatCurrency(resumo.entradas)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Saídas:</span>
-                    <span className="text-red-600 font-medium">
-                      {formatCurrency(resumo.saidas)}
-                    </span>
-                  </div>
-                  <hr />
-                  <div className="flex justify-between font-bold">
-                    <span>Saldo:</span>
-                    <span className={resumo.saldo >= 0 ? 'text-green-600' : 'text-red-600'}>
-                      {formatCurrency(resumo.saldo)}
-                    </span>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-3">
+              <h4 className="font-medium text-sm">Próximo Mês</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Receitas previstas:</span>
+                  <span className="text-green-600 font-medium">
+                    {formatCurrency(reportsData.projections.nextMonth.income)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Gastos previstos:</span>
+                  <span className="text-red-600 font-medium">
+                    {formatCurrency(reportsData.projections.nextMonth.expenses)}
+                  </span>
+                </div>
+                <div className="flex justify-between font-medium border-t pt-2">
+                  <span>Saldo projetado:</span>
+                  <span className={reportsData.projections.nextMonth.balance >= 0 ? 'text-green-600' : 'text-red-600'}>
+                    {formatCurrency(reportsData.projections.nextMonth.balance)}
+                  </span>
                 </div>
               </div>
-            ))}
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="font-medium text-sm">Próximos 3 Meses</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Receitas previstas:</span>
+                  <span className="text-green-600 font-medium">
+                    {formatCurrency(reportsData.projections.next3Months.income)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Gastos previstos:</span>
+                  <span className="text-red-600 font-medium">
+                    {formatCurrency(reportsData.projections.next3Months.expenses)}
+                  </span>
+                </div>
+                <div className="flex justify-between font-medium border-t pt-2">
+                  <span>Saldo projetado:</span>
+                  <span className={reportsData.projections.next3Months.balance >= 0 ? 'text-green-600' : 'text-red-600'}>
+                    {formatCurrency(reportsData.projections.next3Months.balance)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="font-medium text-sm">Cenários de Saldo Mensal</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Otimista:</span>
+                  <span className="text-green-600 font-medium">
+                    {formatCurrency(reportsData.projections.scenarios.optimistic)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Realista:</span>
+                  <span className="font-medium">
+                    {formatCurrency(reportsData.projections.scenarios.realistic)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Pessimista:</span>
+                  <span className="text-red-600 font-medium">
+                    {formatCurrency(reportsData.projections.scenarios.pessimistic)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Temporal Analysis */}
+      <TemporalAnalysisCharts 
+        data={reportsData.temporalAnalysis} 
+        isLoading={reportsData.isLoading}
+      />
+
+      {/* Category Analysis */}
+      <CategoryAnalysisCharts 
+        data={reportsData.categoryAnalysis} 
+        isLoading={reportsData.isLoading}
+      />
+
+      {/* Behavioral Analysis */}
+      <BehavioralAnalysisCharts 
+        data={reportsData.behavioralInsights} 
+        isLoading={reportsData.isLoading}
+      />
+
+      {/* Payment Method Analysis */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Análise por Forma de Pagamento
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {reportsData.paymentMethodAnalysis.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Nenhuma forma de pagamento identificada no período</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {reportsData.paymentMethodAnalysis.map((method, index) => (
+                <div key={method.method} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className="w-8 h-8 rounded-full p-0 flex items-center justify-center">
+                        {index + 1}
+                      </Badge>
+                      <div>
+                        <div className="font-medium">{method.method}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {method.transactionCount} transações • Ticket médio: {formatCurrency(method.avgAmount)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Categorias: {method.categories.slice(0, 3).join(', ')}
+                          {method.categories.length > 3 && ` +${method.categories.length - 3}`}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold">{formatCurrency(method.amount)}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {method.percentage.toFixed(1)}%
+                      </div>
+                    </div>
+                  </div>
+                  <Progress value={method.percentage} className="h-2" />
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Summary Footer */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="text-center text-sm text-muted-foreground">
+            <p>
+              Relatório gerado automaticamente baseado em {reportsData.kpis.transactionCount} transações 
+              de {reportsData.filters.startDate.toLocaleDateString('pt-BR')} até {reportsData.filters.endDate.toLocaleDateString('pt-BR')}
+            </p>
+            <p className="mt-2">
+              Score de Saúde Financeira: {reportsData.kpis.financialHealthScore.toFixed(0)}/100 • 
+              Última atualização: {new Date().toLocaleString('pt-BR')}
+            </p>
           </div>
         </CardContent>
       </Card>

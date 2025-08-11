@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { normalizePhoneNumber } from "@/lib/phone-utils";
 
 export interface Movimentacao {
   id: string;
@@ -100,21 +101,24 @@ export const useMovimentacoes = () => {
 
       // Estratégia 2: Buscar por numero_wpp usando TRIM() no SQL (dados do WhatsApp)
       if (userWhatsapp) {
-        const cleanWhatsapp = userWhatsapp.trim().replace(/\s+/g, '');
-        const variations = [
-          cleanWhatsapp,
-          cleanWhatsapp.substring(2),
-          cleanWhatsapp.substring(1),
-          cleanWhatsapp.replace(/^55/, ''),
-        ].filter(num => num && num.length >= 10);
-
-        console.log('Buscando por números:', variations);
-
+        const normalizedWhatsapp = normalizePhoneNumber(userWhatsapp);
+        console.log('Número normalizado:', normalizedWhatsapp);
+        
+        // Criar diferentes formatos para busca
+        const searchFormats = [
+          normalizedWhatsapp, // 556992290572
+          `+${normalizedWhatsapp}`, // +556992290572
+          normalizedWhatsapp.substring(2), // 6992290572 (sem código do país)
+          normalizedWhatsapp.substring(4), // 92290572 (sem código país e DDD)
+        ].filter(num => num && num.length >= 8);
+        
+        console.log('Buscando por números:', searchFormats);
+        
         // Buscar usando uma estratégia mais agressiva com ILIKE
         const { data: registrosPorWhatsapp } = await supabase
           .from('registros_financeiros')
           .select('*')
-          .or(variations.map(num => `numero_wpp.ilike.%${num}%`).join(','))
+          .or(searchFormats.map(num => `numero_wpp.ilike.%${num}%`).join(','))
           .order('data', { ascending: false });
 
         if (registrosPorWhatsapp && registrosPorWhatsapp.length > 0) {

@@ -2,6 +2,7 @@ import * as React from "react"
 import { Input } from "@/components/ui/input"
 import { CountrySelector, Country, countries } from "@/components/ui/country-selector"
 import { cn } from "@/lib/utils"
+import { normalizePhoneNumber, validatePhoneNumber, formatPhoneForDisplay } from "@/lib/phone-utils"
 
 interface PhoneInputProps {
   value?: string
@@ -22,6 +23,16 @@ export function PhoneInput({ value = "", onChange, placeholder, disabled, classN
   // Parse initial value if provided
   React.useEffect(() => {
     if (value && value !== phoneNumber) {
+      console.log('PhoneInput: Parsing initial value:', value);
+      
+      // Se o valor já está normalizado (como 556992290572), exibir formatado
+      if (value.match(/^55\d{10,11}$/)) {
+        const formatted = formatPhoneForDisplay(value);
+        console.log('PhoneInput: Valor já normalizado, formatando para exibição:', formatted);
+        setPhoneNumber(formatted);
+        return;
+      }
+      
       // Try to extract country code and number from international format
       const cleanValue = value.replace(/\D/g, '')
       
@@ -72,22 +83,46 @@ export function PhoneInput({ value = "", onChange, placeholder, disabled, classN
     const formatted = formatPhoneNumber(newValue, selectedCountry)
     setPhoneNumber(formatted)
     
-    // Create international format for onChange
+    // Create normalized format for onChange (556992290572)
     if (onChange) {
       const cleanNumber = formatted.replace(/\D/g, '')
-      const internationalFormat = cleanNumber ? `${selectedCountry.dialCode}${cleanNumber}` : ""
-      onChange(internationalFormat)
+      let normalizedNumber = '';
+      
+      if (selectedCountry.code === "BR") {
+        // Para Brasil, garantir formato 556992290572
+        if (cleanNumber) {
+          normalizedNumber = normalizePhoneNumber(`${selectedCountry.dialCode}${cleanNumber}`);
+        }
+      } else {
+        // Para outros países, manter formato internacional
+        normalizedNumber = cleanNumber ? `${selectedCountry.dialCode}${cleanNumber}` : "";
+      }
+      
+      console.log('PhoneInput: Chamando onChange com valor normalizado:', normalizedNumber);
+      onChange(normalizedNumber)
     }
   }
 
   const handleCountrySelect = (country: Country) => {
     setSelectedCountry(country)
     
-    // Update international format when country changes
+    // Update normalized format when country changes
     if (onChange) {
       const cleanNumber = phoneNumber.replace(/\D/g, '')
-      const internationalFormat = cleanNumber ? `${country.dialCode}${cleanNumber}` : ""
-      onChange(internationalFormat)
+      let normalizedNumber = '';
+      
+      if (country.code === "BR") {
+        // Para Brasil, garantir formato 556992290572
+        if (cleanNumber) {
+          normalizedNumber = normalizePhoneNumber(`${country.dialCode}${cleanNumber}`);
+        }
+      } else {
+        // Para outros países, manter formato internacional
+        normalizedNumber = cleanNumber ? `${country.dialCode}${cleanNumber}` : "";
+      }
+      
+      console.log('PhoneInput: País alterado, novo valor normalizado:', normalizedNumber);
+      onChange(normalizedNumber)
     }
   }
 

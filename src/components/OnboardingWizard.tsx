@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { normalizePhoneNumber } from '@/lib/phone-utils';
 import { OnboardingStep1 } from './onboarding/OnboardingStep1';
 import { OnboardingStep2 } from './onboarding/OnboardingStep2';
 import { OnboardingStep3 } from './onboarding/OnboardingStep3';
@@ -68,9 +69,9 @@ export const OnboardingWizard = () => {
       const profileUpdate: any = {
         data_nascimento: data.dataNascimento || null,
         cpf: data.cpf || null,
-        numero_wpp: data.numero_wpp || null,
+        numero_wpp: data.numero_wpp ? normalizePhoneNumber(data.numero_wpp) : null,
         nome_conjuge: data.nomeConjuge || null,
-        telefone_conjuge: data.telefoneConjuge || null,
+        telefone_conjuge: data.telefoneConjuge ? normalizePhoneNumber(data.telefoneConjuge) : null,
         preferencia_notificacao: data.preferenciasNotificacao || null,
         objetivo_principal: data.objetivoPrincipal || null,
         meta_economia_mensal: (data.metaEconomia ?? data.metaEconomiaMensal) || null,

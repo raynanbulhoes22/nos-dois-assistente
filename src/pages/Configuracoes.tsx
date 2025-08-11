@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { normalizePhoneNumber, validatePhoneNumber as validatePhone } from "@/lib/phone-utils";
 import { User, DollarSign, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,10 +65,8 @@ export const Configuracoes = () => {
   };
 
   const validatePhoneNumber = (phone: string): boolean => {
-    // Remove all non-digits from international format
-    const normalized = phone.replace(/\D/g, '');
-    // Should have between 10 and 15 digits (including country code)
-    return normalized.length >= 10 && normalized.length <= 15;
+    // Usar a função de validação da lib
+    return validatePhone(phone);
   };
 
   const handleConnectWhatsapp = async () => {
@@ -85,16 +84,19 @@ export const Configuracoes = () => {
     setIsConnectingWhatsapp(true);
 
     try {
-      // whatsappNumber already comes in international format from PhoneInput
+      // Normalizar o número para o formato 556992290572
+      const normalizedPhone = normalizePhoneNumber(whatsappNumber);
+      console.log('Conectando WhatsApp com número normalizado:', normalizedPhone);
+      
       const { error } = await supabase
         .from('profiles')
-        .update({ numero_wpp: whatsappNumber } as any)
+        .update({ numero_wpp: normalizedPhone } as any)
         .eq('id', user.id);
 
       if (error) throw error;
 
       // Atualizar o estado local
-      setProfile(prev => prev ? { ...prev, numero_wpp: whatsappNumber } : null);
+      setProfile(prev => prev ? { ...prev, numero_wpp: normalizedPhone } : null);
       
       toast({
         title: "✅ Sucesso!",

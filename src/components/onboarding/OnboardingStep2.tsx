@@ -28,10 +28,10 @@ export const OnboardingStep2 = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('handleSubmit called');
-    console.log('data.numero_wpp:', data.numero_wpp);
+    console.log('data.numero_wpp (valor final):', data.numero_wpp);
     console.log('isCasalPlan:', isCasalPlan);
     console.log('data.nomeConjuge:', data.nomeConjuge);
-    console.log('data.telefoneConjuge:', data.telefoneConjuge);
+    console.log('data.telefoneConjuge (valor final):', data.telefoneConjuge);
     
     if (!data.numero_wpp) {
       console.log('Validation failed: numero_wpp missing');

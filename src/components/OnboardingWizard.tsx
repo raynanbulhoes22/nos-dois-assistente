@@ -182,33 +182,52 @@ export const OnboardingWizard = () => {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="mb-6 sm:mb-8">
-        <div className="flex justify-between items-center mb-4">
+      {/* Mobile Progress - App-like */}
+      <div className="mb-6 sm:mb-8 bg-card/50 sm:bg-transparent rounded-2xl sm:rounded-none p-4 sm:p-0 backdrop-blur-sm sm:backdrop-blur-none border sm:border-0">
+        {/* Mobile Step Indicators */}
+        <div className="flex justify-center items-center mb-3 sm:mb-4 sm:justify-between">
           {[1, 2, 3, 4, 5].map((step) => (
-            <div
-              key={step}
-              className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-colors ${
-                currentStep >= step
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {step}
+            <div key={step} className="flex items-center">
+              <div
+                className={`flex items-center justify-center w-8 h-8 sm:w-8 sm:h-8 rounded-full text-sm font-semibold transition-all duration-300 ${
+                  currentStep >= step
+                    ? 'bg-primary text-primary-foreground shadow-lg scale-110 sm:scale-100'
+                    : 'bg-muted/60 sm:bg-muted text-muted-foreground'
+                }`}
+              >
+                {currentStep > step ? '✓' : step}
+              </div>
+              {step < 5 && (
+                <div className="w-6 sm:w-8 h-0.5 mx-1 sm:mx-2 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={`h-full bg-primary transition-all duration-500 ${
+                      currentStep > step ? 'w-full' : 'w-0'
+                    }`}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>
-        <div className="w-full bg-muted rounded-full h-2">
+        
+        {/* Progress Bar */}
+        <div className="w-full bg-muted/40 sm:bg-muted rounded-full h-1.5 sm:h-2 mb-3 sm:mb-2">
           <div
-            className="bg-primary h-2 rounded-full transition-all duration-300"
+            className="bg-gradient-to-r from-primary to-primary/80 sm:bg-primary h-full rounded-full transition-all duration-500 ease-out shadow-sm"
             style={{ width: `${(currentStep / 5) * 100}%` }}
           />
         </div>
-        <p className="text-center text-sm text-muted-foreground mt-2">
-          Passo {currentStep} de 5
+        
+        {/* Step Text */}
+        <p className="text-center text-xs sm:text-sm text-muted-foreground font-medium">
+          Etapa {currentStep} de 5
         </p>
       </div>
       
-      {renderStep()}
+      {/* Step Content with Mobile Optimizations */}
+      <div className="animate-fade-in">
+        {renderStep()}
+      </div>
     </div>
   );
 };

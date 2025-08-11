@@ -179,8 +179,38 @@ export const Movimentacoes = () => {
   return (
     <div className="page-container">
       <div className="flex flex-col h-full">
-        {/* Page Header */}
-        <div className="px-4 sm:px-6 pt-4 pb-2">
+        {/* Page Header - Web Only */}
+        <div className="hidden md:block border-b bg-card/50 backdrop-blur-sm">
+          <div className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">Movimentações Financeiras</h1>
+                <p className="text-muted-foreground">Gerencie suas entradas e saídas</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button 
+                  onClick={() => openForm('entrada')} 
+                  className="bg-income hover:bg-income/90"
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Entrada
+                </Button>
+                <Button 
+                  onClick={() => openForm('saida')} 
+                  variant="outline"
+                  size="sm"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nova Saída
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Header */}
+        <div className="md:hidden px-4 sm:px-6 pt-4 pb-2">
           <h1 className="page-title">Movimentações</h1>
         </div>
 
@@ -220,7 +250,37 @@ export const Movimentacoes = () => {
               updateFilter('transactionType', type);
             }}
           >
-            <div className="px-4 sm:px-6 pb-3">
+            {/* Web Navigation */}
+            <div className="hidden md:block border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+              <div className="px-6 py-3">
+                <TabsList className="inline-flex h-12 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground">
+                  <TabsTrigger 
+                    value="todas" 
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                  >
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Todas as Movimentações
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="entradas"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                  >
+                    <TrendingUp className="h-4 w-4 mr-2 text-income" />
+                    Entradas
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="saidas"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                  >
+                    <TrendingDown className="h-4 w-4 mr-2 text-expense" />
+                    Saídas
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+            </div>
+
+            {/* Mobile Navigation */}
+            <div className="md:hidden px-4 sm:px-6 pb-3">
               <TabsList className="grid w-full max-w-md grid-cols-3 h-10">
                 <TabsTrigger value="todas" className="text-sm">Todas</TabsTrigger>
                 <TabsTrigger value="entradas" className="text-sm">Entradas</TabsTrigger>

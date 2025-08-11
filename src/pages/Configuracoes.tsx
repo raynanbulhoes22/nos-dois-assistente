@@ -6,11 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { PhoneInput } from "@/components/ui/phone-input";
-import { User, Heart, DollarSign, AlertTriangle } from "lucide-react";
+import { User, DollarSign, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useFinancialStats } from "@/hooks/useFinancialStats";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface Profile {
   id: string;
@@ -18,15 +19,19 @@ interface Profile {
   email?: string;
   grupo_id?: string;
   numero_wpp?: string;
+  telefone_conjuge?: string;
+  nome_conjuge?: string;
   meta_economia_mensal?: number;
 }
 
 export const Configuracoes = () => {
   const { user } = useAuth();
   const stats = useFinancialStats();
+  const { status: subscriptionStatus, checkSubscription } = useSubscription();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [spousePhoneNumber, setSpousePhoneNumber] = useState("");
   const [isConnectingWhatsapp, setIsConnectingWhatsapp] = useState(false);
   const [isRemovingWhatsapp, setIsRemovingWhatsapp] = useState(false);
   
@@ -49,6 +54,7 @@ export const Configuracoes = () => {
 
       setProfile(profileData);
       setWhatsappNumber((profileData as any)?.numero_wpp || "");
+      setSpousePhoneNumber((profileData as any)?.telefone_conjuge || "");
 
     } catch (error) {
       console.error('Erro ao buscar dados:', error);
@@ -141,6 +147,72 @@ export const Configuracoes = () => {
     }
   };
 
+  const handleConnectSpouseWhatsapp = async () => {
+    if (!user) return;
+
+    if (!validatePhoneNumber(spousePhoneNumber)) {
+      toast({
+        title: "❌ Número inválido",
+        description: "Verifique o número do cônjuge e tente novamente.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ telefone_conjuge: spousePhoneNumber } as any)
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setProfile(prev => prev ? { ...prev, telefone_conjuge: spousePhoneNumber } : null);
+      
+      toast({
+        title: "✅ Sucesso!",
+        description: "Número do cônjuge conectado com sucesso!"
+      });
+
+    } catch (error) {
+      console.error('Erro ao conectar WhatsApp do cônjuge:', error);
+      toast({
+        title: "❌ Erro",
+        description: "Não foi possível conectar o número do cônjuge. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDisconnectSpouseWhatsapp = async () => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ telefone_conjuge: null } as any)
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setProfile(prev => prev ? { ...prev, telefone_conjuge: null } : null);
+      setSpousePhoneNumber("");
+      
+      toast({
+        title: "✅ Sucesso!",
+        description: "Número do cônjuge removido com sucesso!"
+      });
+
+    } catch (error) {
+      console.error('Erro ao desconectar WhatsApp do cônjuge:', error);
+      toast({
+        title: "❌ Erro",
+        description: "Não foi possível remover o número do cônjuge. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
 
   const handleSaveProfile = async () => {
     if (!user || !profile) return;
@@ -171,6 +243,7 @@ export const Configuracoes = () => {
 
   useEffect(() => {
     fetchData();
+    checkSubscription();
   }, [user]);
 
   const formatCurrency = (value: number) => {
@@ -179,6 +252,8 @@ export const Configuracoes = () => {
       currency: 'BRL'
     }).format(value);
   };
+
+  const isCouplesPlan = subscriptionStatus?.subscription_tier === 'Casal';
 
   if (isLoading) {
     return (
@@ -279,47 +354,6 @@ export const Configuracoes = () => {
           </CardContent>
           </Card>
 
-          {/* Sistema de Casal */}
-          <Card className="section-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-3">
-                <div className="icon-container bg-pink-100 dark:bg-pink-900/20 text-pink-600">
-                  <Heart className="h-5 w-5" />
-                </div>
-                Sistema de Casal
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-semibold">Modo Individual</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Visualizar apenas suas próprias transações
-                    </p>
-                  </div>
-                  <Switch />
-                </div>
-                
-                <Separator />
-                
-                <div>
-                  <Label className="text-base font-semibold">Código do Grupo</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Input
-                      placeholder="Digite o código do seu parceiro"
-                      value={profile?.grupo_id || ""}
-                    />
-                    <Button variant="outline">Conectar</Button>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Seu código: <code className="bg-muted px-2 py-1 rounded text-xs">{user?.id.slice(0, 8)}</code>
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Notificações */}
           <Card className="section-card">
             <CardHeader>
@@ -378,7 +412,10 @@ export const Configuracoes = () => {
             <CardContent>
               <div className="space-y-6">
                 <p className="text-muted-foreground">
-                  Conecte seu WhatsApp para registrar gastos por mensagem ou áudio
+                  {isCouplesPlan 
+                    ? "Conecte seu WhatsApp e o do seu cônjuge para registrar gastos por mensagem ou áudio" 
+                    : "Conecte seu WhatsApp para registrar gastos por mensagem ou áudio"
+                  }
                 </p>
                 
                 {(profile as any)?.numero_wpp ? (
@@ -422,6 +459,59 @@ export const Configuracoes = () => {
                           {isConnectingWhatsapp ? "Conectando..." : "Conectar"}
                         </Button>
                       </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Spouse WhatsApp for Couple Plan */}
+                {isCouplesPlan && (
+                  <div className="space-y-4">
+                    <Separator />
+                    <div>
+                      <h3 className="font-semibold mb-2">WhatsApp do Cônjuge</h3>
+                      {(profile as any)?.telefone_conjuge ? (
+                        <div className="p-4 bg-success-muted border border-green-200 dark:border-green-800 rounded-xl">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold text-success">
+                                ✅ WhatsApp do Cônjuge Conectado
+                              </p>
+                              <p className="text-sm text-success">
+                                Número: {(profile as any).telefone_conjuge}
+                              </p>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={handleDisconnectSpouseWhatsapp}
+                              className="text-red-600 border-red-200 hover:bg-red-50"
+                            >
+                              Remover
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="spouse-whatsapp-phone">Número do WhatsApp do Cônjuge</Label>
+                            <div className="flex gap-2 mt-2">
+                              <PhoneInput
+                                value={spousePhoneNumber}
+                                onChange={setSpousePhoneNumber}
+                                placeholder="Digite o número do cônjuge"
+                                className="flex-1"
+                              />
+                              <Button 
+                                variant="outline" 
+                                onClick={handleConnectSpouseWhatsapp}
+                                disabled={!spousePhoneNumber}
+                              >
+                                Conectar
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

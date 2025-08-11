@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { CreditCard, X, Settings } from "lucide-react";
 
 export const Assinaturas = () => {
   const { user } = useAuth();
@@ -64,10 +65,9 @@ export const Assinaturas = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Meu Plano</h1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleRefresh} disabled={busy}>Atualizar status</Button>
-          {status?.subscribed && (
-            <Button onClick={handlePortal} disabled={busy}>Gerenciar plano</Button>
-          )}
+          <Button variant="outline" onClick={handleRefresh} disabled={busy}>
+            Atualizar status
+          </Button>
         </div>
       </div>
 
@@ -104,15 +104,41 @@ export const Assinaturas = () => {
           </CardHeader>
           <CardContent>
             {status.subscribed ? (
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-lg font-semibold">Plano {status.subscription_tier}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Válido até: {status.subscription_end ? new Date(status.subscription_end).toLocaleDateString('pt-BR') : 'N/A'}
-                  </p>
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-lg font-semibold">Plano {status.subscription_tier}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Válido até: {status.subscription_end ? new Date(status.subscription_end).toLocaleDateString('pt-BR') : 'N/A'}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Renovação automática ativa</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Renovação automática ativa</p>
+                
+                {/* Ações de Gerenciamento */}
+                <div className="flex gap-2 pt-3 border-t">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handlePortal} 
+                    disabled={busy}
+                    className="flex items-center gap-2"
+                  >
+                    <Settings className="h-4 w-4" />
+                    Gerenciar Plano
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handlePortal} 
+                    disabled={busy}
+                    className="flex items-center gap-2 text-destructive hover:bg-destructive/10"
+                  >
+                    <X className="h-4 w-4" />
+                    Cancelar Assinatura
+                  </Button>
                 </div>
               </div>
             ) : (

@@ -145,22 +145,27 @@ export const useMovimentacoes = () => {
         
         // Lógica inteligente para definir o título da transação
         const getTransactionTitle = (item: any): string => {
-          // 1. Se tem observação específica, usa ela
+          // 1. Prioridade: usar o campo titulo da tabela se existir
+          if (item.titulo && item.titulo.trim()) {
+            return item.titulo.trim();
+          }
+          
+          // 2. Se tem observação específica, usa ela
           if (item.observacao && item.observacao.trim() && item.observacao.length > 3) {
             return item.observacao.trim();
           }
           
-          // 2. Se tem categoria definida e é diferente de "Sem categoria", usa ela
+          // 3. Se tem categoria definida e é diferente de "Sem categoria", usa ela
           if (item.categoria && item.categoria !== 'Sem categoria' && item.categoria.trim()) {
             return item.categoria.trim();
           }
           
-          // 3. Se tem estabelecimento, usa ele
+          // 4. Se tem estabelecimento, usa ele
           if (item.estabelecimento && item.estabelecimento.trim()) {
             return item.estabelecimento.trim();
           }
           
-          // 4. Se tem nome mas não é um nome de pessoa (contém espaço + sobrenome), usa ele
+          // 5. Se tem nome mas não é um nome de pessoa (contém espaço + sobrenome), usa ele
           if (item.nome && item.nome.trim()) {
             const nome = item.nome.trim();
             // Verifica se não é um nome de pessoa (heurística simples)
@@ -170,7 +175,7 @@ export const useMovimentacoes = () => {
             }
           }
           
-          // 5. Fallback baseado no tipo de movimento
+          // 6. Fallback baseado no tipo de movimento
           if (isEntrada) {
             return 'Entrada de valor';
           } else {

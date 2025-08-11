@@ -13,7 +13,7 @@ import Index from "./pages/Index";
 import { Movimentacoes } from "./pages/Movimentacoes";
 import { Assinaturas } from "./pages/Assinaturas";
 import { Orcamento } from "./pages/Orcamento";
-import { Dividas } from "./pages/Dividas";
+
 import { Relatorios } from "./pages/Relatorios";
 import { Configuracoes } from "./pages/Configuracoes";
 import PrimeirosPasos from "./pages/PrimeirosPasos";
@@ -72,11 +72,6 @@ const App = () => {
                       <Route path="/orcamento" element={
                         <ProtectedRoute>
                           <Orcamento />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dividas" element={
-                        <ProtectedRoute>
-                          <Dividas />
                         </ProtectedRoute>
                       } />
                       <Route path="/relatorios" element={

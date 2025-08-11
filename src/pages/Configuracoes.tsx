@@ -450,9 +450,12 @@ export const Configuracoes = () => {
                         <PhoneInput
                           value={whatsappNumber}
                           onChange={setWhatsappNumber}
-                          placeholder="Digite seu número"
+                          placeholder="DDD + 8 dígitos (ex: 11 33334444)"
                           className="flex-1"
                         />
+                        <div className="text-xs text-muted-foreground mb-2">
+                          ⚠️ <strong>NÃO</strong> coloque o 9 após o DDD
+                        </div>
                         <Button 
                           variant="outline" 
                           onClick={handleConnectWhatsapp}
@@ -500,9 +503,12 @@ export const Configuracoes = () => {
                               <PhoneInput
                                 value={spousePhoneNumber}
                                 onChange={setSpousePhoneNumber}
-                                placeholder="Digite o número do cônjuge"
+                                placeholder="DDD + 8 dígitos (ex: 11 33334444)"
                                 className="flex-1"
                               />
+                              <div className="text-xs text-muted-foreground mb-2">
+                                ⚠️ <strong>NÃO</strong> coloque o 9 após o DDD
+                              </div>
                               <Button 
                                 variant="outline" 
                                 onClick={handleConnectSpouseWhatsapp}

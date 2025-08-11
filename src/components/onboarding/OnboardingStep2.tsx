@@ -57,10 +57,15 @@ export const OnboardingStep2 = ({
             <PhoneInput value={data.numero_wpp} onChange={value => setData({
             ...data,
             numero_wpp: value
-          })} placeholder="DDD + número (ex: 11 99999999)" className="text-base sm:text-sm" />
-            <p className="text-xs text-muted-foreground">
-              Digite apenas DDD + 8 dígitos do número (sem o 9 adicional)
-            </p>
+          })} placeholder="DDD + 8 dígitos (ex: 11 33334444)" className="text-base sm:text-sm" />
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">
+                ⚠️ <strong>Importante:</strong> NÃO coloque o 9 após o DDD
+              </p>
+              <p className="text-xs text-muted-foreground">
+                ✅ Correto: (11) 3333-4444 | ❌ Errado: (11) 93333-4444
+              </p>
+            </div>
           </div>
 
           {/* Casal Plan Fields */}
@@ -83,10 +88,15 @@ export const OnboardingStep2 = ({
                 <PhoneInput value={data.telefoneConjuge || ''} onChange={value => setData({
               ...data,
               telefoneConjuge: value
-            })} placeholder="DDD + número (ex: 11 99999999)" className="text-base sm:text-sm" />
-                <p className="text-xs text-muted-foreground">
-                  Digite apenas DDD + 8 dígitos do número (sem o 9 adicional)
-                </p>
+            })} placeholder="DDD + 8 dígitos (ex: 11 33334444)" className="text-base sm:text-sm" />
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground">
+                    ⚠️ <strong>Importante:</strong> NÃO coloque o 9 após o DDD
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    ✅ Correto: (11) 3333-4444 | ❌ Errado: (11) 93333-4444
+                  </p>
+                </div>
               </div>
             </div>}
 

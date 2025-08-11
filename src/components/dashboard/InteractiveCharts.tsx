@@ -90,15 +90,21 @@ export const InteractiveCharts = ({
     if (active && payload && payload.length) {
       return <div className="bg-background border rounded-lg shadow-lg p-3 max-w-xs">
           {label && <p className="font-medium mb-2 text-sm">{label}</p>}
-          {payload.map((entry: any, index: number) => <p key={index} className="text-sm flex items-center gap-2">
+          {payload.map((entry: any, index: number) => {
+            const value = typeof entry.value === 'number' ? entry.value : 0;
+            const isNegative = value < 0;
+            const textColor = isNegative ? 'text-destructive' : 'text-success';
+            
+            return <p key={index} className="text-sm flex items-center gap-2">
               <span className="w-3 h-3 rounded-full" style={{
-            backgroundColor: entry.color
-          }} />
+                backgroundColor: entry.color
+              }} />
               <span className="flex-1">{entry.name}:</span>
-              <span className="font-medium">
+              <span className={`font-medium ${textColor}`}>
                 {typeof entry.value === 'number' ? formatCurrency(entry.value) : entry.value}
               </span>
-            </p>)}
+            </p>
+          })}
         </div>;
     }
     return null;

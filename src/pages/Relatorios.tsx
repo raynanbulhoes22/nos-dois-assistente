@@ -34,6 +34,15 @@ export const Relatorios = () => {
 
   // Export functionality
   const handleExportPDF = async () => {
+    if (!data.kpis || filteredMovimentacoes.length === 0) {
+      toast({
+        title: "Nenhum dado disponível",
+        description: "Aguarde o carregamento dos dados ou aplique filtros válidos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setExportLoading('pdf');
     try {
       const exportData = {
@@ -59,6 +68,15 @@ export const Relatorios = () => {
   };
 
   const handleExportExcel = async () => {
+    if (!data.kpis || filteredMovimentacoes.length === 0) {
+      toast({
+        title: "Nenhum dado disponível",
+        description: "Aguarde o carregamento dos dados ou aplique filtros válidos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setExportLoading('excel');
     try {
       const exportData = {
@@ -84,6 +102,15 @@ export const Relatorios = () => {
   };
 
   const handleExportCSV = async () => {
+    if (!data.kpis || filteredMovimentacoes.length === 0) {
+      toast({
+        title: "Nenhum dado disponível",
+        description: "Aguarde o carregamento dos dados ou aplique filtros válidos.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setExportLoading('csv');
     try {
       const exportData = {

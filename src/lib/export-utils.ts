@@ -12,12 +12,17 @@ export interface ExportData {
 
 export const generateFileName = (type: 'pdf' | 'excel' | 'csv', filters: any) => {
   const date = format(new Date(), 'yyyy-MM-dd');
-  const period = filters.period.preset || 'personalizado';
+  const period = filters?.period?.preset || filters?.groupBy || 'relatorio';
   return `relatorio-financeiro-${period}-${date}.${type === 'excel' ? 'xlsx' : type}`;
 };
 
 export const exportToPDF = async (data: ExportData, filters: any) => {
   try {
+    // Validar dados
+    if (!data || !data.reportData) {
+      throw new Error('Dados do relatório não encontrados');
+    }
+    
     // Criar um elemento temporário com o conteúdo do relatório
     const reportElement = document.getElementById('relatorios-content');
     if (!reportElement) {
@@ -45,10 +50,11 @@ export const exportToPDF = async (data: ExportData, filters: any) => {
     pdf.setFontSize(16);
     pdf.text('Relatório Financeiro', 20, 20);
     
+    
     pdf.setFontSize(12);
-    const periodText = filters.period.preset === 'custom' 
-      ? `${format(new Date(filters.period.start), 'dd/MM/yyyy', { locale: ptBR })} - ${format(new Date(filters.period.end), 'dd/MM/yyyy', { locale: ptBR })}`
-      : filters.period.preset;
+    const periodText = filters?.startDate && filters?.endDate
+      ? `${format(new Date(filters.startDate), 'dd/MM/yyyy', { locale: ptBR })} - ${format(new Date(filters.endDate), 'dd/MM/yyyy', { locale: ptBR })}`
+      : 'Período não especificado';
     pdf.text(`Período: ${periodText}`, 20, 30);
     pdf.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}`, 20, 40);
 
@@ -78,6 +84,11 @@ export const exportToPDF = async (data: ExportData, filters: any) => {
 
 export const exportToExcel = async (data: ExportData, filters: any) => {
   try {
+    // Validar dados
+    if (!data || !data.reportData || !data.filteredTransactions) {
+      throw new Error('Dados insuficientes para gerar Excel');
+    }
+    
     const { reportData, filteredTransactions } = data;
     
     // Criar workbook
@@ -87,9 +98,9 @@ export const exportToExcel = async (data: ExportData, filters: any) => {
     const summaryData = [
       ['RELATÓRIO FINANCEIRO'],
       [''],
-      ['Período:', filters.period.preset === 'custom' 
-        ? `${format(new Date(filters.period.start), 'dd/MM/yyyy')} - ${format(new Date(filters.period.end), 'dd/MM/yyyy')}`
-        : filters.period.preset],
+      ['Período:', filters?.startDate && filters?.endDate
+        ? `${format(new Date(filters.startDate), 'dd/MM/yyyy')} - ${format(new Date(filters.endDate), 'dd/MM/yyyy')}`
+        : 'Período não especificado'],
       ['Gerado em:', format(new Date(), 'dd/MM/yyyy HH:mm')],
       [''],
       ['INDICADORES PRINCIPAIS'],
@@ -178,6 +189,11 @@ export const exportToExcel = async (data: ExportData, filters: any) => {
 
 export const exportToCSV = async (data: ExportData, filters: any) => {
   try {
+    // Validar dados
+    if (!data || !data.filteredTransactions) {
+      throw new Error('Transações não encontradas para exportação');
+    }
+    
     const { filteredTransactions } = data;
     
     // Preparar dados para CSV

@@ -108,12 +108,23 @@ export const OnboardingStep5 = ({ data, setData, onComplete, onPrev, isLoading }
             </div>
           </div>
 
-          <div className="flex justify-between">
-            <Button type="button" variant="outline" onClick={onPrev} disabled={isLoading}>
-              Anterior
+          {/* Navigation Buttons - Mobile Optimized */}
+          <div className="flex gap-3 pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onPrev} 
+              disabled={isLoading}
+              className="flex-1 h-12 sm:h-10 text-base sm:text-sm"
+            >
+              ← Anterior
             </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Finalizando...' : 'Finalizar Configuração'}
+            <Button 
+              type="submit" 
+              disabled={isLoading}
+              className="flex-1 h-12 sm:h-10 text-base sm:text-sm bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+            >
+              {isLoading ? 'Finalizando...' : 'Finalizar Configuração 🎉'}
             </Button>
           </div>
         </form>

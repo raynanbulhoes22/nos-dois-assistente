@@ -17,35 +17,41 @@ export const OnboardingStep1 = ({ data, setData, onNext }: OnboardingStep1Props)
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Dados Pessoais</CardTitle>
+    <Card className="border-0 sm:border shadow-none sm:shadow-sm bg-card/80 sm:bg-card backdrop-blur-sm sm:backdrop-blur-none">
+      <CardHeader className="pb-4 sm:pb-6">
+        <CardTitle className="text-lg sm:text-xl">📋 Dados Pessoais</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="dataNascimento">Data de Nascimento</Label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-3">
+            <Label htmlFor="dataNascimento" className="text-sm font-medium">📅 Data de Nascimento</Label>
             <Input
               id="dataNascimento"
               type="date"
               value={data.dataNascimento || ''}
               onChange={(e) => setData({ ...data, dataNascimento: e.target.value })}
+              className="text-base sm:text-sm h-12 sm:h-10"
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="cpf">CPF (opcional)</Label>
+          <div className="space-y-3">
+            <Label htmlFor="cpf" className="text-sm font-medium">🆔 CPF (opcional)</Label>
             <Input
               id="cpf"
               placeholder="000.000.000-00"
               value={data.cpf || ''}
               onChange={(e) => setData({ ...data, cpf: e.target.value })}
+              className="text-base sm:text-sm h-12 sm:h-10"
             />
           </div>
 
-          <div className="flex justify-end">
-            <Button type="submit">
-              Próximo
+          {/* Navigation Buttons - Mobile Optimized */}
+          <div className="flex gap-3 pt-4">
+            <Button 
+              type="submit" 
+              className="flex-1 h-12 sm:h-10 text-base sm:text-sm bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+            >
+              Próximo →
             </Button>
           </div>
         </form>

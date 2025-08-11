@@ -159,12 +159,21 @@ export const OnboardingStep4 = ({ data, setData, onNext, onPrev }: OnboardingSte
             </div>
           )}
 
-          <div className="flex justify-between">
-            <Button type="button" variant="outline" onClick={onPrev}>
-              Anterior
+          {/* Navigation Buttons - Mobile Optimized */}
+          <div className="flex gap-3 pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={onPrev} 
+              className="flex-1 h-12 sm:h-10 text-base sm:text-sm"
+            >
+              ← Anterior
             </Button>
-            <Button type="submit">
-              Próximo
+            <Button 
+              type="submit" 
+              className="flex-1 h-12 sm:h-10 text-base sm:text-sm bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+            >
+              Próximo →
             </Button>
           </div>
         </form>

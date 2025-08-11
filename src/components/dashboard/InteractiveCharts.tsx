@@ -1,53 +1,28 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  PieChart, BarChart3, TrendingUp, Activity, DollarSign, Target,
-  ChevronLeft, ChevronRight 
-} from "lucide-react";
+import { PieChart, BarChart3, TrendingUp, Activity, DollarSign, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import {
-  PieChart as RechartsPieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  ComposedChart
-} from "recharts";
-
-const COLORS = [
-  'hsl(var(--primary))',
-  'hsl(var(--secondary))', 
-  'hsl(var(--accent))',
-  'hsl(var(--warning))',
-  'hsl(var(--destructive))',
-  'hsl(var(--success))'
-];
-
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, AreaChart, Area, ComposedChart } from "recharts";
+const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--warning))', 'hsl(var(--destructive))', 'hsl(var(--success))'];
 interface ChartData {
-  categoryData: Array<{ name: string; value: number; }>;
-  monthlyData: Array<{ 
-    month: string; 
-    entradas: number; 
-    saidas: number; 
-    saldo: number; 
+  categoryData: Array<{
+    name: string;
+    value: number;
   }>;
-  projectionData: Array<{ 
-    month: string; 
-    entradas: number; 
-    saidas: number; 
-    saldo: number; 
-    isProjection?: boolean; 
+  monthlyData: Array<{
+    month: string;
+    entradas: number;
+    saidas: number;
+    saldo: number;
+  }>;
+  projectionData: Array<{
+    month: string;
+    entradas: number;
+    saidas: number;
+    saldo: number;
+    isProjection?: boolean;
   }>;
   comparativeData: Array<{
     categoria: string;
@@ -56,16 +31,16 @@ interface ChartData {
     diferenca: number;
   }>;
 }
-
 interface InteractiveChartsProps {
   data: ChartData;
   isLoading?: boolean;
 }
-
-export const InteractiveCharts = ({ data, isLoading = false }: InteractiveChartsProps) => {
+export const InteractiveCharts = ({
+  data,
+  isLoading = false
+}: InteractiveChartsProps) => {
   const [selectedPeriod, setSelectedPeriod] = useState(6);
   const [selectedChart, setSelectedChart] = useState("category");
-
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -74,7 +49,6 @@ export const InteractiveCharts = ({ data, isLoading = false }: InteractiveCharts
       maximumFractionDigits: 0
     }).format(value);
   };
-
   const formatCurrencyShort = (value: number) => {
     if (value >= 1000000) {
       return `${(value / 1000000).toFixed(1)}M`;
@@ -84,71 +58,50 @@ export const InteractiveCharts = ({ data, isLoading = false }: InteractiveCharts
     }
     return formatCurrency(value);
   };
-
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({
+    active,
+    payload,
+    label
+  }: any) => {
     if (active && payload && payload.length) {
-      return (
-        <div className="bg-background border rounded-lg shadow-lg p-3 max-w-xs">
+      return <div className="bg-background border rounded-lg shadow-lg p-3 max-w-xs">
           {label && <p className="font-medium mb-2 text-sm">{label}</p>}
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm flex items-center gap-2">
-              <span 
-                className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: entry.color }}
-              />
+          {payload.map((entry: any, index: number) => <p key={index} className="text-sm flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full" style={{
+            backgroundColor: entry.color
+          }} />
               <span className="flex-1">{entry.name}:</span>
               <span className="font-medium">
                 {typeof entry.value === 'number' ? formatCurrency(entry.value) : entry.value}
               </span>
-            </p>
-          ))}
-        </div>
-      );
+            </p>)}
+        </div>;
     }
     return null;
   };
-
   if (isLoading) {
-    return (
-      <div className="space-y-4">
+    return <div className="space-y-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <Card key={i} className="animate-pulse">
+          {[1, 2, 3, 4].map(i => <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
                 <div className="h-48 bg-muted rounded"></div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       {/* Chart Navigation */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Análise Detalhada</h3>
+        <h3 className="text-lg font-semibold">Visão Geral</h3>
         <div className="flex items-center gap-2">
-          <Button
-            variant={selectedPeriod === 3 ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedPeriod(3)}
-          >
+          <Button variant={selectedPeriod === 3 ? "default" : "outline"} size="sm" onClick={() => setSelectedPeriod(3)}>
             3M
           </Button>
-          <Button
-            variant={selectedPeriod === 6 ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedPeriod(6)}
-          >
+          <Button variant={selectedPeriod === 6 ? "default" : "outline"} size="sm" onClick={() => setSelectedPeriod(6)}>
             6M
           </Button>
-          <Button
-            variant={selectedPeriod === 12 ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedPeriod(12)}
-          >
+          <Button variant={selectedPeriod === 12 ? "default" : "outline"} size="sm" onClick={() => setSelectedPeriod(12)}>
             12M
           </Button>
         </div>
@@ -188,19 +141,11 @@ export const InteractiveCharts = ({ data, isLoading = false }: InteractiveCharts
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsPieChart>
-                      <Pie
-                        data={data.categoryData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        labelLine={false}
-                      >
-                        {data.categoryData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
+                      <Pie data={data.categoryData} cx="50%" cy="50%" outerRadius={80} fill="#8884d8" dataKey="value" label={({
+                      name,
+                      percent
+                    }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                        {data.categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                       </Pie>
                       <Tooltip content={<CustomTooltip />} />
                     </RechartsPieChart>
@@ -215,23 +160,20 @@ export const InteractiveCharts = ({ data, isLoading = false }: InteractiveCharts
                 <CardTitle className="text-base">Ranking de Gastos</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {data.categoryData.map((category, index) => (
-                  <div key={category.name} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                {data.categoryData.map((category, index) => <div key={category.name} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
                     <div className="flex items-center gap-3">
-                      <div 
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                      />
+                      <div className="w-4 h-4 rounded-full" style={{
+                    backgroundColor: COLORS[index % COLORS.length]
+                  }} />
                       <span className="font-medium text-sm">{category.name}</span>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-sm">{formatCurrency(category.value)}</p>
                       <p className="text-xs text-muted-foreground">
-                        {((category.value / data.categoryData.reduce((sum, c) => sum + c.value, 0)) * 100).toFixed(1)}%
+                        {(category.value / data.categoryData.reduce((sum, c) => sum + c.value, 0) * 100).toFixed(1)}%
                       </p>
                     </div>
-                  </div>
-                ))}
+                  </div>)}
               </CardContent>
             </Card>
           </div>
@@ -252,37 +194,20 @@ export const InteractiveCharts = ({ data, isLoading = false }: InteractiveCharts
                   <ResponsiveContainer width="100%" height="100%">
                     <ComposedChart data={data.monthlyData}>
                       <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                      <XAxis 
-                        dataKey="month" 
-                        tick={{ fontSize: 12 }}
-                        axisLine={false}
-                      />
-                      <YAxis 
-                        tick={{ fontSize: 12 }}
-                        tickFormatter={formatCurrencyShort}
-                        axisLine={false}
-                      />
+                      <XAxis dataKey="month" tick={{
+                      fontSize: 12
+                    }} axisLine={false} />
+                      <YAxis tick={{
+                      fontSize: 12
+                    }} tickFormatter={formatCurrencyShort} axisLine={false} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar 
-                        dataKey="entradas" 
-                        fill="hsl(var(--success))" 
-                        name="Receitas"
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Bar 
-                        dataKey="saidas" 
-                        fill="hsl(var(--destructive))" 
-                        name="Despesas"
-                        radius={[4, 4, 0, 0]}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="saldo" 
-                        stroke="hsl(var(--primary))" 
-                        strokeWidth={3}
-                        name="Saldo"
-                        dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                      />
+                      <Bar dataKey="entradas" fill="hsl(var(--success))" name="Receitas" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="saidas" fill="hsl(var(--destructive))" name="Despesas" radius={[4, 4, 0, 0]} />
+                      <Line type="monotone" dataKey="saldo" stroke="hsl(var(--primary))" strokeWidth={3} name="Saldo" dot={{
+                      fill: 'hsl(var(--primary))',
+                      strokeWidth: 2,
+                      r: 4
+                    }} />
                     </ComposedChart>
                   </ResponsiveContainer>
                 </div>
@@ -304,26 +229,14 @@ export const InteractiveCharts = ({ data, isLoading = false }: InteractiveCharts
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={data.monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis 
-                      dataKey="month" 
-                      tick={{ fontSize: 12 }}
-                      axisLine={false}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={formatCurrencyShort}
-                      axisLine={false}
-                    />
+                    <XAxis dataKey="month" tick={{
+                    fontSize: 12
+                  }} axisLine={false} />
+                    <YAxis tick={{
+                    fontSize: 12
+                  }} tickFormatter={formatCurrencyShort} axisLine={false} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area
-                      type="monotone"
-                      dataKey="saldo"
-                      stroke="hsl(var(--primary))"
-                      fill="hsl(var(--primary))"
-                      fillOpacity={0.2}
-                      strokeWidth={3}
-                      name="Saldo"
-                    />
+                    <Area type="monotone" dataKey="saldo" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.2} strokeWidth={3} name="Saldo" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -345,27 +258,14 @@ export const InteractiveCharts = ({ data, isLoading = false }: InteractiveCharts
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={[...data.monthlyData.slice(-3), ...data.projectionData]}>
                     <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis 
-                      dataKey="month" 
-                      tick={{ fontSize: 12 }}
-                      axisLine={false}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={formatCurrencyShort}
-                      axisLine={false}
-                    />
+                    <XAxis dataKey="month" tick={{
+                    fontSize: 12
+                  }} axisLine={false} />
+                    <YAxis tick={{
+                    fontSize: 12
+                  }} tickFormatter={formatCurrencyShort} axisLine={false} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area
-                      type="monotone"
-                      dataKey="saldo"
-                      stroke="hsl(var(--accent))"
-                      fill="hsl(var(--accent))"
-                      fillOpacity={0.3}
-                      strokeWidth={2}
-                      name="Saldo Projetado"
-                      strokeDasharray="5 5"
-                    />
+                    <Area type="monotone" dataKey="saldo" stroke="hsl(var(--accent))" fill="hsl(var(--accent))" fillOpacity={0.3} strokeWidth={2} name="Saldo Projetado" strokeDasharray="5 5" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -373,6 +273,5 @@ export const InteractiveCharts = ({ data, isLoading = false }: InteractiveCharts
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
-  );
+    </div>;
 };

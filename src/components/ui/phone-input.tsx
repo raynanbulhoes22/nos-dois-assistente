@@ -60,15 +60,18 @@ export function PhoneInput({ value = "", onChange, placeholder, disabled, classN
     
     // Apply country-specific formatting
     if (country.code === "BR" && country.mask) {
-      // Brazilian format: (99) 99999-9999
-      if (cleaned.length <= 11) {
-        const match = cleaned.match(/^(\d{0,2})(\d{0,5})(\d{0,4})$/)
+      // Brazilian format: (99) 9999-9999 (DDD + 8 dígitos)
+      // Limitar a 10 dígitos máximo
+      const limitedCleaned = cleaned.slice(0, 10)
+      
+      if (limitedCleaned.length <= 10) {
+        const match = limitedCleaned.match(/^(\d{0,2})(\d{0,4})(\d{0,4})$/)
         if (match) {
           let formatted = ""
           if (match[1]) formatted += `(${match[1]}`
           if (match[1] && match[1].length === 2) formatted += ") "
           if (match[2]) formatted += match[2]
-          if (match[2] && match[2].length === 5 && match[3]) formatted += `-${match[3]}`
+          if (match[2] && match[2].length === 4 && match[3]) formatted += `-${match[3]}`
           return formatted
         }
       }

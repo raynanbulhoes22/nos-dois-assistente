@@ -53,11 +53,14 @@ export const OnboardingStep2 = ({
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* WhatsApp Input - Mobile Optimized */}
           <div className="space-y-3">
-            
+            <Label htmlFor="numero_wpp" className="text-sm font-medium">Seu WhatsApp *</Label>
             <PhoneInput value={data.numero_wpp} onChange={value => setData({
             ...data,
             numero_wpp: value
-          })} placeholder="Digite seu número" className="text-base sm:text-sm" />
+          })} placeholder="DDD + número (ex: 11 99999999)" className="text-base sm:text-sm" />
+            <p className="text-xs text-muted-foreground">
+              Digite apenas DDD + 8 dígitos do número (sem o 9 adicional)
+            </p>
           </div>
 
           {/* Casal Plan Fields */}
@@ -80,7 +83,10 @@ export const OnboardingStep2 = ({
                 <PhoneInput value={data.telefoneConjuge || ''} onChange={value => setData({
               ...data,
               telefoneConjuge: value
-            })} placeholder="Digite o número do cônjuge" className="text-base sm:text-sm" />
+            })} placeholder="DDD + número (ex: 11 99999999)" className="text-base sm:text-sm" />
+                <p className="text-xs text-muted-foreground">
+                  Digite apenas DDD + 8 dígitos do número (sem o 9 adicional)
+                </p>
               </div>
             </div>}
 

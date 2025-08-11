@@ -25,7 +25,7 @@ export interface Country {
 }
 
 export const countries: Country[] = [
-  { code: "BR", name: "Brasil", dialCode: "+55", mask: "(99) 99999-9999" },
+  { code: "BR", name: "Brasil", dialCode: "+55", mask: "(99) 9999-9999" },
   { code: "AR", name: "Argentina", dialCode: "+54" },
   { code: "AU", name: "Austrália", dialCode: "+61" },
   { code: "AT", name: "Áustria", dialCode: "+43" },

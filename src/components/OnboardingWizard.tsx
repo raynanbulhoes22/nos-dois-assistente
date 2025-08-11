@@ -161,12 +161,11 @@ export const OnboardingWizard = () => {
         return <OnboardingStep1 data={data} setData={setData} onNext={nextStep} />;
       case 2:
         return (
-          <OnboardingStep2 
-            data={data} 
-            setData={setData} 
-            onNext={nextStep} 
+          <OnboardingStep2
+            data={data}
+            setData={setData}
+            onNext={nextStep}
             onPrev={prevStep}
-            subscriptionTier={subscriptionTier}
           />
         );
       case 3:

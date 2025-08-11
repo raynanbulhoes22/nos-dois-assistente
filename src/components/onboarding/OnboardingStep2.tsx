@@ -5,21 +5,21 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { OnboardingData } from '../OnboardingWizard';
+import { useSubscription } from '@/hooks/useSubscription';
 interface OnboardingStep2Props {
   data: OnboardingData;
   setData: (data: OnboardingData) => void;
   onNext: () => void;
   onPrev: () => void;
-  subscriptionTier?: string;
 }
 export const OnboardingStep2 = ({
   data,
   setData,
   onNext,
-  onPrev,
-  subscriptionTier
+  onPrev
 }: OnboardingStep2Props) => {
-  const isCasalPlan = subscriptionTier === 'Casal';
+  const { status } = useSubscription();
+  const isCasalPlan = status?.subscription_tier === 'Casal';
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!data.numero_wpp) return;

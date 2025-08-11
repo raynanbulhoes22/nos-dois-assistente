@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PieChart, BarChart3, TrendingUp, Activity, DollarSign, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useMemo } from "react";
-import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, AreaChart, Area, ComposedChart } from "recharts";
+import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, AreaChart, Area, ComposedChart, ReferenceLine } from "recharts";
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--warning))', 'hsl(var(--destructive))', 'hsl(var(--success))'];
 interface ChartData {
   categoryData: Array<{
@@ -49,12 +49,20 @@ export const InteractiveCharts = ({
     // Recalculate category data based on filtered months
     const categoryMap = new Map<string, number>();
     
+    // Process projection data for conditional coloring
+    const projectionDataWithConditions = [...filteredMonthlyData.slice(-3), ...data.projectionData].map(item => ({
+      ...item,
+      saldoPositivo: item.saldo >= 0 ? item.saldo : 0,
+      saldoNegativo: item.saldo < 0 ? item.saldo : 0
+    }));
+    
     // Since we don't have access to raw transactions here, we'll filter the existing data
     // This is a simplified approach - ideally we'd filter at the data source level
     return {
       ...data,
       monthlyData: filteredMonthlyData,
-      projectionData: data.projectionData // Keep projections as is
+      projectionData: data.projectionData, // Keep projections as is
+      projectionDataWithConditions
     };
   }, [data, selectedPeriod]);
   const formatCurrency = (value: number) => {
@@ -270,21 +278,45 @@ export const InteractiveCharts = ({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={[...filteredData.monthlyData.slice(-3), ...filteredData.projectionData]}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis dataKey="month" tick={{
-                    fontSize: 12
-                  }} axisLine={false} />
-                    <YAxis tick={{
-                    fontSize: 12
-                  }} tickFormatter={formatCurrencyShort} axisLine={false} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area type="monotone" dataKey="saldo" stroke="hsl(var(--accent))" fill="hsl(var(--accent))" fillOpacity={0.3} strokeWidth={2} name="Saldo Projetado" strokeDasharray="5 5" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+                <div className="h-64">
+                 <ResponsiveContainer width="100%" height="100%">
+                   <AreaChart data={filteredData.projectionDataWithConditions}>
+                     <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                     <XAxis dataKey="month" tick={{
+                     fontSize: 12
+                   }} axisLine={false} />
+                     <YAxis tick={{
+                     fontSize: 12
+                   }} tickFormatter={formatCurrencyShort} axisLine={false} />
+                     <Tooltip content={<CustomTooltip />} />
+                     <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="2 2" strokeWidth={1} />
+                     {/* Positive values area - Green */}
+                     <Area 
+                       type="monotone" 
+                       dataKey="saldoPositivo" 
+                       stroke="hsl(var(--success))" 
+                       fill="hsl(var(--success))" 
+                       fillOpacity={0.3} 
+                       strokeWidth={2} 
+                       name="Saldo Positivo"
+                       strokeDasharray="5 5"
+                       connectNulls={false}
+                     />
+                     {/* Negative values area - Red */}
+                     <Area 
+                       type="monotone" 
+                       dataKey="saldoNegativo" 
+                       stroke="hsl(var(--destructive))" 
+                       fill="hsl(var(--destructive))" 
+                       fillOpacity={0.3} 
+                       strokeWidth={2} 
+                       name="Saldo Negativo"
+                       strokeDasharray="5 5"
+                       connectNulls={false}
+                     />
+                   </AreaChart>
+                 </ResponsiveContainer>
+               </div>
             </CardContent>
           </Card>
         </TabsContent>

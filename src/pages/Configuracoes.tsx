@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { User, Heart, DollarSign, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -56,14 +57,10 @@ export const Configuracoes = () => {
     }
   };
 
-  const normalizePhoneNumber = (phone: string): string => {
-    // Remove todos os caracteres que não são dígitos
-    return phone.replace(/\D/g, '');
-  };
-
   const validatePhoneNumber = (phone: string): boolean => {
-    const normalized = normalizePhoneNumber(phone);
-    // Deve ter entre 10 e 15 dígitos
+    // Remove all non-digits from international format
+    const normalized = phone.replace(/\D/g, '');
+    // Should have between 10 and 15 digits (including country code)
     return normalized.length >= 10 && normalized.length <= 15;
   };
 
@@ -82,17 +79,16 @@ export const Configuracoes = () => {
     setIsConnectingWhatsapp(true);
 
     try {
-      const normalizedNumber = normalizePhoneNumber(whatsappNumber);
-      
+      // whatsappNumber already comes in international format from PhoneInput
       const { error } = await supabase
         .from('profiles')
-        .update({ numero_wpp: normalizedNumber } as any)
+        .update({ numero_wpp: whatsappNumber } as any)
         .eq('id', user.id);
 
       if (error) throw error;
 
       // Atualizar o estado local
-      setProfile(prev => prev ? { ...prev, numero_wpp: normalizedNumber } : null);
+      setProfile(prev => prev ? { ...prev, numero_wpp: whatsappNumber } : null);
       
       toast({
         title: "✅ Sucesso!",
@@ -393,7 +389,7 @@ export const Configuracoes = () => {
                           ✅ WhatsApp Conectado
                         </p>
                         <p className="text-sm text-success">
-                          Número: +{(profile as any).numero_wpp}
+                          Número: {(profile as any).numero_wpp}
                         </p>
                       </div>
                       <Button 
@@ -408,19 +404,25 @@ export const Configuracoes = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex gap-2">
-                    <Input 
-                      placeholder="+55 (11) 99999-9999" 
-                      value={whatsappNumber}
-                      onChange={(e) => setWhatsappNumber(e.target.value)}
-                    />
-                    <Button 
-                      variant="outline" 
-                      onClick={handleConnectWhatsapp}
-                      disabled={isConnectingWhatsapp}
-                    >
-                      {isConnectingWhatsapp ? "Conectando..." : "Conectar"}
-                    </Button>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="whatsapp-phone">Número do WhatsApp</Label>
+                      <div className="flex gap-2 mt-2">
+                        <PhoneInput
+                          value={whatsappNumber}
+                          onChange={setWhatsappNumber}
+                          placeholder="Digite seu número"
+                          className="flex-1"
+                        />
+                        <Button 
+                          variant="outline" 
+                          onClick={handleConnectWhatsapp}
+                          disabled={isConnectingWhatsapp || !whatsappNumber}
+                        >
+                          {isConnectingWhatsapp ? "Conectando..." : "Conectar"}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 )}
                 

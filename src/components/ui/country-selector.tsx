@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Check, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import "flag-icons/css/flag-icons.min.css"
 import {
   Command,
   CommandEmpty,
@@ -19,53 +20,57 @@ import { cn } from "@/lib/utils"
 export interface Country {
   code: string
   name: string
-  flag: string
   dialCode: string
   mask?: string
 }
 
 export const countries: Country[] = [
-  { code: "BR", name: "Brasil", flag: "🇧🇷", dialCode: "+55", mask: "(99) 99999-9999" },
-  { code: "AR", name: "Argentina", flag: "🇦🇷", dialCode: "+54" },
-  { code: "AU", name: "Austrália", flag: "🇦🇺", dialCode: "+61" },
-  { code: "AT", name: "Áustria", flag: "🇦🇹", dialCode: "+43" },
-  { code: "BE", name: "Bélgica", flag: "🇧🇪", dialCode: "+32" },
-  { code: "BO", name: "Bolívia", flag: "🇧🇴", dialCode: "+591" },
-  { code: "CA", name: "Canadá", flag: "🇨🇦", dialCode: "+1" },
-  { code: "CL", name: "Chile", flag: "🇨🇱", dialCode: "+56" },
-  { code: "CN", name: "China", flag: "🇨🇳", dialCode: "+86" },
-  { code: "CO", name: "Colômbia", flag: "🇨🇴", dialCode: "+57" },
-  { code: "CR", name: "Costa Rica", flag: "🇨🇷", dialCode: "+506" },
-  { code: "DK", name: "Dinamarca", flag: "🇩🇰", dialCode: "+45" },
-  { code: "EC", name: "Equador", flag: "🇪🇨", dialCode: "+593" },
-  { code: "EG", name: "Egito", flag: "🇪🇬", dialCode: "+20" },
-  { code: "SV", name: "El Salvador", flag: "🇸🇻", dialCode: "+503" },
-  { code: "ES", name: "Espanha", flag: "🇪🇸", dialCode: "+34" },
-  { code: "US", name: "Estados Unidos", flag: "🇺🇸", dialCode: "+1" },
-  { code: "FI", name: "Finlândia", flag: "🇫🇮", dialCode: "+358" },
-  { code: "FR", name: "França", flag: "🇫🇷", dialCode: "+33" },
-  { code: "DE", name: "Alemanha", flag: "🇩🇪", dialCode: "+49" },
-  { code: "GT", name: "Guatemala", flag: "🇬🇹", dialCode: "+502" },
-  { code: "HN", name: "Honduras", flag: "🇭🇳", dialCode: "+504" },
-  { code: "IN", name: "Índia", flag: "🇮🇳", dialCode: "+91" },
-  { code: "IT", name: "Itália", flag: "🇮🇹", dialCode: "+39" },
-  { code: "JP", name: "Japão", flag: "🇯🇵", dialCode: "+81" },
-  { code: "MX", name: "México", flag: "🇲🇽", dialCode: "+52" },
-  { code: "NL", name: "Holanda", flag: "🇳🇱", dialCode: "+31" },
-  { code: "NZ", name: "Nova Zelândia", flag: "🇳🇿", dialCode: "+64" },
-  { code: "NO", name: "Noruega", flag: "🇳🇴", dialCode: "+47" },
-  { code: "PA", name: "Panamá", flag: "🇵🇦", dialCode: "+507" },
-  { code: "PY", name: "Paraguai", flag: "🇵🇾", dialCode: "+595" },
-  { code: "PE", name: "Peru", flag: "🇵🇪", dialCode: "+51" },
-  { code: "PL", name: "Polônia", flag: "🇵🇱", dialCode: "+48" },
-  { code: "PT", name: "Portugal", flag: "🇵🇹", dialCode: "+351" },
-  { code: "GB", name: "Reino Unido", flag: "🇬🇧", dialCode: "+44" },
-  { code: "RU", name: "Rússia", flag: "🇷🇺", dialCode: "+7" },
-  { code: "SE", name: "Suécia", flag: "🇸🇪", dialCode: "+46" },
-  { code: "CH", name: "Suíça", flag: "🇨🇭", dialCode: "+41" },
-  { code: "UY", name: "Uruguai", flag: "🇺🇾", dialCode: "+598" },
-  { code: "VE", name: "Venezuela", flag: "🇻🇪", dialCode: "+58" }
+  { code: "BR", name: "Brasil", dialCode: "+55", mask: "(99) 99999-9999" },
+  { code: "AR", name: "Argentina", dialCode: "+54" },
+  { code: "AU", name: "Austrália", dialCode: "+61" },
+  { code: "AT", name: "Áustria", dialCode: "+43" },
+  { code: "BE", name: "Bélgica", dialCode: "+32" },
+  { code: "BO", name: "Bolívia", dialCode: "+591" },
+  { code: "CA", name: "Canadá", dialCode: "+1" },
+  { code: "CL", name: "Chile", dialCode: "+56" },
+  { code: "CN", name: "China", dialCode: "+86" },
+  { code: "CO", name: "Colômbia", dialCode: "+57" },
+  { code: "CR", name: "Costa Rica", dialCode: "+506" },
+  { code: "DK", name: "Dinamarca", dialCode: "+45" },
+  { code: "EC", name: "Equador", dialCode: "+593" },
+  { code: "EG", name: "Egito", dialCode: "+20" },
+  { code: "SV", name: "El Salvador", dialCode: "+503" },
+  { code: "ES", name: "Espanha", dialCode: "+34" },
+  { code: "US", name: "Estados Unidos", dialCode: "+1" },
+  { code: "FI", name: "Finlândia", dialCode: "+358" },
+  { code: "FR", name: "França", dialCode: "+33" },
+  { code: "DE", name: "Alemanha", dialCode: "+49" },
+  { code: "GT", name: "Guatemala", dialCode: "+502" },
+  { code: "HN", name: "Honduras", dialCode: "+504" },
+  { code: "IN", name: "Índia", dialCode: "+91" },
+  { code: "IT", name: "Itália", dialCode: "+39" },
+  { code: "JP", name: "Japão", dialCode: "+81" },
+  { code: "MX", name: "México", dialCode: "+52" },
+  { code: "NL", name: "Holanda", dialCode: "+31" },
+  { code: "NZ", name: "Nova Zelândia", dialCode: "+64" },
+  { code: "NO", name: "Noruega", dialCode: "+47" },
+  { code: "PA", name: "Panamá", dialCode: "+507" },
+  { code: "PY", name: "Paraguai", dialCode: "+595" },
+  { code: "PE", name: "Peru", dialCode: "+51" },
+  { code: "PL", name: "Polônia", dialCode: "+48" },
+  { code: "PT", name: "Portugal", dialCode: "+351" },
+  { code: "GB", name: "Reino Unido", dialCode: "+44" },
+  { code: "RU", name: "Rússia", dialCode: "+7" },
+  { code: "SE", name: "Suécia", dialCode: "+46" },
+  { code: "CH", name: "Suíça", dialCode: "+41" },
+  { code: "UY", name: "Uruguai", dialCode: "+598" },
+  { code: "VE", name: "Venezuela", dialCode: "+58" }
 ]
+
+// Component to render flag icon
+const FlagIcon = ({ code, className }: { code: string; className?: string }) => (
+  <span className={cn(`fi fi-${code.toLowerCase()}`, className)} />
+)
 
 interface CountrySelectorProps {
   value?: Country
@@ -95,12 +100,12 @@ export function CountrySelector({ value, onSelect, disabled }: CountrySelectorPr
         >
           {value ? (
             <div className="flex items-center gap-2">
-              <span className="text-lg">{value.flag}</span>
+              <FlagIcon code={value.code} className="w-4 h-3" />
               <span className="text-sm font-mono">{value.dialCode}</span>
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <span className="text-lg">🇧🇷</span>
+              <FlagIcon code="BR" className="w-4 h-3" />
               <span className="text-sm font-mono">+55</span>
             </div>
           )}
@@ -123,7 +128,7 @@ export function CountrySelector({ value, onSelect, disabled }: CountrySelectorPr
                   }}
                 >
                   <div className="flex items-center gap-3 w-full">
-                    <span className="text-lg">{country.flag}</span>
+                    <FlagIcon code={country.code} className="w-4 h-3" />
                     <div className="flex-1">
                       <span className="text-sm">{country.name}</span>
                     </div>

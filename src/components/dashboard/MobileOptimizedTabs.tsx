@@ -66,24 +66,10 @@ export const MobileOptimizedTabs = ({
         </TabsList>
 
         <TabsContent value="overview" className="mt-0 space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <InteractiveCharts 
-              data={chartData}
-              isLoading={isLoading}
-            />
-            <QuickInsights
-              recentTransactions={recentTransactions}
-              upcomingCommitments={[]}
-              insights={[
-                {
-                  type: 'neutral' as const,
-                  title: 'Acompanhe seus gastos',
-                  description: 'Use os filtros no cabeçalho para visualizar dados específicos do período desejado.'
-                }
-              ]}
-              isLoading={isLoading}
-            />
-          </div>
+          <InteractiveCharts 
+            data={chartData}
+            isLoading={isLoading}
+          />
         </TabsContent>
 
         <TabsContent value="analyses" className="mt-0 space-y-6">

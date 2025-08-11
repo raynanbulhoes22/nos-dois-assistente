@@ -446,23 +446,37 @@ export const Configuracoes = () => {
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="whatsapp-phone">Número do WhatsApp</Label>
-                      <div className="flex gap-2 mt-2">
-                        <PhoneInput
-                          value={whatsappNumber}
-                          onChange={setWhatsappNumber}
-                          placeholder="DDD + 8 dígitos (ex: 11 33334444)"
-                          className="flex-1"
-                        />
-                        <div className="text-xs text-muted-foreground mb-2">
-                          ⚠️ <strong>NÃO</strong> coloque o 9 após o DDD
+                      <div className="space-y-3 mt-2">
+                        <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                          <div className="flex items-start gap-2">
+                            <span className="text-warning text-sm">⚠️</span>
+                            <div className="space-y-1">
+                              <p className="text-xs font-medium text-warning">
+                                <strong>Importante:</strong> NÃO coloque o 9 após o DDD
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                ✅ Correto: (11) 3333-4444 | ❌ Errado: (11) 93333-4444
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                        <Button 
-                          variant="outline" 
-                          onClick={handleConnectWhatsapp}
-                          disabled={isConnectingWhatsapp || !whatsappNumber}
-                        >
-                          {isConnectingWhatsapp ? "Conectando..." : "Conectar"}
-                        </Button>
+                        
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <PhoneInput
+                            value={whatsappNumber}
+                            onChange={setWhatsappNumber}
+                            placeholder="DDD + 8 dígitos"
+                            className="flex-1"
+                          />
+                          <Button 
+                            variant="outline" 
+                            onClick={handleConnectWhatsapp}
+                            disabled={isConnectingWhatsapp || !whatsappNumber}
+                            className="sm:w-auto w-full"
+                          >
+                            {isConnectingWhatsapp ? "Conectando..." : "Conectar"}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -499,23 +513,37 @@ export const Configuracoes = () => {
                         <div className="space-y-4">
                           <div>
                             <Label htmlFor="spouse-whatsapp-phone">Número do WhatsApp do Cônjuge</Label>
-                            <div className="flex gap-2 mt-2">
-                              <PhoneInput
-                                value={spousePhoneNumber}
-                                onChange={setSpousePhoneNumber}
-                                placeholder="DDD + 8 dígitos (ex: 11 33334444)"
-                                className="flex-1"
-                              />
-                              <div className="text-xs text-muted-foreground mb-2">
-                                ⚠️ <strong>NÃO</strong> coloque o 9 após o DDD
+                            <div className="space-y-3 mt-2">
+                              <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg">
+                                <div className="flex items-start gap-2">
+                                  <span className="text-warning text-sm">⚠️</span>
+                                  <div className="space-y-1">
+                                    <p className="text-xs font-medium text-warning">
+                                      <strong>Importante:</strong> NÃO coloque o 9 após o DDD
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">
+                                      ✅ Correto: (11) 3333-4444 | ❌ Errado: (11) 93333-4444
+                                    </p>
+                                  </div>
+                                </div>
                               </div>
-                              <Button 
-                                variant="outline" 
-                                onClick={handleConnectSpouseWhatsapp}
-                                disabled={!spousePhoneNumber}
-                              >
-                                Conectar
-                              </Button>
+                              
+                              <div className="flex flex-col sm:flex-row gap-2">
+                                <PhoneInput
+                                  value={spousePhoneNumber}
+                                  onChange={setSpousePhoneNumber}
+                                  placeholder="DDD + 8 dígitos"
+                                  className="flex-1"
+                                />
+                                <Button 
+                                  variant="outline" 
+                                  onClick={handleConnectSpouseWhatsapp}
+                                  disabled={!spousePhoneNumber}
+                                  className="sm:w-auto w-full"
+                                >
+                                  Conectar
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         </div>

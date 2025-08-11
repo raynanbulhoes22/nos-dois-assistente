@@ -28,17 +28,14 @@ export const OnboardingStep2 = ({
   };
   return <Card className="border-0 sm:border shadow-none sm:shadow-sm bg-card/80 sm:bg-card backdrop-blur-sm sm:backdrop-blur-none">
       <CardHeader className="pb-4 sm:pb-6">
-        <CardTitle className="text-lg sm:text-xl">Configuração do Sistema</CardTitle>
+        <CardTitle className="text-lg sm:text-xl">Número de Whatsapp</CardTitle>
         
       </CardHeader>
       <CardContent className="space-y-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* WhatsApp Input - Mobile Optimized */}
           <div className="space-y-3">
-            <Label htmlFor="numero_wpp" className="text-sm font-medium flex items-center gap-2">
-              <span className="text-green-500">📱</span>
-              Seu Telefone/WhatsApp *
-            </Label>
+            
             <PhoneInput value={data.numero_wpp} onChange={value => setData({
             ...data,
             numero_wpp: value

@@ -52,8 +52,9 @@ export const InteractiveCharts = ({
     // Process projection data for conditional coloring
     const projectionDataWithConditions = [...filteredMonthlyData.slice(-3), ...data.projectionData].map(item => ({
       ...item,
-      saldoPositivo: item.saldo >= 0 ? item.saldo : 0,
-      saldoNegativo: item.saldo < 0 ? item.saldo : 0
+      saldoPositivo: item.saldo > 0 ? item.saldo : null,
+      saldoNegativo: item.saldo < 0 ? item.saldo : null,
+      saldoZero: item.saldo === 0 ? 0 : null
     }));
     
     // Since we don't have access to raw transactions here, we'll filter the existing data
@@ -296,29 +297,29 @@ export const InteractiveCharts = ({
                    }} tickFormatter={formatCurrencyShort} axisLine={false} />
                      <Tooltip content={<CustomTooltip />} />
                      <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="2 2" strokeWidth={1} />
+                     {/* Negative values area - Red (rendered first so it appears below) */}
+                     <Area 
+                       type="monotone" 
+                       dataKey="saldoNegativo" 
+                       stroke="hsl(var(--destructive))" 
+                       fill="hsl(var(--destructive))" 
+                       fillOpacity={0.4} 
+                       strokeWidth={2} 
+                       name="Saldo Negativo"
+                       strokeDasharray="5 5"
+                       connectNulls={true}
+                     />
                      {/* Positive values area - Green */}
                      <Area 
                        type="monotone" 
                        dataKey="saldoPositivo" 
                        stroke="hsl(var(--success))" 
                        fill="hsl(var(--success))" 
-                       fillOpacity={0.3} 
+                       fillOpacity={0.4} 
                        strokeWidth={2} 
                        name="Saldo Positivo"
                        strokeDasharray="5 5"
-                       connectNulls={false}
-                     />
-                     {/* Negative values area - Red */}
-                     <Area 
-                       type="monotone" 
-                       dataKey="saldoNegativo" 
-                       stroke="hsl(var(--destructive))" 
-                       fill="hsl(var(--destructive))" 
-                       fillOpacity={0.3} 
-                       strokeWidth={2} 
-                       name="Saldo Negativo"
-                       strokeDasharray="5 5"
-                       connectNulls={false}
+                       connectNulls={true}
                      />
                    </AreaChart>
                  </ResponsiveContainer>

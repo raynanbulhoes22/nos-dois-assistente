@@ -9,6 +9,7 @@ export interface Movimentacao {
   data: string;
   categoria?: string;
   nome?: string;
+  titulo?: string;
   forma_pagamento?: string;
   estabelecimento?: string;
   observacao?: string;
@@ -182,7 +183,8 @@ export const useMovimentacoes = () => {
           valor: Math.abs(item.valor), // Sempre trabalhar com valores positivos
           data: item.data,
           categoria: item.categoria || 'Sem categoria',
-          nome: getTransactionTitle(item),
+          nome: item.nome, // Nome da pessoa que fez a movimentação
+          titulo: getTransactionTitle(item), // Título/descrição da transação
           forma_pagamento: item.forma_pagamento,
           estabelecimento: item.estabelecimento,
           observacao: item.observacao,

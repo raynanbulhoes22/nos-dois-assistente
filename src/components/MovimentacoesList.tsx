@@ -60,7 +60,7 @@ export function MovimentacoesList({ items, onItemClick, onEdit, onDelete, onDupl
                   {/* Título */}
                   <div className="mb-2 flex items-center gap-2">
                     <span className="font-medium text-foreground truncate">
-                      {item.nome || "Sem descrição"}
+                      {item.titulo || "Sem descrição"}
                     </span>
                     {item.nome && (
                       <Badge variant="outline" className="text-xs px-2 py-0 h-5 shrink-0">

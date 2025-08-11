@@ -259,7 +259,7 @@ export const Relatorios = () => {
 
   return (
     <div className={`${isMobile ? 'p-4' : 'container mx-auto p-6'}`}>
-      <div className="flex flex-col gap-6" id="relatorios-content">
+      <div className="flex flex-col gap-6" id="relatorios-content" data-export="relatorios">
         {/* Header */}
         <div className="text-center">
           <motion.h1 

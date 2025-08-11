@@ -16,6 +16,67 @@ export const generateFileName = (type: 'pdf' | 'excel' | 'csv', filters: any) =>
   return `relatorio-financeiro-${period}-${date}.${type === 'excel' ? 'xlsx' : type}`;
 };
 
+// Função para aguardar o carregamento completo dos gráficos
+const waitForChartsToLoad = (element: HTMLElement, timeout = 5000): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+    const maxAttempts = timeout / 100;
+    
+    const checkCharts = () => {
+      attempts++;
+      
+      // Verificar se todos os SVGs dos gráficos foram renderizados
+      const charts = element.querySelectorAll('.recharts-wrapper');
+      const svgs = element.querySelectorAll('svg');
+      
+      const allChartsLoaded = Array.from(charts).every(chart => {
+        const svg = chart.querySelector('svg');
+        return svg && svg.children.length > 0;
+      });
+      
+      const allSvgsLoaded = Array.from(svgs).every(svg => {
+        return svg.getBBox ? svg.getBBox().width > 0 : true;
+      });
+      
+      if (allChartsLoaded && allSvgsLoaded) {
+        resolve();
+      } else if (attempts >= maxAttempts) {
+        resolve(); // Continuar mesmo se não carregou completamente
+      } else {
+        setTimeout(checkCharts, 100);
+      }
+    };
+    
+    checkCharts();
+  });
+};
+
+// Função para otimizar elemento para captura
+const optimizeElementForCapture = (element: HTMLElement) => {
+  // Forçar renderização de elementos lazy
+  const lazyElements = element.querySelectorAll('[data-lazy]');
+  lazyElements.forEach(el => {
+    (el as HTMLElement).style.opacity = '1';
+    (el as HTMLElement).style.visibility = 'visible';
+  });
+  
+  // Garantir que todos os SVGs estejam visíveis
+  const svgs = element.querySelectorAll('svg');
+  svgs.forEach(svg => {
+    svg.style.opacity = '1';
+    svg.style.visibility = 'visible';
+  });
+  
+  // Remover elementos que podem causar problemas na captura
+  const problematicElements = element.querySelectorAll(
+    '.scroll-area-viewport, .overflow-hidden, .sticky, .fixed, .absolute'
+  );
+  problematicElements.forEach(el => {
+    (el as HTMLElement).style.overflow = 'visible';
+    (el as HTMLElement).style.position = 'static';
+  });
+};
+
 export const exportToPDF = async (data: ExportData, filters: any) => {
   try {
     // Validar dados
@@ -23,52 +84,138 @@ export const exportToPDF = async (data: ExportData, filters: any) => {
       throw new Error('Dados do relatório não encontrados');
     }
     
-    // Criar um elemento temporário com o conteúdo do relatório
-    const reportElement = document.getElementById('relatorios-content');
+    // Tentar encontrar o elemento do relatório com fallbacks
+    let reportElement = document.getElementById('relatorios-content');
+    
     if (!reportElement) {
-      throw new Error('Elemento do relatório não encontrado');
+      // Fallback 1: procurar por classe
+      reportElement = document.querySelector('.relatorios-content') as HTMLElement;
+    }
+    
+    if (!reportElement) {
+      // Fallback 2: procurar por data attribute
+      reportElement = document.querySelector('[data-export="relatorios"]') as HTMLElement;
+    }
+    
+    if (!reportElement) {
+      // Fallback 3: capturar todo o main content
+      reportElement = document.querySelector('main') as HTMLElement;
+    }
+    
+    if (!reportElement) {
+      throw new Error('Elemento do relatório não encontrado. Verifique se a página está carregada.');
     }
 
-    // Capturar o elemento como imagem
+    // Otimizar elemento para captura
+    optimizeElementForCapture(reportElement);
+    
+    // Aguardar carregamento dos gráficos
+    await waitForChartsToLoad(reportElement);
+    
+    // Pequena pausa adicional para garantir renderização
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Configuração otimizada do html2canvas para gráficos
     const canvas = await html2canvas(reportElement, {
-      scale: 2,
+      scale: 1.5, // Reduzido para melhor performance
       useCORS: true,
       allowTaint: true,
-      backgroundColor: '#ffffff'
+      backgroundColor: '#ffffff',
+      logging: false, // Desabilitar logs para performance
+      imageTimeout: 15000, // Timeout maior para imagens
+      removeContainer: false,
+      foreignObjectRendering: true, // Melhor para SVGs
+      ignoreElements: (element) => {
+        // Ignorar elementos que podem causar problemas
+        return element.classList.contains('scroll-bar') || 
+               element.classList.contains('fixed') ||
+               element.classList.contains('sticky');
+      },
+      onclone: (clonedDoc) => {
+        // Otimizar documento clonado
+        const clonedElement = clonedDoc.querySelector('#relatorios-content, .relatorios-content, [data-export="relatorios"], main');
+        if (clonedElement) {
+          optimizeElementForCapture(clonedElement as HTMLElement);
+        }
+      }
     });
 
-    // Criar PDF
-    const pdf = new jsPDF('p', 'mm', 'a4');
+    // Criar PDF com configurações otimizadas
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true
+    });
+    
     const imgWidth = 210; // A4 width in mm
-    const pageHeight = 295; // A4 height in mm
+    const pageHeight = 295; // A4 height in mm  
+    const marginTop = 50; // Espaço para cabeçalho
+    const availableHeight = pageHeight - marginTop;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    let heightLeft = imgHeight;
-
-    let position = 0;
-
+    
     // Adicionar cabeçalho
     pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
     pdf.text('Relatório Financeiro', 20, 20);
     
-    
     pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'normal');
     const periodText = filters?.startDate && filters?.endDate
       ? `${format(new Date(filters.startDate), 'dd/MM/yyyy', { locale: ptBR })} - ${format(new Date(filters.endDate), 'dd/MM/yyyy', { locale: ptBR })}`
       : 'Período não especificado';
     pdf.text(`Período: ${periodText}`, 20, 30);
     pdf.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}`, 20, 40);
+    
+    // Linha divisória
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(20, 45, 190, 45);
 
     // Adicionar a imagem do relatório
-    const imgData = canvas.toDataURL('image/png');
-    pdf.addImage(imgData, 'PNG', 0, 50, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-
-    // Adicionar páginas extras se necessário
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+    const imgData = canvas.toDataURL('image/png', 0.95); // Qualidade alta mas comprimida
+    
+    if (imgHeight <= availableHeight) {
+      // Conteúdo cabe em uma página
+      pdf.addImage(imgData, 'PNG', 0, marginTop, imgWidth, imgHeight);
+    } else {
+      // Múltiplas páginas necessárias
+      let remainingHeight = imgHeight;
+      let yPosition = 0;
+      let isFirstPage = true;
+      
+      while (remainingHeight > 0) {
+        if (!isFirstPage) {
+          pdf.addPage();
+          // Adicionar cabeçalho reduzido nas páginas seguintes
+          pdf.setFontSize(10);
+          pdf.text('Relatório Financeiro (continuação)', 20, 15);
+          pdf.line(20, 20, 190, 20);
+        }
+        
+        const currentPageHeight = isFirstPage ? availableHeight : pageHeight - 30;
+        const sourceY = yPosition;
+        const sourceHeight = Math.min(currentPageHeight * canvas.width / imgWidth, remainingHeight * canvas.width / imgWidth);
+        
+        // Criar canvas temporário para a seção atual
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = sourceHeight;
+        
+        if (tempCtx) {
+          tempCtx.drawImage(canvas, 0, sourceY * canvas.width / imgWidth, canvas.width, sourceHeight, 0, 0, canvas.width, sourceHeight);
+          const sectionImgData = tempCanvas.toDataURL('image/png', 0.95);
+          
+          const sectionHeight = (sourceHeight * imgWidth) / canvas.width;
+          const pageY = isFirstPage ? marginTop : 25;
+          
+          pdf.addImage(sectionImgData, 'PNG', 0, pageY, imgWidth, sectionHeight);
+        }
+        
+        remainingHeight -= currentPageHeight;
+        yPosition += currentPageHeight;
+        isFirstPage = false;
+      }
     }
 
     // Salvar PDF
@@ -78,7 +225,7 @@ export const exportToPDF = async (data: ExportData, filters: any) => {
     return { success: true, fileName };
   } catch (error) {
     console.error('Erro ao gerar PDF:', error);
-    throw new Error('Falha ao gerar PDF');
+    throw new Error(`Falha ao gerar PDF: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
   }
 };
 

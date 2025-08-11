@@ -52,7 +52,17 @@ export const Relatorios = () => {
 
   // Export functionality
   const handleExportPDF = async () => {
-    if (!data.kpis || filteredMovimentacoes.length === 0) {
+    // Verificações mais rigorosas para PDF
+    if (data.isLoading) {
+      toast({
+        title: "Aguarde o carregamento",
+        description: "Os dados ainda estão sendo carregados. Aguarde um momento.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!data.kpis || !data.categoryAnalysis || data.categoryAnalysis.length === 0) {
       toast({
         title: "Nenhum dado disponível",
         description: "Aguarde o carregamento dos dados ou aplique filtros válidos.",
@@ -61,8 +71,31 @@ export const Relatorios = () => {
       return;
     }
 
+    if (filteredMovimentacoes.length === 0) {
+      toast({
+        title: "Nenhuma transação encontrada",
+        description: "Não há dados suficientes para gerar o relatório PDF.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Verificar se o elemento existe e está renderizado
+    const reportElement = document.getElementById('relatorios-content');
+    if (!reportElement) {
+      toast({
+        title: "Erro de renderização",
+        description: "O relatório não está pronto para exportação. Recarregue a página.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setExportLoading('pdf');
     try {
+      // Aguardar um momento para garantir que tudo está renderizado
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const exportData = {
         reportData: data,
         filteredTransactions: filteredMovimentacoes

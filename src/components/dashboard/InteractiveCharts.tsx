@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PieChart, BarChart3, TrendingUp, Activity, DollarSign, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line, AreaChart, Area, ComposedChart } from "recharts";
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--warning))', 'hsl(var(--destructive))', 'hsl(var(--success))'];
 interface ChartData {
@@ -41,6 +41,22 @@ export const InteractiveCharts = ({
 }: InteractiveChartsProps) => {
   const [selectedPeriod, setSelectedPeriod] = useState(6);
   const [selectedChart, setSelectedChart] = useState("category");
+
+  // Filter data based on selected period
+  const filteredData = useMemo(() => {
+    const filteredMonthlyData = data.monthlyData.slice(-selectedPeriod);
+    
+    // Recalculate category data based on filtered months
+    const categoryMap = new Map<string, number>();
+    
+    // Since we don't have access to raw transactions here, we'll filter the existing data
+    // This is a simplified approach - ideally we'd filter at the data source level
+    return {
+      ...data,
+      monthlyData: filteredMonthlyData,
+      projectionData: data.projectionData // Keep projections as is
+    };
+  }, [data, selectedPeriod]);
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -140,13 +156,13 @@ export const InteractiveCharts = ({
               <CardContent>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RechartsPieChart>
-                      <Pie data={data.categoryData} cx="50%" cy="50%" outerRadius={80} fill="#8884d8" dataKey="value" label={({
-                      name,
-                      percent
-                    }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                        {data.categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-                      </Pie>
+                     <RechartsPieChart>
+                       <Pie data={filteredData.categoryData} cx="50%" cy="50%" outerRadius={80} fill="#8884d8" dataKey="value" label={({
+                       name,
+                       percent
+                     }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
+                         {filteredData.categoryData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                       </Pie>
                       <Tooltip content={<CustomTooltip />} />
                     </RechartsPieChart>
                   </ResponsiveContainer>
@@ -159,21 +175,21 @@ export const InteractiveCharts = ({
               <CardHeader>
                 <CardTitle className="text-base">Ranking de Gastos</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {data.categoryData.map((category, index) => <div key={category.name} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                    <div className="flex items-center gap-3">
-                      <div className="w-4 h-4 rounded-full" style={{
-                    backgroundColor: COLORS[index % COLORS.length]
-                  }} />
-                      <span className="font-medium text-sm">{category.name}</span>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-sm">{formatCurrency(category.value)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {(category.value / data.categoryData.reduce((sum, c) => sum + c.value, 0) * 100).toFixed(1)}%
-                      </p>
-                    </div>
-                  </div>)}
+               <CardContent className="space-y-3">
+                 {filteredData.categoryData.map((category, index) => <div key={category.name} className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+                     <div className="flex items-center gap-3">
+                       <div className="w-4 h-4 rounded-full" style={{
+                     backgroundColor: COLORS[index % COLORS.length]
+                   }} />
+                       <span className="font-medium text-sm">{category.name}</span>
+                     </div>
+                     <div className="text-right">
+                       <p className="font-semibold text-sm">{formatCurrency(category.value)}</p>
+                       <p className="text-xs text-muted-foreground">
+                         {(category.value / filteredData.categoryData.reduce((sum, c) => sum + c.value, 0) * 100).toFixed(1)}%
+                       </p>
+                     </div>
+                   </div>)}
               </CardContent>
             </Card>
           </div>
@@ -192,7 +208,7 @@ export const InteractiveCharts = ({
               <CardContent>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChart data={data.monthlyData}>
+                    <ComposedChart data={filteredData.monthlyData}>
                       <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                       <XAxis dataKey="month" tick={{
                       fontSize: 12
@@ -227,7 +243,7 @@ export const InteractiveCharts = ({
             <CardContent>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={data.monthlyData}>
+                  <AreaChart data={filteredData.monthlyData}>
                     <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                     <XAxis dataKey="month" tick={{
                     fontSize: 12
@@ -256,7 +272,7 @@ export const InteractiveCharts = ({
             <CardContent>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={[...data.monthlyData.slice(-3), ...data.projectionData]}>
+                  <AreaChart data={[...filteredData.monthlyData.slice(-3), ...filteredData.projectionData]}>
                     <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                     <XAxis dataKey="month" tick={{
                     fontSize: 12

@@ -85,6 +85,50 @@ export const checkPasswordStrength = (password: string): {
   };
 };
 
+// CSS sanitization for chart components
+export const sanitizeCSS = (css: string): string => {
+  // Remove potentially dangerous CSS patterns
+  const dangerousPatterns = [
+    /javascript:/gi,
+    /expression\s*\(/gi,
+    /url\s*\(\s*['"]*(?!data:image\/)/gi, // Allow data URLs for images but block others
+    /@import/gi,
+    /behavior\s*:/gi,
+    /-moz-binding/gi,
+    /vbscript:/gi,
+    /\\[\da-f]{1,6}/gi, // Remove CSS unicode escapes
+    /<[^>]*>/g // Remove HTML tags
+  ];
+  
+  let sanitized = css;
+  dangerousPatterns.forEach(pattern => {
+    sanitized = sanitized.replace(pattern, '');
+  });
+  
+  // Validate CSS properties - only allow safe chart-related properties
+  const lines = sanitized.split('\n');
+  const safeCSSLines = lines.filter(line => {
+    const trimmed = line.trim();
+    if (trimmed === '' || trimmed.includes('{') || trimmed.includes('}') || trimmed.startsWith('/*') || trimmed.endsWith('*/')) {
+      return true;
+    }
+    
+    // Allow CSS custom properties for chart colors
+    if (trimmed.startsWith('--color-') && /^--color-[\w-]+\s*:\s*[#\w(),.\s%-]+;?$/.test(trimmed)) {
+      return true;
+    }
+    
+    // Allow specific CSS selectors for charts
+    if (/^\s*[\w\-\[\]="'\s\.,:#]+\s*\{?\s*$/.test(trimmed)) {
+      return true;
+    }
+    
+    return false;
+  });
+  
+  return safeCSSLines.join('\n');
+};
+
 // CSRF token generation (simple implementation)
 export const generateCSRFToken = (): string => {
   return crypto.randomUUID();

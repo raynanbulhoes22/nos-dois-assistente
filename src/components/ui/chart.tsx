@@ -2,6 +2,7 @@ import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
 import { cn } from "@/lib/utils"
+import { sanitizeCSS } from "@/lib/security"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
@@ -74,17 +75,6 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
-  // Sanitize CSS content to prevent XSS
-  const sanitizeCSS = (css: string): string => {
-    // Remove potentially dangerous CSS content
-    return css
-      .replace(/<[^>]*>/g, '') // Remove HTML tags
-      .replace(/javascript:/gi, '') // Remove javascript: protocol
-      .replace(/expression\s*\(/gi, '') // Remove CSS expressions
-      .replace(/import\s+/gi, '') // Remove CSS imports
-      .replace(/@import/gi, '') // Remove @import rules
-      .replace(/url\s*\(\s*['"]*javascript:/gi, '') // Remove javascript URLs
-  }
 
   const cssContent = Object.entries(THEMES)
     .map(

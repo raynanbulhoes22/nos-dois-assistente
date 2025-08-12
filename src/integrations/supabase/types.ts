@@ -161,74 +161,6 @@ export type Database = {
         }
         Relationships: []
       }
-      eventos_conciliados: {
-        Row: {
-          ano_referencia: number
-          confianca_match: number | null
-          created_at: string
-          criado_manualmente: boolean | null
-          data_esperada: string
-          data_real: string | null
-          evento_id: string
-          id: string
-          mes_referencia: number
-          observacoes: string | null
-          registro_financeiro_id: string | null
-          status: string
-          tipo_evento: string
-          updated_at: string
-          user_id: string
-          valor_esperado: number
-          valor_real: number | null
-        }
-        Insert: {
-          ano_referencia: number
-          confianca_match?: number | null
-          created_at?: string
-          criado_manualmente?: boolean | null
-          data_esperada: string
-          data_real?: string | null
-          evento_id: string
-          id?: string
-          mes_referencia: number
-          observacoes?: string | null
-          registro_financeiro_id?: string | null
-          status?: string
-          tipo_evento: string
-          updated_at?: string
-          user_id: string
-          valor_esperado: number
-          valor_real?: number | null
-        }
-        Update: {
-          ano_referencia?: number
-          confianca_match?: number | null
-          created_at?: string
-          criado_manualmente?: boolean | null
-          data_esperada?: string
-          data_real?: string | null
-          evento_id?: string
-          id?: string
-          mes_referencia?: number
-          observacoes?: string | null
-          registro_financeiro_id?: string | null
-          status?: string
-          tipo_evento?: string
-          updated_at?: string
-          user_id?: string
-          valor_esperado?: number
-          valor_real?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "eventos_conciliados_registro_financeiro_id_fkey"
-            columns: ["registro_financeiro_id"]
-            isOneToOne: false
-            referencedRelation: "registros_financeiros"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       fontes_renda: {
         Row: {
           ativa: boolean
@@ -300,6 +232,9 @@ export type Database = {
       }
       historico_de_interacoes: {
         Row: {
+          acao: string
+          agente: string
+          dados: Json | null
           id: string
           instancia: string
           mensagem: string
@@ -310,6 +245,9 @@ export type Database = {
           telefone: string
         }
         Insert: {
+          acao: string
+          agente: string
+          dados?: Json | null
           id?: string
           instancia: string
           mensagem: string
@@ -320,6 +258,9 @@ export type Database = {
           telefone: string
         }
         Update: {
+          acao?: string
+          agente?: string
+          dados?: Json | null
           id?: string
           instancia?: string
           mensagem?: string
@@ -487,7 +428,6 @@ export type Database = {
           tipo: string | null
           tipo_movimento: string | null
           title: string | null
-          titulo: string | null
           user_id: string | null
           valor: number
         }
@@ -509,7 +449,6 @@ export type Database = {
           tipo?: string | null
           tipo_movimento?: string | null
           title?: string | null
-          titulo?: string | null
           user_id?: string | null
           valor: number
         }
@@ -531,7 +470,6 @@ export type Database = {
           tipo?: string | null
           tipo_movimento?: string | null
           title?: string | null
-          titulo?: string | null
           user_id?: string | null
           valor?: number
         }

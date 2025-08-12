@@ -88,7 +88,7 @@ export const TabSection = ({
         >
           <div className="space-y-3">
             {activeFontes.map((fonte) => (
-              <div key={fonte.id} className="list-item">
+              <div key={fonte.id} className="list-item group">
                 <div className="flex justify-between items-start">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm truncate">{fonte.tipo}</h3>
@@ -139,7 +139,7 @@ export const TabSection = ({
         >
           <div className="space-y-3">
             {activeCartoes.map((cartao) => (
-              <div key={cartao.id} className="list-item">
+              <div key={cartao.id} className="list-item group">
                 <div className="flex justify-between items-start">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm truncate">{cartao.apelido}</h3>
@@ -197,7 +197,7 @@ export const TabSection = ({
         >
           <div className="space-y-3">
             {activeContas.map((conta) => (
-              <div key={conta.id} className="list-item">
+              <div key={conta.id} className="list-item group">
                 <div className="flex justify-between items-start">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm truncate">{conta.nome}</h3>
@@ -248,7 +248,7 @@ export const TabSection = ({
         >
           <div className="space-y-3">
             {activeGastosFixos.map((gasto) => (
-              <div key={gasto.id} className="list-item">
+              <div key={gasto.id} className="list-item group">
                 <div className="flex justify-between items-start">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm truncate">{gasto.nome}</h3>

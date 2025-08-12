@@ -663,6 +663,33 @@ export const Orcamento = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Modal Conta Parcelada */}
+      <ContaParceladaForm
+        open={showContaParceladaModal}
+        onOpenChange={(open) => {
+          setShowContaParceladaModal(open);
+          if (!open) {
+            setEditingContaParcelada(null);
+          }
+        }}
+        onSubmit={async (data) => {
+          try {
+            if (editingContaParcelada) {
+              await updateConta(editingContaParcelada.id, data as any);
+              toast.success('Parcelamento atualizado com sucesso!');
+            } else {
+              await createConta(data);
+              toast.success('Parcelamento criado com sucesso!');
+            }
+            return true;
+          } catch (error) {
+            toast.error('Erro ao salvar parcelamento');
+            return false;
+          }
+        }}
+        editingConta={editingContaParcelada}
+      />
+
       {/* Modal Gasto Fixo */}
       <Dialog open={showGastoFixoModal} onOpenChange={setShowGastoFixoModal}>
         <DialogContent className="sm:max-w-md">

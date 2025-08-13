@@ -36,7 +36,7 @@ serve(async (req) => {
     // Product IDs corretos do Stripe
     const productIds = {
       solo: "prod_SrRMO9vUS3N86x",
-      casal: "prod_SrRMO9vUS3N86x"
+      casal: "prod_SrRNeVQBvuq7Vm"
     };
 
     // Get the most recent active price for the product

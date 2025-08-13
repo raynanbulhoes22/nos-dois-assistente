@@ -20,7 +20,7 @@ serve(async (req) => {
     // Product IDs corretos do Stripe
     const productIds = {
       solo: "prod_SrRMO9vUS3N86x",
-      casal: "prod_SrRMO9vUS3N86x"
+      casal: "prod_SrRNeVQBvuq7Vm"
     };
 
     // Buscar preços para ambos os produtos

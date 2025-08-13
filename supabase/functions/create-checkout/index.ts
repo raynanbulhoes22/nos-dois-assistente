@@ -33,28 +33,16 @@ serve(async (req) => {
 
     const { plan } = await req.json().catch(() => ({ plan: "solo" }));
     
-    // Buscar produtos pelo nome ao invés de IDs fixos
-    const productNames = {
-      solo: "Solo",
-      casal: "Casal"
+    // Product IDs corretos do Stripe
+    const productIds = {
+      solo: "prod_SrRMO9vUS3N86x",
+      casal: "prod_SrRMO9vUS3N86x"
     };
 
-    const productName = productNames[plan as keyof typeof productNames] || productNames.solo;
-    
-    // Buscar produto pelo nome
-    const products = await stripe.products.list({
-      active: true,
-      limit: 100
-    });
-    
-    const product = products.data.find(p => p.name.toLowerCase().includes(productName.toLowerCase()));
-    if (!product) {
-      throw new Error(`Produto ${productName} não encontrado no Stripe`);
-    }
-
     // Get the most recent active price for the product
+    const productId = productIds[plan as keyof typeof productIds] || productIds.solo;
     const prices = await stripe.prices.list({
-      product: product.id,
+      product: productId,
       active: true,
       limit: 10  // Get multiple prices to find the most recent
     });
@@ -67,7 +55,7 @@ serve(async (req) => {
     const sortedPrices = prices.data.sort((a, b) => b.created - a.created);
     const priceId = sortedPrices[0].id;
     
-    console.log(`Using price ${priceId} for ${plan} plan with amount ${sortedPrices[0].unit_amount}`);;
+    console.log(`Using price ${priceId} for ${plan} plan with amount ${sortedPrices[0].unit_amount}`);
 
     // Check if a Stripe customer record exists for this user
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });

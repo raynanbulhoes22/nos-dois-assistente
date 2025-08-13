@@ -17,27 +17,24 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
-    // Buscar produtos pelo nome ao invés de IDs fixos
-    const products = await stripe.products.list({
-      active: true,
-      limit: 100
-    });
-    
-    const soloProduct = products.data.find(p => p.name.toLowerCase().includes("solo"));
-    const casalProduct = products.data.find(p => p.name.toLowerCase().includes("casal"));
+    // Product IDs corretos do Stripe
+    const productIds = {
+      solo: "prod_SrRMO9vUS3N86x",
+      casal: "prod_SrRMO9vUS3N86x"
+    };
 
     // Buscar preços para ambos os produtos
-    const soloPrice = soloProduct ? await stripe.prices.list({
-      product: soloProduct.id,
+    const soloPrice = await stripe.prices.list({
+      product: productIds.solo,
       active: true,
       limit: 1
-    }) : { data: [] };
+    });
 
-    const casalPrice = casalProduct ? await stripe.prices.list({
-      product: casalProduct.id,
+    const casalPrice = await stripe.prices.list({
+      product: productIds.casal,
       active: true,
       limit: 1
-    }) : { data: [] };
+    });
 
     const pricing = {
       solo: {

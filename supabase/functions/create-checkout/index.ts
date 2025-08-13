@@ -39,19 +39,23 @@ serve(async (req) => {
       casal: "prod_SpcIUtrNw95jCH"
     };
 
-    // Get all prices for the product
+    // Get the most recent active price for the product
     const productId = productIds[plan as keyof typeof productIds] || productIds.solo;
     const prices = await stripe.prices.list({
       product: productId,
       active: true,
-      limit: 1
+      limit: 10  // Get multiple prices to find the most recent
     });
 
     if (prices.data.length === 0) {
       throw new Error(`No active price found for ${plan} plan`);
     }
 
-    const priceId = prices.data[0].id;
+    // Sort by created date to get the most recent price
+    const sortedPrices = prices.data.sort((a, b) => b.created - a.created);
+    const priceId = sortedPrices[0].id;
+    
+    console.log(`Using price ${priceId} for ${plan} plan with amount ${sortedPrices[0].unit_amount}`);;
 
     // Check if a Stripe customer record exists for this user
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });

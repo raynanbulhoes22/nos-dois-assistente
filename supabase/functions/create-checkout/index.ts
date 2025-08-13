@@ -33,16 +33,28 @@ serve(async (req) => {
 
     const { plan } = await req.json().catch(() => ({ plan: "solo" }));
     
-    // Product IDs do Stripe
-    const productIds = {
-      solo: "prod_SpcIOvFRzJ5jGq",
-      casal: "prod_SpcIUtrNw95jCH"
+    // Buscar produtos pelo nome ao invés de IDs fixos
+    const productNames = {
+      solo: "Solo",
+      casal: "Casal"
     };
 
+    const productName = productNames[plan as keyof typeof productNames] || productNames.solo;
+    
+    // Buscar produto pelo nome
+    const products = await stripe.products.list({
+      active: true,
+      limit: 100
+    });
+    
+    const product = products.data.find(p => p.name.toLowerCase().includes(productName.toLowerCase()));
+    if (!product) {
+      throw new Error(`Produto ${productName} não encontrado no Stripe`);
+    }
+
     // Get the most recent active price for the product
-    const productId = productIds[plan as keyof typeof productIds] || productIds.solo;
     const prices = await stripe.prices.list({
-      product: productId,
+      product: product.id,
       active: true,
       limit: 10  // Get multiple prices to find the most recent
     });

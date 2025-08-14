@@ -96,10 +96,16 @@ export const TemporalAnalysisCharts = ({ data, isLoading }: TemporalAnalysisChar
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="evolution" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="evolution">Evolução Mensal</TabsTrigger>
-            <TabsTrigger value="comparison">Receitas vs Gastos</TabsTrigger>
-            <TabsTrigger value="balance">Saldo Acumulado</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-3 h-auto p-1 gap-1">
+            <TabsTrigger value="evolution" className="text-xs sm:text-sm px-2 py-2 h-auto">
+              Evolução Mensal
+            </TabsTrigger>
+            <TabsTrigger value="comparison" className="text-xs sm:text-sm px-2 py-2 h-auto">
+              Receitas vs Gastos
+            </TabsTrigger>
+            <TabsTrigger value="balance" className="text-xs sm:text-sm px-2 py-2 h-auto">
+              Saldo Acumulado
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="evolution" className="mt-6">

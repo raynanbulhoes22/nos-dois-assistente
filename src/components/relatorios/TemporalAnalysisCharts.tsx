@@ -96,15 +96,18 @@ export const TemporalAnalysisCharts = ({ data, isLoading }: TemporalAnalysisChar
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="evolution" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-3 h-auto p-1 gap-1">
-            <TabsTrigger value="evolution" className="text-xs sm:text-sm px-2 py-2 h-auto">
-              Evolução Mensal
+          <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+            <TabsTrigger value="evolution" className="text-[10px] xs:text-xs sm:text-sm px-1 xs:px-2 py-1.5 h-auto whitespace-nowrap">
+              <span className="hidden xs:inline">Evolução Mensal</span>
+              <span className="xs:hidden">Evolução</span>
             </TabsTrigger>
-            <TabsTrigger value="comparison" className="text-xs sm:text-sm px-2 py-2 h-auto">
-              Receitas vs Gastos
+            <TabsTrigger value="comparison" className="text-[10px] xs:text-xs sm:text-sm px-1 xs:px-2 py-1.5 h-auto whitespace-nowrap">
+              <span className="hidden xs:inline">Receitas vs Gastos</span>
+              <span className="xs:hidden">Receitas</span>
             </TabsTrigger>
-            <TabsTrigger value="balance" className="text-xs sm:text-sm px-2 py-2 h-auto">
-              Saldo Acumulado
+            <TabsTrigger value="balance" className="text-[10px] xs:text-xs sm:text-sm px-1 xs:px-2 py-1.5 h-auto whitespace-nowrap">
+              <span className="hidden xs:inline">Saldo Acumulado</span>
+              <span className="xs:hidden">Saldo</span>
             </TabsTrigger>
           </TabsList>
 

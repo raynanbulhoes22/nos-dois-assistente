@@ -230,103 +230,101 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
 
   return (
     <TooltipProvider>
-      <div className="mt-3 pt-3 border-t border-border/40">
+      <div className="bg-gradient-to-r from-muted/30 to-muted/50 rounded-lg p-3 sm:p-4 border border-border/40">
         <div className="flex items-center gap-2 mb-3">
-          <Wallet className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-foreground">Saldo Inicial</span>
+          <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
+            <Wallet className="h-3 w-3 text-primary" />
+          </div>
+          <span className="text-sm font-semibold text-foreground">Saldo do Mês</span>
         </div>
         
-        {/* Layout Horizontal Compacto - 3 colunas como antes */}
-        <div className="grid grid-cols-3 gap-3">
-          {/* Saldo Inicial - Clicável e intuitivo */}
+        {/* Layout Mobile First - Stack em mobile, grid em desktop */}
+        <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-3">
+          {/* Saldo Inicial - Mobile First */}
           <Tooltip>
             <TooltipTrigger asChild>
               <div 
                 onClick={handleEditSaldo}
                 className={`
-                  text-center p-2 rounded-lg cursor-pointer transition-all duration-300 group transform hover:scale-105
+                  p-3 sm:p-2 rounded-lg cursor-pointer transition-all duration-300 group
                   ${saldoInicialAtual === 0 
-                    ? 'border-dashed border-2 border-primary/40 bg-primary/5 hover:border-primary/60 hover:bg-primary/10 animate-pulse' 
-                    : 'bg-muted/30 hover:bg-muted/50 hover:shadow-lg border border-transparent hover:border-primary/30'
+                    ? 'border-2 border-dashed border-primary/50 bg-primary/5 hover:border-primary hover:bg-primary/10' 
+                    : 'bg-card/60 hover:bg-card border border-border/40 hover:border-primary/40 shadow-sm hover:shadow-md'
                   }
                 `}
               >
                 {saldoInicialAtual === 0 ? (
-                  <>
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <Plus className="h-3 w-3 text-primary group-hover:scale-110 transition-transform" />
-                      <span className="text-xs text-primary font-medium">DEFINIR</span>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1 mb-2">
+                      <Plus className="h-4 w-4 text-primary" />
+                      <span className="text-sm text-primary font-semibold">Definir</span>
                     </div>
-                    <p className="text-xs text-primary font-medium mb-1">
-                      Saldo Inicial
-                    </p>
                     <p className="text-xs text-muted-foreground">
-                      💰 Clique aqui
+                      Toque para definir saldo inicial
                     </p>
-                  </>
+                  </div>
                 ) : (
-                  <>
+                  <div className="text-center">
                     <div className="flex items-center justify-center gap-1 mb-1">
-                      <span className="text-xs text-muted-foreground font-medium">SALDO INICIAL</span>
-                      <Edit2 className="h-3 w-3 text-primary opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:scale-110" />
+                      <span className="text-xs text-muted-foreground font-medium">INICIAL</span>
+                      <Edit2 className="h-3 w-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
-                    <p className="text-sm font-bold text-foreground mb-1 group-hover:text-primary transition-colors">
+                    <p className="text-sm sm:text-base font-bold text-foreground">
                       {formatCurrency(saldoInicialAtual)}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      💰 Clique aqui
-                    </p>
-                  </>
+                  </div>
                 )}
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="font-medium">
+              <p className="text-sm">
                 {saldoInicialAtual === 0 
-                  ? 'Clique para definir seu saldo inicial'
-                  : 'Clique para editar o saldo inicial'
+                  ? 'Toque para definir saldo inicial'
+                  : 'Toque para editar saldo inicial'
                 }
               </p>
             </TooltipContent>
           </Tooltip>
 
-          {/* Saldo Atual Computado - Visual hierarchy melhorada */}
-          <div className={`text-center p-2 rounded-lg border transition-all duration-300 hover:shadow-md ${
-            saldoAtualComputado >= 0 ? 'bg-success/10 border-success/30 hover:bg-success/15' : 'bg-destructive/10 border-destructive/30 hover:bg-destructive/15'
+          {/* Saldo Atual - Mobile First */}
+          <div className={`p-3 sm:p-2 rounded-lg border transition-all duration-300 text-center ${
+            saldoAtualComputado >= 0 
+              ? 'bg-success/5 border-success/30' 
+              : 'bg-destructive/5 border-destructive/30'
           }`}>
-            <span className="text-xs text-muted-foreground font-medium block mb-1">SALDO ATUAL</span>
-            <div className="flex items-center justify-center gap-1.5">
-              <p className={`text-sm font-bold ${
+            <span className="text-xs text-muted-foreground font-medium block mb-1">ATUAL</span>
+            <div className="flex items-center justify-center gap-1">
+              <p className={`text-sm sm:text-base font-bold ${
                 saldoAtualComputado >= 0 ? 'text-success' : 'text-destructive'
               }`}>
                 {formatCurrency(saldoAtualComputado)}
               </p>
               {saldoAtualComputado >= 0 ? (
-                <TrendingUp className="h-3.5 w-3.5 text-success" />
+                <TrendingUp className="h-3 w-3 text-success" />
               ) : (
-                <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+                <TrendingDown className="h-3 w-3 text-destructive" />
               )}
             </div>
           </div>
 
-          {/* Evolução - Com porcentagem e ícone direcional */}
-          <div className="text-center p-2 rounded-lg bg-muted/20 border border-border/30 hover:bg-muted/30 hover:shadow-md transition-all duration-300">
-            <span className="text-xs text-muted-foreground font-medium block mb-1">EVOLUÇÃO</span>
+          {/* Evolução - Mobile First */}
+          <div className="p-3 sm:p-2 rounded-lg bg-muted/40 border border-border/30 text-center">
+            <span className="text-xs text-muted-foreground font-medium block mb-1">VARIAÇÃO</span>
             <div className="flex items-center justify-center gap-1">
               {isPositiveEvolution ? (
                 <Plus className="h-3 w-3 text-success" />
               ) : (
                 <Minus className="h-3 w-3 text-destructive" />
               )}
-              <div className="text-center">
-                <p className={`text-sm font-bold leading-tight ${
+              <div>
+                <p className={`text-sm sm:text-base font-bold ${
                   isPositiveEvolution ? 'text-success' : 'text-destructive'
                 }`}>
                   {formatCurrency(Math.abs(evolucaoSaldo))}
                 </p>
                 {saldoInicialAtual !== 0 && (
-                  <p className={`text-xs leading-tight ${
-                    isPositiveEvolution ? 'text-success/80' : 'text-destructive/80'
+                  <p className={`text-xs ${
+                    isPositiveEvolution ? 'text-success/70' : 'text-destructive/70'
                   }`}>
                     {evolucaoPercentual > 0 ? '+' : ''}{evolucaoPercentual.toFixed(1)}%
                   </p>
@@ -337,33 +335,32 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
         </div>
       </div>
 
-      {/* Modal de Edição */}
+      {/* Modal de Edição - Mobile Optimized */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
+        <DialogContent className="w-[95vw] max-w-sm mx-auto rounded-lg">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="flex items-center gap-2 text-lg">
               <Wallet className="h-5 w-5 text-primary" />
-              {saldoInicialAtual === 0 ? 'Definir Saldo Inicial' : 'Editar Saldo Inicial'}
+              {saldoInicialAtual === 0 ? 'Definir Saldo' : 'Editar Saldo'}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Explicação mais clara */}
-            <div className="bg-muted/50 p-3 rounded-lg border border-border/30">
+            {/* Explicação Mobile First */}
+            <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <AlertCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-foreground mb-1">
                     Quanto você tinha na carteira?
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Informe o valor que você possuía no início de {mes}/{ano} 
-                    (soma de dinheiro em conta, carteira, poupança, etc.)
+                    Informe o valor total que você possuía no início de {mes}/{ano}
                   </p>
                 </div>
               </div>
             </div>
             
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="saldo" className="text-sm font-medium">
                 Saldo Inicial (R$)
               </Label>
@@ -373,21 +370,21 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
                 placeholder="Ex: 1500,00"
                 value={novoSaldo}
                 onChange={(e) => setNovoSaldo(e.target.value)}
-                className="text-center text-lg font-semibold mt-1"
+                className="text-center text-lg font-semibold h-12"
                 autoFocus
               />
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
               <Button
                 variant="outline"
-                className="flex-1"
+                className="w-full sm:flex-1 order-2 sm:order-1"
                 onClick={() => setIsEditModalOpen(false)}
               >
                 Cancelar
               </Button>
               <Button
-                className="flex-1 font-medium"
+                className="w-full sm:flex-1 font-medium order-1 sm:order-2"
                 onClick={handleSaveSaldo}
               >
                 {saldoInicialAtual === 0 ? 'Definir' : 'Atualizar'}

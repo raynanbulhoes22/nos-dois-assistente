@@ -61,18 +61,18 @@ export const TabSection = ({
 
   return (
     <Tabs defaultValue="renda" className="w-full">
-      <TabsList className={`grid w-full grid-cols-4 ${isMobile ? 'mb-4' : 'mb-6'}`}>
-        <TabsTrigger value="renda" className="text-xs sm:text-sm">
-          Renda
+      <TabsList className={`grid w-full grid-cols-4 ${isMobile ? 'mb-3 h-9' : 'mb-4 h-10'}`}>
+        <TabsTrigger value="renda" className={`${isMobile ? 'text-xs px-1' : 'text-sm px-3'} min-w-0`}>
+          {isMobile ? 'Renda' : 'Renda'}
         </TabsTrigger>
-        <TabsTrigger value="cartoes" className="text-xs sm:text-sm">
-          Cartões
+        <TabsTrigger value="cartoes" className={`${isMobile ? 'text-xs px-1' : 'text-sm px-3'} min-w-0`}>
+          {isMobile ? 'Cartões' : 'Cartões'}
         </TabsTrigger>
-        <TabsTrigger value="parcelamentos" className="text-xs sm:text-sm">
-          Parcelados
+        <TabsTrigger value="parcelamentos" className={`${isMobile ? 'text-xs px-1' : 'text-sm px-3'} min-w-0`}>
+          {isMobile ? 'Parcelas' : 'Parcelados'}
         </TabsTrigger>
-        <TabsTrigger value="gastos-fixos" className="text-xs sm:text-sm">
-          Gastos Fixos
+        <TabsTrigger value="gastos-fixos" className={`${isMobile ? 'text-xs px-1' : 'text-sm px-3'} min-w-0`}>
+          {isMobile ? 'Fixos' : 'Gastos Fixos'}
         </TabsTrigger>
       </TabsList>
 

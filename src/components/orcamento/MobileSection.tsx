@@ -38,17 +38,17 @@ export const MobileSection = ({
   };
 
   return (
-    <Card className={cn("section-card", className)}>
-      <CardHeader className="pb-3">
+    <Card className={cn("border-0 sm:border shadow-none sm:shadow-md bg-transparent sm:bg-card", className)}>
+      <CardHeader className="px-0 sm:px-6 pb-2 sm:pb-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={cn("icon-container", iconVariants[iconVariant])}>
-              <Icon className="h-5 w-5" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className={cn("w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center", iconVariants[iconVariant])}>
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
-            <div>
-              <CardTitle className="text-lg">{title}</CardTitle>
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-base sm:text-lg leading-tight truncate">{title}</CardTitle>
               {subtitle && (
-                <p className="text-sm text-muted-foreground">{subtitle}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{subtitle}</p>
               )}
             </div>
           </div>
@@ -56,30 +56,38 @@ export const MobileSection = ({
             <Button 
               size="sm" 
               onClick={onAdd} 
-              className="shadow-md focus-ring"
+              className="h-8 sm:h-9 px-2 sm:px-3 shadow-sm focus-ring shrink-0"
             >
-              <Plus className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">{addLabel}</span>
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+              <span className="hidden sm:inline text-xs">{addLabel}</span>
             </Button>
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="px-0 sm:px-6 pb-4 sm:pb-6">
         {isEmpty ? (
-          <div className="empty-state">
-            <div className={cn("empty-state-icon bg-muted", iconVariants[iconVariant])}>
-              <Icon className="h-8 w-8" />
+          <div className="text-center py-6 sm:py-8 space-y-3">
+            <div className={cn("w-12 h-12 sm:w-16 sm:h-16 rounded-full mx-auto flex items-center justify-center bg-muted/50", iconVariants[iconVariant])}>
+              <Icon className="h-6 w-6 sm:h-8 sm:w-8 opacity-60" />
             </div>
-            <p className="text-muted-foreground">{emptyMessage}</p>
-            {onAdd && (
-              <Button onClick={onAdd} className="mt-4">
-                <Plus className="h-4 w-4 mr-2" />
-                {addLabel}
-              </Button>
-            )}
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground font-medium">{emptyMessage}</p>
+              {onAdd && (
+                <Button 
+                  onClick={onAdd} 
+                  size="sm"
+                  className="mt-3 h-9 px-4"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  {addLabel}
+                </Button>
+              )}
+            </div>
           </div>
         ) : (
-          children
+          <div className="space-y-2 sm:space-y-3">
+            {children}
+          </div>
         )}
       </CardContent>
     </Card>

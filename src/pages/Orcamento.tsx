@@ -461,48 +461,59 @@ export const Orcamento = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      <div className="container mx-auto p-2 sm:p-4 lg:p-6 max-w-7xl">
-        {/* Header simplificado */}
-        <div className="sticky top-0 z-30 mb-4 sm:mb-8 -mx-2 sm:-mx-4 lg:-mx-6 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 bg-gradient-to-b from-background/95 to-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-          <div className="flex flex-col gap-2">
-            <div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+      <div className="container mx-auto px-3 py-4 sm:px-4 sm:py-6 lg:px-6 max-w-7xl">
+        {/* Header Mobile-First */}
+        <div className="sticky top-0 z-30 mb-3 sm:mb-6 -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6 py-3 sm:py-4 bg-gradient-to-b from-background/98 to-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/80 border-b border-border/50">
+          <div className="space-y-3">
+            <div className="text-center sm:text-left">
+              <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent leading-tight">
                 Calendário Financeiro
               </h1>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                Visualize todas suas movimentações em um calendário
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1 px-2 sm:px-0">
+                Visualize suas movimentações em um calendário
               </p>
             </div>
             
-            {/* Saldo Inicial no Header */}
-            <SaldoInicialCard mes={mesAtual} ano={anoAtual} />
+            {/* Saldo Inicial Compacto */}
+            <div className="w-full">
+              <SaldoInicialCard mes={mesAtual} ano={anoAtual} />
+            </div>
           </div>
         </div>
 
-        <div className="space-y-3 sm:space-y-6">
-          {/* Alertas Críticos */}
+        <div className="space-y-3 sm:space-y-4 lg:space-y-6 pb-4 sm:pb-6">
+          {/* Alertas Críticos - Mobile First */}
           {alertas.length > 0 && (
-            <AlertaFluxo alertas={alertas} />
+            <div className="animate-fade-in">
+              <AlertaFluxo alertas={alertas} />
+            </div>
           )}
 
+          {/* Calendário Principal - Responsivo */}
+          <div className="overflow-hidden rounded-lg animate-fade-in">
+            <CalendarioFinanceiro 
+              mesAtual={mesAtual} 
+              anoAtual={anoAtual}
+              onNavigate={navegarMes}
+              getMesNome={getMesNome}
+              statusMes={timelineMeses.find(t => t.mes === mesAtual && t.ano === anoAtual)?.status as any}
+              timeline={timelineMeses}
+              onMonthSelect={onMonthSelect}
+            />
+          </div>
 
-          {/* Calendário Principal */}
-          <CalendarioFinanceiro 
-            mesAtual={mesAtual} 
-            anoAtual={anoAtual}
-            onNavigate={navegarMes}
-            getMesNome={getMesNome}
-            statusMes={timelineMeses.find(t => t.mes === mesAtual && t.ano === anoAtual)?.status as any}
-            timeline={timelineMeses}
-            onMonthSelect={onMonthSelect}
-          />
-
-          {/* Seções Compactas em Tabs */}
-          <Card className="block">
-            <CardHeader>
-              <CardTitle className="text-base sm:text-lg">Configurações Financeiras</CardTitle>
+          {/* Configurações Financeiras - Mobile Optimized */}
+          <Card className="border-0 sm:border shadow-sm sm:shadow-md animate-fade-in">
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="text-base sm:text-lg font-semibold flex items-center gap-2">
+                <div className="h-2 w-2 bg-primary rounded-full"></div>
+                Configurações Financeiras
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Gerencie suas fontes de renda, cartões e gastos
+              </p>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6">
               <TabSection
                 fontes={fontes}
                 cartoes={cartoes}
@@ -531,25 +542,28 @@ export const Orcamento = () => {
         </div>
       </div>
 
-      {/* Modal Fonte de Renda */}
+      {/* Modal Fonte de Renda - Mobile Optimized */}
       <Dialog open={showFonteModal} onOpenChange={setShowFonteModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingFonte ? 'Editar' : 'Nova'} Fonte de Renda</DialogTitle>
+        <DialogContent className="w-[95vw] max-w-md mx-auto rounded-lg">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-lg">
+              {editingFonte ? 'Editar' : 'Nova'} Fonte de Renda
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={editingFonte ? handleUpdateFonte : handleAddFonte} className="space-y-4">
-            <div>
-              <Label htmlFor="tipo">Tipo</Label>
+            <div className="space-y-2">
+              <Label htmlFor="tipo" className="text-sm font-medium">Tipo</Label>
               <Input
                 id="tipo"
                 value={fonteForm.tipo}
                 onChange={(e) => setFonteForm({...fonteForm, tipo: e.target.value})}
                 placeholder="Ex: Salário, Freelance..."
                 required
+                className="h-11"
               />
             </div>
-            <div>
-              <Label htmlFor="valor">Valor</Label>
+            <div className="space-y-2">
+              <Label htmlFor="valor" className="text-sm font-medium">Valor</Label>
               <Input
                 id="valor"
                 type="number"
@@ -558,34 +572,44 @@ export const Orcamento = () => {
                 onChange={(e) => setFonteForm({...fonteForm, valor: e.target.value})}
                 placeholder="0,00"
                 required
+                className="h-11"
               />
             </div>
-            <div>
-              <Label htmlFor="descricao">Descrição</Label>
+            <div className="space-y-2">
+              <Label htmlFor="descricao" className="text-sm font-medium">Descrição</Label>
               <Textarea
                 id="descricao"
                 value={fonteForm.descricao}
                 onChange={(e) => setFonteForm({...fonteForm, descricao: e.target.value})}
                 placeholder="Detalhes adicionais..."
+                className="min-h-[80px] resize-none"
               />
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 py-2">
               <Switch
                 id="ativa"
                 checked={fonteForm.ativa}
                 onCheckedChange={(checked) => setFonteForm({...fonteForm, ativa: checked})}
               />
-              <Label htmlFor="ativa">Fonte ativa</Label>
+              <Label htmlFor="ativa" className="text-sm">Fonte ativa</Label>
             </div>
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => {
-                setShowFonteModal(false);
-                setEditingFonte(null);
-                resetFonteForm();
-              }}>
+            <div className="flex flex-col sm:flex-row gap-2 sm:justify-end pt-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setShowFonteModal(false);
+                  setEditingFonte(null);
+                  resetFonteForm();
+                }}
+                className="w-full sm:w-auto order-2 sm:order-1"
+              >
                 Cancelar
               </Button>
-              <Button type="submit">
+              <Button 
+                type="submit" 
+                className="w-full sm:w-auto order-1 sm:order-2"
+              >
                 {editingFonte ? 'Atualizar' : 'Adicionar'}
               </Button>
             </div>
@@ -593,25 +617,28 @@ export const Orcamento = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Modal Cartão */}
+      {/* Modal Cartão - Mobile Optimized */}
       <Dialog open={showCartaoModal} onOpenChange={setShowCartaoModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingCartao ? 'Editar' : 'Novo'} Cartão</DialogTitle>
+        <DialogContent className="w-[95vw] max-w-md mx-auto rounded-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-lg">
+              {editingCartao ? 'Editar' : 'Novo'} Cartão
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={editingCartao ? handleUpdateCartao : handleAddCartao} className="space-y-4">
-            <div>
-              <Label htmlFor="apelido">Apelido</Label>
+            <div className="space-y-2">
+              <Label htmlFor="apelido" className="text-sm font-medium">Apelido</Label>
               <Input
                 id="apelido"
                 value={cartaoForm.apelido}
                 onChange={(e) => setCartaoForm({...cartaoForm, apelido: e.target.value})}
                 placeholder="Ex: Cartão Principal"
                 required
+                className="h-11"
               />
             </div>
-            <div>
-              <Label htmlFor="ultimos_digitos">Últimos 4 dígitos</Label>
+            <div className="space-y-2">
+              <Label htmlFor="ultimos_digitos" className="text-sm font-medium">Últimos 4 dígitos</Label>
               <Input
                 id="ultimos_digitos"
                 value={cartaoForm.ultimos_digitos}
@@ -619,35 +646,37 @@ export const Orcamento = () => {
                 placeholder="1234"
                 maxLength={4}
                 required
+                className="h-11"
               />
             </div>
-            <div>
-              <Label htmlFor="limite">Limite Total</Label>
-              <CurrencyInput
-                id="limite"
-                value={cartaoForm.limite}
-                onChange={(value) => setCartaoForm({...cartaoForm, limite: value})}
-                placeholder="Ex: 5000,00"
-                required
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="limite" className="text-sm font-medium">Limite Total</Label>
+                <CurrencyInput
+                  id="limite"
+                  value={cartaoForm.limite}
+                  onChange={(value) => setCartaoForm({...cartaoForm, limite: value})}
+                  placeholder="Ex: 5000,00"
+                  required
+                  className="h-11"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="limite_disponivel" className="text-sm font-medium">Disponível</Label>
+                <CurrencyInput
+                  id="limite_disponivel"
+                  value={cartaoForm.limite_disponivel}
+                  onChange={(value) => setCartaoForm({...cartaoForm, limite_disponivel: value})}
+                  placeholder="Ex: 1500,00"
+                  required
+                  className="h-11"
+                />
+              </div>
             </div>
-            <div>
-              <Label htmlFor="limite_disponivel">Limite Disponível</Label>
-              <CurrencyInput
-                id="limite_disponivel"
-                value={cartaoForm.limite_disponivel}
-                onChange={(value) => setCartaoForm({...cartaoForm, limite_disponivel: value})}
-                placeholder="Ex: 1500,00 ou -4366,93"
-                required
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Valor atualmente disponível para uso no cartão (pode ser negativo)
-              </p>
-            </div>
-            <div>
-              <Label htmlFor="dia_vencimento">Dia do Vencimento</Label>
+            <div className="space-y-2">
+              <Label htmlFor="dia_vencimento" className="text-sm font-medium">Dia do Vencimento</Label>
               <Select value={cartaoForm.dia_vencimento} onValueChange={(value) => setCartaoForm({...cartaoForm, dia_vencimento: value})}>
-                <SelectTrigger>
+                <SelectTrigger className="h-11">
                   <SelectValue placeholder="Selecione o dia" />
                 </SelectTrigger>
                 <SelectContent>
@@ -657,23 +686,31 @@ export const Orcamento = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3 py-2">
               <Switch
                 id="ativo"
                 checked={cartaoForm.ativo}
                 onCheckedChange={(checked) => setCartaoForm({...cartaoForm, ativo: checked})}
               />
-              <Label htmlFor="ativo">Cartão ativo</Label>
+              <Label htmlFor="ativo" className="text-sm">Cartão ativo</Label>
             </div>
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => {
-                setShowCartaoModal(false);
-                setEditingCartao(null);
-                resetCartaoForm();
-              }}>
+            <div className="flex flex-col sm:flex-row gap-2 sm:justify-end pt-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setShowCartaoModal(false);
+                  setEditingCartao(null);
+                  resetCartaoForm();
+                }}
+                className="w-full sm:w-auto order-2 sm:order-1"
+              >
                 Cancelar
               </Button>
-              <Button type="submit">
+              <Button 
+                type="submit" 
+                className="w-full sm:w-auto order-1 sm:order-2"
+              >
                 {editingCartao ? 'Atualizar' : 'Adicionar'}
               </Button>
             </div>
@@ -708,11 +745,13 @@ export const Orcamento = () => {
         editingConta={editingContaParcelada}
       />
 
-      {/* Modal Gasto Fixo */}
+      {/* Modal Gasto Fixo - Mobile Optimized */}
       <Dialog open={showGastoFixoModal} onOpenChange={setShowGastoFixoModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingGastoFixo ? 'Editar' : 'Novo'} Gasto Fixo</DialogTitle>
+        <DialogContent className="w-[95vw] max-w-md mx-auto rounded-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-lg">
+              {editingGastoFixo ? 'Editar' : 'Novo'} Gasto Fixo
+            </DialogTitle>
           </DialogHeader>
           <GastoFixoForm
             gastoFixo={editingGastoFixo}

@@ -103,15 +103,33 @@ export const Assinaturas = () => {
   };
   const handleRefresh = async () => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke("check-subscription");
-      if (error) throw error;
+      console.log('🔄 Verificando status da assinatura...');
+      
+      const { data, error } = await supabase.functions.invoke("check-subscription");
+      
+      if (error) {
+        console.error('❌ Erro ao verificar assinatura:', error);
+        toast({
+          title: "Erro ao verificar assinatura",
+          description: error.message || "Tente novamente",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('✅ Status atualizado:', data);
       setStatus(data as any);
+      
+      if (data.subscribed) {
+        toast({
+          title: "Assinatura ativa!",
+          description: `Seu plano ${data.subscription_tier} está ativo.`,
+        });
+      }
     } catch (e: any) {
+      console.error('❌ Erro inesperado:', e);
       toast({
-        title: "Erro ao verificar plano",
+        title: "Erro ao verificar assinatura",
         description: e.message || "Tente novamente",
         variant: "destructive"
       });
@@ -198,10 +216,15 @@ export const Assinaturas = () => {
                       Válido até: {status.subscription_end ? new Date(status.subscription_end).toLocaleDateString('pt-BR') : 'N/A'}
                     </p>
                   </div>
-                  <Button variant="outline" onClick={handlePortal} disabled={busy}>
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Gerenciar Plano
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={handlePortal} disabled={busy}>
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      Gerenciar Plano
+                    </Button>
+                    <Button variant="ghost" onClick={handleRefresh} size="sm">
+                      🔄 Atualizar
+                    </Button>
+                  </div>
                 </div> : <p className="text-lg font-semibold">Escolha um plano para começar sua jornada financeira</p>}
             </CardContent>
           </Card>}

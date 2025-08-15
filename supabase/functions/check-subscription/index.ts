@@ -77,45 +77,58 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     log("Found customer", { customerId });
 
-    // Check for active subscriptions with expanded status checking
-    const subscriptions = await stripe.subscriptions.list({ 
+    // Check for active AND trialing subscriptions
+    let allSubscriptions = [];
+    
+    // Get active subscriptions
+    const activeSubscriptions = await stripe.subscriptions.list({ 
       customer: customerId, 
       status: "active",
-      limit: 10 // Check more subscriptions to be thorough
+      limit: 10
+    });
+    allSubscriptions.push(...activeSubscriptions.data);
+    
+    // Get trialing subscriptions
+    const trialingSubscriptions = await stripe.subscriptions.list({ 
+      customer: customerId, 
+      status: "trialing",
+      limit: 10
+    });
+    allSubscriptions.push(...trialingSubscriptions.data);
+    
+    log("Found subscriptions", { 
+      activeCount: activeSubscriptions.data.length,
+      trialingCount: trialingSubscriptions.data.length,
+      totalCount: allSubscriptions.length,
+      subscriptions: allSubscriptions.map(s => ({ id: s.id, status: s.status, product: s.items.data[0].price.product }))
     });
     
-    log("Found subscriptions", { count: subscriptions.data.length, subscriptions: subscriptions.data.map(s => ({ id: s.id, status: s.status, product: s.items.data[0].price.product })) });
-    
-    const hasActive = subscriptions.data.length > 0;
+    const hasActiveOrTrialing = allSubscriptions.length > 0;
     let tier: string | null = null;
     let endISO: string | null = null;
 
-    if (hasActive) {
-      const sub = subscriptions.data[0];
+    if (hasActiveOrTrialing) {
+      const sub = allSubscriptions[0]; // Take the first subscription found
       endISO = new Date(sub.current_period_end * 1000).toISOString();
       const price = sub.items.data[0].price;
-      const productId = price.product as string;
+      const amount = price.unit_amount || 0;
       
-      log("Processing subscription", { subscriptionId: sub.id, productId, priceId: price.id });
+      log("Processing subscription", { 
+        subscriptionId: sub.id, 
+        status: sub.status,
+        priceId: price.id, 
+        amount: amount,
+        currency: price.currency 
+      });
       
-      // Map product IDs to tiers - Updated with correct product IDs
-      if (productId === "prod_SrRMO9vUS3N86x" || productId === "prod_SrRfAWgOkJYu0D") {
+      // Determine tier by price amount (more reliable than product ID)
+      if (amount <= 1200) { // R$ 12,00 or less = Solo
         tier = "Solo";
-      } else if (productId === "prod_SrRNeVQBvuq7Vm" || productId === "prod_SrRfG2qGJ4bkjZ") {
-        tier = "Casal";
       } else {
-        // If we don't recognize the product ID, let's check by price amount
-        const amount = price.unit_amount || 0;
-        if (amount === 1197) { // R$ 11,97 in cents
-          tier = "Solo";
-        } else if (amount === 1997) { // R$ 19,97 in cents  
-          tier = "Casal";
-        } else {
-          tier = "Premium"; // Default to Premium for unknown products
-        }
+        tier = "Casal";
       }
       
-      log("Determined subscription tier", { productId, priceId: price.id, amount: price.unit_amount, tier });
+      log("Determined subscription tier", { amount, tier, status: sub.status });
     } else {
       // Also check for incomplete or past_due subscriptions that might need attention
       const incompleteSubscriptions = await stripe.subscriptions.list({ 
@@ -137,18 +150,28 @@ serve(async (req) => {
     }
 
     if (supabaseServiceClient) {
-      await supabaseServiceClient.from("subscribers").upsert({
+      const { error: upsertError } = await supabaseServiceClient.from("subscribers").upsert({
         email: user.email,
         user_id: user.id,
         stripe_customer_id: customerId,
-        subscribed: hasActive,
+        subscribed: hasActiveOrTrialing,
         subscription_tier: tier,
         subscription_end: endISO,
         updated_at: new Date().toISOString(),
-      }, { onConflict: "email" });
+      }, { onConflict: 'email' });
+
+      if (upsertError) {
+        log("Database upsert error", { error: upsertError });
+      } else {
+        log("Database updated successfully", { subscribed: hasActiveOrTrialing, tier, endISO });
+      }
     }
 
-    return new Response(JSON.stringify({ subscribed: hasActive, subscription_tier: tier, subscription_end: endISO }), {
+    return new Response(JSON.stringify({
+      subscribed: hasActiveOrTrialing,
+      subscription_tier: tier,
+      subscription_end: endISO
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -79,8 +80,8 @@ export const Orcamento = () => {
   const [cartaoForm, setCartaoForm] = useState({
     apelido: '',
     ultimos_digitos: '',
-    limite: '',
-    limite_disponivel: '',
+    limite: 0,
+    limite_disponivel: 0,
     dia_vencimento: '',
     ativo: true
   });
@@ -264,8 +265,8 @@ export const Orcamento = () => {
       await addCartao({
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
-        limite: parseFloat(cartaoForm.limite.replace(/\./g, '').replace(',', '.')),
-        limite_disponivel: parseFloat((cartaoForm.limite_disponivel || cartaoForm.limite).replace(/\./g, '').replace(',', '.')),
+        limite: cartaoForm.limite,
+        limite_disponivel: cartaoForm.limite_disponivel || cartaoForm.limite,
         dia_vencimento: parseInt(cartaoForm.dia_vencimento),
         ativo: cartaoForm.ativo
       });
@@ -282,8 +283,8 @@ export const Orcamento = () => {
     setCartaoForm({
       apelido: cartao.apelido || '',
       ultimos_digitos: cartao.ultimos_digitos || '',
-      limite: (cartao.limite || 0).toString(),
-      limite_disponivel: (cartao.limite_disponivel || cartao.limite || 0).toString(),
+      limite: cartao.limite || 0,
+      limite_disponivel: parseFloat(cartao.limite_disponivel) || cartao.limite || 0,
       dia_vencimento: (cartao.dia_vencimento || '').toString(),
       ativo: cartao.ativo !== false
     });
@@ -296,8 +297,8 @@ export const Orcamento = () => {
       await updateCartao(editingCartao.id, {
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
-        limite: parseFloat(cartaoForm.limite.replace(/\./g, '').replace(',', '.')),
-        limite_disponivel: parseFloat(cartaoForm.limite_disponivel.replace(/\./g, '').replace(',', '.')),
+        limite: cartaoForm.limite,
+        limite_disponivel: cartaoForm.limite_disponivel,
         dia_vencimento: parseInt(cartaoForm.dia_vencimento),
         ativo: cartaoForm.ativo
       });
@@ -359,8 +360,8 @@ export const Orcamento = () => {
     setCartaoForm({
       apelido: '',
       ultimos_digitos: '',
-      limite: '',
-      limite_disponivel: '',
+      limite: 0,
+      limite_disponivel: 0,
       dia_vencimento: '',
       ativo: true
     });
@@ -622,30 +623,21 @@ export const Orcamento = () => {
             </div>
             <div>
               <Label htmlFor="limite">Limite Total</Label>
-              <Input
+              <CurrencyInput
                 id="limite"
-                type="number"
-                step="0.01"
                 value={cartaoForm.limite}
-                onChange={(e) => setCartaoForm({...cartaoForm, limite: e.target.value})}
-                placeholder="0,00"
+                onChange={(value) => setCartaoForm({...cartaoForm, limite: value})}
+                placeholder="Ex: 5000,00"
                 required
               />
             </div>
             <div>
               <Label htmlFor="limite_disponivel">Limite Disponível</Label>
-              <Input
+              <CurrencyInput
                 id="limite_disponivel"
-                type="text"
                 value={cartaoForm.limite_disponivel}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  // Permitir formato brasileiro: -4.366,93 ou -4366,93 ou -4366.93
-                  if (value === '' || /^-?\d{1,3}(\.\d{3})*,?\d*$|^-?\d+\.?\d*$/.test(value)) {
-                    setCartaoForm({...cartaoForm, limite_disponivel: value});
-                  }
-                }}
-                placeholder="-4.366,93 ou 1.500,00"
+                onChange={(value) => setCartaoForm({...cartaoForm, limite_disponivel: value})}
+                placeholder="Ex: 1500,00 ou -4366,93"
                 required
               />
               <p className="text-xs text-muted-foreground mt-1">

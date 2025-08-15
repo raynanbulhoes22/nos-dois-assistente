@@ -5,6 +5,7 @@ import { useCartoes } from "@/hooks/useCartoes";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrcamentos } from "@/hooks/useOrcamentos";
 import { supabase } from "@/integrations/supabase/client";
+import { garantirSaldoInicialMesAtual } from "@/lib/saldo-utils";
 
 export interface FinancialStats {
   rendaRegistrada: number;
@@ -71,7 +72,13 @@ export const useFinancialStats = () => {
   }, [user]);
 
   useEffect(() => {
-    if (!movimentacoes.length && !fontes.length) return;
+    const calcularStats = async () => {
+      if (!movimentacoes.length && !fontes.length && !user) return;
+
+      // Garantir que existe saldo inicial para o mês atual
+      if (user) {
+        await garantirSaldoInicialMesAtual(user.id);
+      }
 
     const hoje = new Date();
     const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
@@ -173,8 +180,10 @@ export const useFinancialStats = () => {
       metaEconomia,
       alertas
     });
-
-  }, [movimentacoes, entradas, saidas, fontes, cartoes, profile, getTotalRendaAtiva, getTotalLimite, getOrcamentoAtual]);
+    };
+    
+    calcularStats();
+  }, [movimentacoes, entradas, saidas, fontes, cartoes, profile, user, getTotalRendaAtiva, getTotalLimite, getOrcamentoAtual]);
 
   return stats;
 };

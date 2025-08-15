@@ -141,12 +141,29 @@ export const OnboardingWizard = () => {
         }
       }
 
-      // Criar orçamento inicial com saldo inicial se informado
-      if (data.saldoInicial !== undefined) {
+      // Criar registro financeiro com saldo inicial se informado
+      if (data.saldoInicial !== undefined && data.saldoInicial !== 0) {
         const hoje = new Date();
         const mesAtual = hoje.getMonth() + 1;
         const anoAtual = hoje.getFullYear();
 
+        // Criar registro do saldo inicial como uma entrada
+        const { error: saldoError } = await supabase
+          .from('registros_financeiros')
+          .insert([{
+            user_id: user.id,
+            valor: data.saldoInicial,
+            data: hoje.toISOString().split('T')[0],
+            tipo: 'entrada',
+            categoria: 'Saldo Inicial',
+            nome: 'Saldo Inicial da Conta',
+            observacao: 'Saldo inicial informado durante configuração da conta',
+            origem: 'manual'
+          }]);
+
+        if (saldoError) console.warn('Erro ao criar registro de saldo inicial:', saldoError);
+
+        // Também criar orçamento inicial
         const { error: orcamentoError } = await supabase
           .from('orcamentos_mensais')
           .insert([{

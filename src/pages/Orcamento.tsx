@@ -7,6 +7,7 @@ import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 import { useContasParceladas } from "@/hooks/useContasParceladas";
 import { usePrevisibilidadeFinanceira } from "@/hooks/usePrevisibilidadeFinanceira";
 import { useGastosFixos } from "@/hooks/useGastosFixos";
+import { useSaldoInicial } from "@/hooks/useSaldoInicial";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -150,8 +151,9 @@ export const Orcamento = () => {
     deleteGastoFixo, 
     getTotalGastosFixosAtivos 
   } = useGastosFixos();
-
-  // Loading state
+  
+  // Hook para garantir saldo inicial no mês atual
+  useSaldoInicial(mesAtual, anoAtual);
   const isLoading = fontesLoading || cartoesLoading || orcamentosLoading || movimentacoesLoading || contasLoading;
 
   // Calculados

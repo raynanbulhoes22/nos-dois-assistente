@@ -264,8 +264,8 @@ export const Orcamento = () => {
       await addCartao({
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
-        limite: parseFloat(cartaoForm.limite),
-        limite_disponivel: parseFloat(cartaoForm.limite_disponivel || cartaoForm.limite),
+        limite: parseFloat(cartaoForm.limite.replace(',', '.')),
+        limite_disponivel: parseFloat(cartaoForm.limite_disponivel.replace(',', '.') || cartaoForm.limite.replace(',', '.')),
         dia_vencimento: parseInt(cartaoForm.dia_vencimento),
         ativo: cartaoForm.ativo
       });
@@ -296,8 +296,8 @@ export const Orcamento = () => {
       await updateCartao(editingCartao.id, {
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
-        limite: parseFloat(cartaoForm.limite),
-        limite_disponivel: parseFloat(cartaoForm.limite_disponivel),
+        limite: parseFloat(cartaoForm.limite.replace(',', '.')),
+        limite_disponivel: parseFloat(cartaoForm.limite_disponivel.replace(',', '.')),
         dia_vencimento: parseInt(cartaoForm.dia_vencimento),
         ativo: cartaoForm.ativo
       });
@@ -636,15 +636,20 @@ export const Orcamento = () => {
               <Label htmlFor="limite_disponivel">Limite Disponível</Label>
               <Input
                 id="limite_disponivel"
-                type="number"
-                step="0.01"
+                type="text"
                 value={cartaoForm.limite_disponivel}
-                onChange={(e) => setCartaoForm({...cartaoForm, limite_disponivel: e.target.value})}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  // Permitir números negativos, vírgulas e pontos
+                  if (value === '' || /^-?\d*[.,]?\d*$/.test(value)) {
+                    setCartaoForm({...cartaoForm, limite_disponivel: value});
+                  }
+                }}
                 placeholder={cartaoForm.limite || "0,00"}
                 required
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Valor atualmente disponível para uso no cartão
+                Valor atualmente disponível para uso no cartão (pode ser negativo)
               </p>
             </div>
             <div>

@@ -2,24 +2,29 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
+// Headers para permitir requisições de origens diferentes (CORS)
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Função de log para facilitar o debug
 const log = (step: string, details?: unknown) => {
   console.log(`[CHECK-SUB] ${step}`, details ?? "");
 };
 
 serve(async (req) => {
+  // Responde a requisições OPTIONS para o pre-flight do CORS
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Carrega as variáveis de ambiente
   const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "https://hgdwjxmorrpqdmxslwmz.supabase.co";
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
 
+  // Valida se a chave secreta do Stripe está configurada
   if (!stripeKey) {
     return new Response(JSON.stringify({ error: "STRIPE_SECRET_KEY não configurada" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -27,22 +32,22 @@ serve(async (req) => {
     });
   }
   if (!serviceRoleKey) {
-    // We can still check Stripe status and return without DB upsert
     log("Service role not set: proceeding without DB updates");
   }
 
-  // Client for auth (we need to validate the user token). Use anon if service not available.
+  // Cliente do Supabase para autenticação do usuário
   const supabaseAuthClient = createClient(
     supabaseUrl,
     (Deno.env.get("SUPABASE_ANON_KEY") ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnZHdqeG1vcnJwcWRteHNsd216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExODgyNzgsImV4cCI6MjA2Njc2NDI3OH0.RrgvKfuMkFtCFbK28CB-2xd6-eDk6y8CAAwpAfHCfAY")
   );
 
-  // Service client for DB writes
+  // Cliente de serviço do Supabase para operações no banco de dados
   const supabaseServiceClient = serviceRoleKey
     ? createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } })
     : null;
 
   try {
+    // Valida o token de autenticação do usuário
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
     const token = authHeader.replace("Bearer ", "");
@@ -52,9 +57,13 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     log("User authenticated", { id: user.id, email: user.email });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
+    // Inicializa o cliente do Stripe
+    const stripe = new Stripe(stripeKey, { apiVersion: "2024-06-20" }); // Versão da API atualizada
+    
+    // Procura pelo cliente no Stripe usando o e-mail
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
+    // Se o cliente não for encontrado no Stripe
     if (customers.data.length === 0) {
       log("No Stripe customer found");
       if (supabaseServiceClient) {
@@ -77,65 +86,60 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     log("Found customer", { customerId });
 
-    // Check for active subscriptions with expanded status checking
-    const subscriptions = await stripe.subscriptions.list({ 
-      customer: customerId, 
-      status: "active",
-      limit: 10 // Check more subscriptions to be thorough
+    // **CORREÇÃO APLICADA AQUI**
+    // Procura por assinaturas ativas OU em período de teste (`trialing`)
+    const subscriptions = await stripe.subscriptions.list({
+      customer: customerId,
+      status: ["active", "trialing"], // Verifica ambos os status
+      limit: 10,
     });
-    
+
     log("Found subscriptions", { count: subscriptions.data.length, subscriptions: subscriptions.data.map(s => ({ id: s.id, status: s.status, product: s.items.data[0].price.product })) });
-    
+
     const hasActive = subscriptions.data.length > 0;
     let tier: string | null = null;
     let endISO: string | null = null;
 
     if (hasActive) {
       const sub = subscriptions.data[0];
+      // A data de fim do período atual é válida tanto para 'active' quanto para 'trialing'
       endISO = new Date(sub.current_period_end * 1000).toISOString();
       const price = sub.items.data[0].price;
       const productId = price.product as string;
-      
-      log("Processing subscription", { subscriptionId: sub.id, productId, priceId: price.id });
-      
-      // Map product IDs to tiers - Updated with correct product IDs
+
+      log("Processing subscription", { subscriptionId: sub.id, productId, priceId: price.id, status: sub.status });
+
+      // Mapeia os IDs dos produtos para os planos (tiers)
       if (productId === "prod_SrRMO9vUS3N86x" || productId === "prod_SrRfAWgOkJYu0D") {
         tier = "Solo";
       } else if (productId === "prod_SrRNeVQBvuq7Vm" || productId === "prod_SrRfG2qGJ4bkjZ") {
         tier = "Casal";
       } else {
-        // If we don't recognize the product ID, let's check by price amount
+        // Fallback para verificação pelo valor, caso o ID do produto não seja reconhecido
         const amount = price.unit_amount || 0;
-        if (amount === 1197) { // R$ 11,97 in cents
+        if (amount === 1197) { // R$ 11,97 em centavos
           tier = "Solo";
-        } else if (amount === 1997) { // R$ 19,97 in cents  
+        } else if (amount === 1997) { // R$ 19,97 em centavos
           tier = "Casal";
         } else {
-          tier = "Premium"; // Default to Premium for unknown products
+          tier = "Premium"; // Padrão para produtos desconhecidos
         }
       }
-      
+
       log("Determined subscription tier", { productId, priceId: price.id, amount: price.unit_amount, tier });
     } else {
-      // Also check for incomplete or past_due subscriptions that might need attention
-      const incompleteSubscriptions = await stripe.subscriptions.list({ 
-        customer: customerId, 
-        status: "incomplete",
-        limit: 5
+      // Opcional: Mantém a verificação de outros status para debug
+      const otherSubscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        status: "all",
+        limit: 10
       });
-      
-      const pastDueSubscriptions = await stripe.subscriptions.list({ 
-        customer: customerId, 
-        status: "past_due",
-        limit: 5
-      });
-      
-      log("Checking other subscription statuses", { 
-        incomplete: incompleteSubscriptions.data.length,
-        pastDue: pastDueSubscriptions.data.length 
+      log("No active or trialing subscriptions found. All statuses:", {
+        subscriptions: otherSubscriptions.data.map(s => ({ id: s.id, status: s.status }))
       });
     }
 
+    // Atualiza ou insere os dados no Supabase
     if (supabaseServiceClient) {
       await supabaseServiceClient.from("subscribers").upsert({
         email: user.email,
@@ -148,10 +152,12 @@ serve(async (req) => {
       }, { onConflict: "email" });
     }
 
+    // Retorna o status da assinatura para o cliente
     return new Response(JSON.stringify({ subscribed: hasActive, subscription_tier: tier, subscription_end: endISO }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
+
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     log("ERROR", message);

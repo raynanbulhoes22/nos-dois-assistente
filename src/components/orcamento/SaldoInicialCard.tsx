@@ -8,7 +8,7 @@ import { useOrcamentos } from '@/hooks/useOrcamentos';
 import { useFinancialStats } from '@/hooks/useFinancialStats';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 
 interface SaldoInicialCardProps {
   mes: number;
@@ -19,6 +19,7 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const { user } = useAuth();
   const { getOrcamentoByMesAno, updateOrcamento, createOrcamento } = useOrcamentos();
   const { saldoInicial, saldoComputado, saldoAtual } = useFinancialStats();
+  const { toast } = useToast();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [novoSaldo, setNovoSaldo] = useState('');
 
@@ -38,27 +39,44 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   };
 
   const handleSaveSaldo = async () => {
-    if (!user) return;
+    if (!user) {
+      toast({
+        title: "❌ Erro",
+        description: "Usuário não encontrado. Faça login novamente.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    console.log('🔄 Iniciando atualização do saldo inicial...', { user: user.id, mes, ano, novoSaldo });
     
     try {
       const valorSaldo = parseFloat(novoSaldo.replace(',', '.')) || 0;
+      console.log('💰 Valor processado:', valorSaldo);
       
       // 1. Atualizar/criar orçamento
+      console.log('📊 Atualizando orçamento...', { orcamento: orcamento?.id });
       if (orcamento) {
-        await updateOrcamento(orcamento.id, { saldo_inicial: valorSaldo });
+        const result = await updateOrcamento(orcamento.id, { saldo_inicial: valorSaldo });
+        console.log('✅ Orçamento atualizado:', result);
       } else {
-        await createOrcamento({
+        const result = await createOrcamento({
           mes,
           ano,
           saldo_inicial: valorSaldo,
           meta_economia: 0
         });
+        console.log('✅ Orçamento criado:', result);
       }
       
       // 2. Verificar se já existe registro de saldo inicial para este mês
       const primeiroDiaMes = new Date(ano, mes - 1, 1);
+      console.log('🔍 Verificando registro existente...', { 
+        data: primeiroDiaMes.toISOString().split('T')[0],
+        user_id: user.id 
+      });
       
-      const { data: registroExistente } = await supabase
+      const { data: registroExistente, error: selectError } = await supabase
         .from('registros_financeiros')
         .select('id, valor')
         .eq('user_id', user.id)
@@ -66,8 +84,16 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
         .eq('data', primeiroDiaMes.toISOString().split('T')[0])
         .maybeSingle();
       
+      if (selectError) {
+        console.error('❌ Erro ao buscar registro existente:', selectError);
+        throw selectError;
+      }
+      
+      console.log('📋 Registro existente encontrado:', registroExistente);
+      
       if (registroExistente) {
         // 3a. Atualizar registro existente
+        console.log('🔄 Atualizando registro existente...');
         const { error: updateError } = await supabase
           .from('registros_financeiros')
           .update({
@@ -78,10 +104,14 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
           })
           .eq('id', registroExistente.id);
           
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('❌ Erro ao atualizar registro:', updateError);
+          throw updateError;
+        }
         console.log('✅ Registro de saldo inicial atualizado');
       } else {
         // 3b. Criar novo registro
+        console.log('➕ Criando novo registro...');
         const { error: insertError } = await supabase
           .from('registros_financeiros')
           .insert([{
@@ -96,15 +126,25 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
             tipo_movimento: valorSaldo >= 0 ? 'entrada' : 'saida'
           }]);
           
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error('❌ Erro ao inserir registro:', insertError);
+          throw insertError;
+        }
         console.log('✅ Registro de saldo inicial criado');
       }
       
-      toast.success('Saldo inicial atualizado com sucesso!');
+      toast({
+        title: "✅ Sucesso!",
+        description: "Saldo inicial atualizado com sucesso!"
+      });
       setIsEditModalOpen(false);
     } catch (error) {
       console.error('Erro ao atualizar saldo inicial:', error);
-      toast.error('Erro ao atualizar saldo inicial');
+      toast({
+        title: "❌ Erro",
+        description: error instanceof Error ? error.message : "Erro ao atualizar saldo inicial",
+        variant: "destructive"
+      });
     }
   };
 

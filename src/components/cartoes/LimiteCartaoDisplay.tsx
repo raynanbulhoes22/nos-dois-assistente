@@ -50,6 +50,13 @@ export const LimiteCartaoDisplay = ({ cartao, className, onClick }: LimiteCartao
     });
   };
 
+  console.log('[LimiteCartaoDisplay] Renderizando com dados:', {
+    cartao: cartao.apelido,
+    limiteTotal,
+    limiteAtualDisponivel,
+    isLoading
+  });
+
   if (isLoading) {
     return (
       <Card className={className}>

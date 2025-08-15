@@ -35,6 +35,9 @@ export const useLimiteDinamicoCartao = (cartao: Cartao) => {
   const [transacoes, setTransacoes] = useState<TransacaoCartao[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  console.log(`[DEBUG] Hook executado para cartão: ${cartao.apelido}`);
+  console.log(`[DEBUG] Cartão dados:`, cartao);
+
   // Função para detectar se uma transação é pagamento de fatura
   const isPagamentoFatura = (transacao: TransacaoCartao): boolean => {
     const texto = `${transacao.titulo} ${transacao.nome} ${transacao.estabelecimento} ${transacao.observacao}`.toLowerCase();

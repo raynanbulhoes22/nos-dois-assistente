@@ -308,6 +308,16 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
             </p>
           </div>
         </div>
+        
+        {/* Descrição útil e divertida */}
+        <div className="mt-2 text-center">
+          <p className="text-xs text-muted-foreground">
+            💰 {saldoInicialAtual === 0 
+              ? "Clique no card acima para contar quantos reais tem na carteira!" 
+              : "Clique no primeiro card para atualizar o valor da sua carteira"
+            }
+          </p>
+        </div>
       </div>
 
       {/* Modal de Edição */}

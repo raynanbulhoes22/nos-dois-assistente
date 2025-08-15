@@ -234,57 +234,56 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
         {/* Layout Horizontal Compacto - 3 colunas como antes */}
         <div className="grid grid-cols-3 gap-3">
           {/* Saldo Inicial - Clicável e intuitivo */}
-          <div className="space-y-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div 
-                  onClick={handleEditSaldo}
-                  className={`
-                    text-center p-2 rounded-lg cursor-pointer transition-all duration-200 group
-                    ${saldoInicialAtual === 0 
-                      ? 'border-dashed border-2 border-primary/40 bg-primary/5 hover:border-primary/60 hover:bg-primary/10' 
-                      : 'bg-muted/30 hover:bg-muted/50 hover:shadow-md border border-transparent hover:border-primary/30'
-                    }
-                  `}
-                >
-                  {saldoInicialAtual === 0 ? (
-                    <>
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <Plus className="h-3 w-3 text-primary" />
-                        <span className="text-xs text-primary font-medium">DEFINIR</span>
-                      </div>
-                      <p className="text-xs text-primary font-medium">
-                        Saldo Inicial
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <span className="text-xs text-muted-foreground">SALDO INICIAL</span>
-                        <Edit2 className="h-3 w-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                      <p className="text-sm font-semibold text-foreground">
-                        {formatCurrency(saldoInicialAtual)}
-                      </p>
-                    </>
-                  )}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  {saldoInicialAtual === 0 
-                    ? 'Clique para definir seu saldo inicial'
-                    : 'Clique para editar o saldo inicial'
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div 
+                onClick={handleEditSaldo}
+                className={`
+                  text-center p-2 rounded-lg cursor-pointer transition-all duration-200 group
+                  ${saldoInicialAtual === 0 
+                    ? 'border-dashed border-2 border-primary/40 bg-primary/5 hover:border-primary/60 hover:bg-primary/10' 
+                    : 'bg-muted/30 hover:bg-muted/50 hover:shadow-md border border-transparent hover:border-primary/30'
                   }
-                </p>
-              </TooltipContent>
-            </Tooltip>
-            
-            {/* Descrição curta */}
-            <p className="text-xs text-muted-foreground text-center">
-              💰 Clique aqui
-            </p>
-          </div>
+                `}
+              >
+                {saldoInicialAtual === 0 ? (
+                  <>
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <Plus className="h-3 w-3 text-primary" />
+                      <span className="text-xs text-primary font-medium">DEFINIR</span>
+                    </div>
+                    <p className="text-xs text-primary font-medium mb-1">
+                      Saldo Inicial
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      💰 Clique aqui
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <span className="text-xs text-muted-foreground">SALDO INICIAL</span>
+                      <Edit2 className="h-3 w-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <p className="text-sm font-semibold text-foreground mb-1">
+                      {formatCurrency(saldoInicialAtual)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      💰 Clique aqui
+                    </p>
+                  </>
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                {saldoInicialAtual === 0 
+                  ? 'Clique para definir seu saldo inicial'
+                  : 'Clique para editar o saldo inicial'
+                }
+              </p>
+            </TooltipContent>
+          </Tooltip>
 
           {/* Saldo Atual Computado */}
           <div className={`text-center p-2 rounded-lg border ${

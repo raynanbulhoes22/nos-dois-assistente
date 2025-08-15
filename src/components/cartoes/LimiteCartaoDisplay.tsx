@@ -29,6 +29,48 @@ export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: Lim
     isLoading 
   } = useLimiteDinamicoCartao(cartao);
 
+  const getUtilizationColor = () => {
+    if (limiteAtualDisponivel < 0) return {
+      variant: "destructive" as const,
+      barColor: "bg-destructive",
+      textColor: "text-destructive",
+      borderColor: "border-destructive/20",
+      bgColor: "bg-destructive/5"
+    };
+    
+    if (percentualUtilizado >= 90) return {
+      variant: "destructive" as const,
+      barColor: "bg-destructive",
+      textColor: "text-destructive",
+      borderColor: "border-destructive/20",
+      bgColor: "bg-destructive/5"
+    };
+    
+    if (percentualUtilizado >= 75) return {
+      variant: "secondary" as const,
+      barColor: "bg-orange-500",
+      textColor: "text-orange-600",
+      borderColor: "border-orange-200",
+      bgColor: "bg-orange-50"
+    };
+    
+    if (percentualUtilizado >= 50) return {
+      variant: "outline" as const,
+      barColor: "bg-yellow-500",
+      textColor: "text-yellow-600",
+      borderColor: "border-yellow-200",
+      bgColor: "bg-yellow-50"
+    };
+    
+    return {
+      variant: "default" as const,
+      barColor: "bg-green-500",
+      textColor: "text-green-600",
+      borderColor: "border-green-200",
+      bgColor: "bg-green-50"
+    };
+  };
+
   const getStatusColor = () => {
     if (limiteAtualDisponivel < 0) return "destructive";
     if (percentualUtilizado > 80) return "destructive";
@@ -44,9 +86,13 @@ export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: Lim
 
   const getStatusText = () => {
     if (limiteAtualDisponivel < 0) return "Limite Excedido";
-    if (percentualUtilizado > 80) return "Limite Baixo";
-    return "Limite OK";
+    if (percentualUtilizado >= 90) return "Crítico";
+    if (percentualUtilizado >= 75) return "Alto";
+    if (percentualUtilizado >= 50) return "Moderado";
+    return "Baixo";
   };
+
+  const utilizationColors = getUtilizationColor();
 
   const formatCurrency = (valor: number) => {
     return valor.toLocaleString('pt-BR', {
@@ -92,7 +138,7 @@ export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: Lim
   return (
     <TooltipProvider>
       <Card 
-        className={`relative transition-all duration-200 hover:shadow-md cursor-pointer group ${className || ''}`} 
+        className={`relative transition-all duration-300 hover:shadow-lg cursor-pointer group border-l-4 ${utilizationColors.borderColor} ${utilizationColors.bgColor} ${className || ''}`} 
         onClick={() => setShowInfoModal(true)}
       >
         <CardHeader className="pb-3">
@@ -104,7 +150,7 @@ export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: Lim
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant={getStatusColor()} className="shrink-0">
+              <Badge variant={utilizationColors.variant} className="shrink-0 animate-pulse">
                 {getStatusText()}
               </Badge>
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -143,7 +189,7 @@ export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: Lim
             <span className="text-sm text-muted-foreground">Disponível</span>
             <div className="flex items-center gap-2">
               {getStatusIcon()}
-              <span className={`font-medium ${limiteAtualDisponivel < 0 ? 'text-destructive' : 'text-primary'}`}>
+              <span className={`font-medium transition-colors duration-300 ${utilizationColors.textColor}`}>
                 {formatCurrency(limiteAtualDisponivel)}
               </span>
             </div>
@@ -153,18 +199,20 @@ export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: Lim
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground">Utilização do Limite</span>
-              <span className="font-medium">{percentualUtilizado.toFixed(1)}%</span>
+              <span className={`font-medium ${utilizationColors.textColor}`}>{percentualUtilizado.toFixed(1)}%</span>
             </div>
             
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="relative">
-                  <Progress 
-                    value={Math.min(100, Math.max(0, percentualUtilizado))} 
-                    className="h-3 cursor-help"
-                  />
+                  <div className="h-3 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-500 ease-out ${utilizationColors.barColor}`}
+                      style={{ width: `${Math.min(100, Math.max(0, percentualUtilizado))}%` }}
+                    />
+                  </div>
                   {limiteAtualDisponivel < 0 && (
-                    <div className="absolute top-0 left-0 h-3 bg-destructive rounded-full opacity-20 animate-pulse" 
+                    <div className="absolute top-0 left-0 h-3 bg-destructive rounded-full opacity-30 animate-pulse" 
                          style={{ width: '100%' }} />
                   )}
                 </div>
@@ -187,17 +235,17 @@ export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: Lim
           </div>
 
           {(comprasNoMes > 0 || pagamentosNoMes > 0) && (
-            <div className="text-xs text-muted-foreground space-y-1">
+            <div className="text-xs text-muted-foreground space-y-1 animate-fade-in">
               {comprasNoMes > 0 && (
                 <div className="flex justify-between">
                   <span>📱 Compras do mês:</span>
-                  <span className="text-red-500">-{formatCurrency(comprasNoMes)}</span>
+                  <span className="text-destructive font-medium">-{formatCurrency(comprasNoMes)}</span>
                 </div>
               )}
               {pagamentosNoMes > 0 && (
                 <div className="flex justify-between">
                   <span>💳 Pagamentos do mês:</span>
-                  <span className="text-green-500">+{formatCurrency(pagamentosNoMes)}</span>
+                  <span className="text-success font-medium">+{formatCurrency(pagamentosNoMes)}</span>
                 </div>
               )}
             </div>
@@ -210,13 +258,13 @@ export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: Lim
           )}
 
           {diferenca !== 0 && (
-            <div className="flex items-center gap-1 text-xs">
+            <div className="flex items-center gap-1 text-xs animate-fade-in">
               {diferenca > 0 ? (
-                <TrendingUp className="h-3 w-3 text-green-500" />
+                <TrendingUp className="h-3 w-3 text-success" />
               ) : (
-                <TrendingDown className="h-3 w-3 text-red-500" />
+                <TrendingDown className="h-3 w-3 text-destructive" />
               )}
-              <span className="text-muted-foreground">
+              <span className={`${diferenca > 0 ? 'text-success' : 'text-destructive'} font-medium`}>
                 {diferenca > 0 
                   ? `+${formatCurrency(diferenca)} este mês` 
                   : `${formatCurrency(diferenca)} este mês`
@@ -263,15 +311,17 @@ export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: Lim
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Utilização</span>
-                <span>{percentualUtilizado.toFixed(1)}%</span>
-              </div>
-              <Progress 
-                value={Math.min(100, Math.max(0, percentualUtilizado))} 
-                className="h-2"
-              />
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Utilização</span>
+                  <span className={utilizationColors.textColor}>{percentualUtilizado.toFixed(1)}%</span>
+                </div>
+                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full transition-all duration-500 ${utilizationColors.barColor}`}
+                    style={{ width: `${Math.min(100, Math.max(0, percentualUtilizado))}%` }}
+                  />
+                </div>
             </div>
 
             {(comprasNoMes > 0 || pagamentosNoMes > 0) && (

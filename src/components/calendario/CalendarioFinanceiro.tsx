@@ -186,16 +186,18 @@ export const CalendarioFinanceiro = ({
             <CalendarioFilters filtros={filtros} onChange={setFiltros} />
           </div>
           
-          {/* Navegação de meses com timeline */}
-          <MonthNavigation
-            currentMonth={mesAtual}
-            currentYear={anoAtual}
-            onNavigate={onNavigate}
-            getMesNome={getMesNome}
-            statusMes={statusMes}
-            timeline={timeline}
-            onMonthSelect={onMonthSelect}
-          />
+          {/* Navegação de meses com timeline centralizada */}
+          <div className="flex justify-center">
+            <MonthNavigation
+              currentMonth={mesAtual}
+              currentYear={anoAtual}
+              onNavigate={onNavigate}
+              getMesNome={getMesNome}
+              statusMes={statusMes}
+              timeline={timeline}
+              onMonthSelect={onMonthSelect}
+            />
+          </div>
         </div>
       </div>
       

@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Wallet, Edit2, TrendingUp, TrendingDown } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Wallet, Edit2, TrendingUp, TrendingDown, Plus, AlertCircle } from 'lucide-react';
 import { useOrcamentos } from '@/hooks/useOrcamentos';
 import { useFinancialStats } from '@/hooks/useFinancialStats';
 import { useAuth } from '@/hooks/useAuth';
@@ -223,68 +224,123 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const isPositiveEvolution = evolucaoSaldo >= 0;
 
   return (
-    <>
+    <TooltipProvider>
       <div className="mt-3 pt-3 border-t border-border/40">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Wallet className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium text-foreground">Saldo Inicial</span>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleEditSaldo}
-            className="h-6 w-6 p-0"
-          >
-            <Edit2 className="h-3 w-3" />
-          </Button>
+          
+          {/* Botão de edição secundário (menor e menos proeminente) */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleEditSaldo}
+                className="h-5 w-5 p-0 opacity-60 hover:opacity-100"
+              >
+                <Edit2 className="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Editar saldo inicial</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
         
-        {/* Layout Horizontal Compacto */}
-        <div className="grid grid-cols-3 gap-3">
-          {/* Saldo Inicial */}
-          <div className="text-center p-2 rounded-lg bg-muted/30">
-            <span className="text-xs text-muted-foreground block mb-1">SALDO INICIAL</span>
-            <p className="text-sm font-semibold text-foreground">
-              {formatCurrency(saldoInicialAtual)}
-            </p>
-          </div>
-
-          {/* Saldo Atual Computado */}
-          <div className={`text-center p-2 rounded-lg ${
-            saldoAtualComputado >= 0 ? 'bg-success/10 border border-success/20' : 'bg-error/10 border border-error/20'
-          }`}>
-            <span className="text-xs text-muted-foreground block mb-1">SALDO ATUAL</span>
-            <div className="flex items-center justify-center gap-1">
-              <p className={`text-sm font-semibold ${
-                saldoAtualComputado >= 0 ? 'text-success' : 'text-error'
-              }`}>
-                {formatCurrency(saldoAtualComputado)}
-              </p>
-              {saldoAtualComputado >= 0 ? (
-                <TrendingUp className="h-3 w-3 text-success" />
+        {/* Card principal clicável para edição */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div 
+              onClick={handleEditSaldo}
+              className={`
+                relative cursor-pointer transition-all duration-200 rounded-lg border-2 p-3 mb-3
+                ${saldoInicialAtual === 0 
+                  ? 'border-dashed border-primary/30 bg-primary/5 hover:border-primary/50 hover:bg-primary/10' 
+                  : 'border-solid border-border/30 bg-card hover:border-primary/40 hover:shadow-md'
+                }
+                group
+              `}
+            >
+              {/* Ícone de edição no card */}
+              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Edit2 className="h-3 w-3 text-primary" />
+              </div>
+              
+              {saldoInicialAtual === 0 ? (
+                /* Estado vazio - call to action */
+                <div className="text-center py-2">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Plus className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-primary">Definir Saldo Inicial</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Clique para informar quanto você tem na carteira
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    no início de {mes}/{ano}
+                  </p>
+                </div>
               ) : (
-                <TrendingDown className="h-3 w-3 text-error" />
+                /* Estado com valor - card de informação */
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Wallet className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground">Saldo Inicial</span>
+                  </div>
+                  <p className="text-lg font-bold text-foreground mb-1">
+                    {formatCurrency(saldoInicialAtual)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Clique para editar
+                  </p>
+                </div>
               )}
             </div>
-          </div>
-
-          {/* Evolução */}
-          <div className="text-center p-2 rounded-lg bg-muted/20">
-            <span className="text-xs text-muted-foreground block mb-1">EVOLUÇÃO</span>
-            <p className={`text-sm font-semibold ${
-              isPositiveEvolution ? 'text-success' : 'text-error'
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>
+              {saldoInicialAtual === 0 
+                ? 'Clique para definir seu saldo inicial'
+                : 'Clique para editar o saldo inicial'
+              }
+            </p>
+          </TooltipContent>
+        </Tooltip>
+        
+        {/* Layout Horizontal Compacto - apenas se tem saldo definido */}
+        {saldoInicialAtual !== 0 && (
+          <div className="grid grid-cols-2 gap-3">
+            {/* Saldo Atual Computado */}
+            <div className={`text-center p-2 rounded-lg border ${
+              saldoAtualComputado >= 0 ? 'bg-success/10 border-success/20' : 'bg-error/10 border-error/20'
             }`}>
-              {isPositiveEvolution ? '+' : ''}{formatCurrency(evolucaoSaldo)}
-            </p>
-          </div>
-        </div>
+              <span className="text-xs text-muted-foreground block mb-1">SALDO ATUAL</span>
+              <div className="flex items-center justify-center gap-1">
+                <p className={`text-sm font-semibold ${
+                  saldoAtualComputado >= 0 ? 'text-success' : 'text-error'
+                }`}>
+                  {formatCurrency(saldoAtualComputado)}
+                </p>
+                {saldoAtualComputado >= 0 ? (
+                  <TrendingUp className="h-3 w-3 text-success" />
+                ) : (
+                  <TrendingDown className="h-3 w-3 text-error" />
+                )}
+              </div>
+            </div>
 
-        {saldoInicialAtual === 0 && (
-          <div className="mt-2 text-center p-2 rounded-lg bg-warning/10 border border-warning/20">
-            <p className="text-xs text-warning">
-              Configure seu saldo inicial para um controle mais preciso
-            </p>
+            {/* Evolução */}
+            <div className="text-center p-2 rounded-lg bg-muted/20 border border-border/30">
+              <span className="text-xs text-muted-foreground block mb-1">EVOLUÇÃO</span>
+              <p className={`text-sm font-semibold ${
+                isPositiveEvolution ? 'text-success' : 'text-error'
+              }`}>
+                {isPositiveEvolution ? '+' : ''}{formatCurrency(evolucaoSaldo)}
+              </p>
+            </div>
           </div>
         )}
       </div>
@@ -293,23 +349,41 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Editar Saldo Inicial</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Wallet className="h-5 w-5 text-primary" />
+              {saldoInicialAtual === 0 ? 'Definir Saldo Inicial' : 'Editar Saldo Inicial'}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Explicação mais clara */}
+            <div className="bg-muted/50 p-3 rounded-lg border border-border/30">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground mb-1">
+                    Quanto você tinha na carteira?
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Informe o valor que você possuía no início de {mes}/{ano} 
+                    (soma de dinheiro em conta, carteira, poupança, etc.)
+                  </p>
+                </div>
+              </div>
+            </div>
+            
             <div>
-              <Label htmlFor="saldo">Saldo Inicial (R$)</Label>
+              <Label htmlFor="saldo" className="text-sm font-medium">
+                Saldo Inicial (R$)
+              </Label>
               <Input
                 id="saldo"
                 type="text"
-                placeholder="0,00"
+                placeholder="Ex: 1500,00"
                 value={novoSaldo}
                 onChange={(e) => setNovoSaldo(e.target.value)}
-                className="text-center"
+                className="text-center text-lg font-semibold mt-1"
                 autoFocus
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                Valor que você tinha no início de {mes}/{ano}
-              </p>
             </div>
             
             <div className="flex gap-2">
@@ -321,15 +395,15 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
                 Cancelar
               </Button>
               <Button
-                className="flex-1"
+                className="flex-1 font-medium"
                 onClick={handleSaveSaldo}
               >
-                Salvar
+                {saldoInicialAtual === 0 ? 'Definir' : 'Atualizar'}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
-    </>
+    </TooltipProvider>
   );
 };

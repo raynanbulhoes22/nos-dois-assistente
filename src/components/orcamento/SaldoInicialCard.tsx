@@ -79,7 +79,8 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
+          {/* Layout Horizontal para Web, Vertical para Mobile */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Saldo Inicial */}
             <div className="text-center p-3 rounded-lg bg-muted/50">
               <span className="text-xs text-muted-foreground block mb-1">SALDO INICIAL</span>
@@ -108,9 +109,9 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
             </div>
 
             {/* Evolução */}
-            <div className="text-center">
+            <div className="text-center p-3 rounded-lg bg-muted/30">
               <span className="text-xs text-muted-foreground block mb-1">EVOLUÇÃO</span>
-              <p className={`text-sm font-medium ${
+              <p className={`text-lg font-semibold ${
                 isPositiveEvolution ? 'text-success' : 'text-error'
               }`}>
                 {isPositiveEvolution ? '+' : ''}{formatCurrency(evolucaoSaldo)}

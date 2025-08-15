@@ -280,12 +280,12 @@ export const Orcamento = () => {
   const handleEditCartao = (cartao: any) => {
     setEditingCartao(cartao);
     setCartaoForm({
-      apelido: cartao.apelido,
-      ultimos_digitos: cartao.ultimos_digitos,
-      limite: cartao.limite.toString(),
-      limite_disponivel: (cartao.limite_disponivel || cartao.limite).toString(),
-      dia_vencimento: cartao.dia_vencimento.toString(),
-      ativo: cartao.ativo
+      apelido: cartao.apelido || '',
+      ultimos_digitos: cartao.ultimos_digitos || '',
+      limite: (cartao.limite || 0).toString(),
+      limite_disponivel: (cartao.limite_disponivel || cartao.limite || 0).toString(),
+      dia_vencimento: (cartao.dia_vencimento || '').toString(),
+      ativo: cartao.ativo !== false
     });
     setShowCartaoModal(true);
   };

@@ -160,7 +160,7 @@ export const AuthForm = () => {
         } else if (error.message.includes('Email not confirmed')) {
           toast({
             title: "Email não confirmado",
-            description: "Verifique sua caixa de entrada.",
+            description: "Verifique sua caixa de entrada e confirme seu email antes de fazer login.",
             variant: "destructive"
           });
         } else if (error.message.includes('Too many requests')) {

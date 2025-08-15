@@ -91,7 +91,7 @@ serve(async (req) => {
       // Map product IDs to tiers
       if (productId === "prod_SpcIOvFRzJ5jGq") {
         tier = "Solo";
-      } else if (productId === "prod_SpcIUtrNw95jCH") {
+      } else if (productId === "prod_SrRNeVQBvuq7Vm") {
         tier = "Casal";
       } else {
         tier = "Desconhecido";

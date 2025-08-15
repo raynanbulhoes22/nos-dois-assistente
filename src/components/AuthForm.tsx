@@ -176,17 +176,10 @@ export const AuthForm = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: session, error } = await supabase.auth.signInWithPassword({
         email: sanitizedEmail,
         password: data.password,
       });
-
-      // Se "Mantenha-me conectado" estiver marcado, configurar sessão persistente
-      if (!error && rememberMe) {
-        // A sessão já é persistente por padrão no Supabase
-        // Esta configuração garante que o usuário permaneça conectado
-        localStorage.setItem('supabase.auth.rememberMe', 'true');
-      }
 
       if (error) {
         if (error.message.includes('Invalid credentials') || error.message.includes('Invalid login credentials')) {

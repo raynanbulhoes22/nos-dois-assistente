@@ -89,7 +89,7 @@ serve(async (req) => {
       const productId = price.product as string;
       
       // Map product IDs to tiers
-      if (productId === "prod_SpcIOvFRzJ5jGq") {
+      if (productId === "prod_SrRMO9vUS3N86x") {
         tier = "Solo";
       } else if (productId === "prod_SrRNeVQBvuq7Vm") {
         tier = "Casal";

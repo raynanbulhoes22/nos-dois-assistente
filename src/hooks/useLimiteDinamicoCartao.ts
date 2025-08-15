@@ -119,8 +119,14 @@ export const useLimiteDinamicoCartao = (cartao: Cartao) => {
 
       if (error) throw error;
 
+      console.log(`[DEBUG] Buscando transações para cartão ${cartao.apelido} (${cartao.ultimos_digitos})`);
+      console.log(`[DEBUG] Total transações encontradas: ${data?.length || 0}`);
+
       // Filtrar apenas transações que pertencem a este cartão
       const transacoesDoCartao = (data || []).filter((transacao: any) => pertenceAoCartao(transacao));
+      
+      console.log(`[DEBUG] Transações filtradas para o cartão: ${transacoesDoCartao.length}`);
+      console.log(`[DEBUG] Amostras das transações:`, transacoesDoCartao.slice(0, 3));
       
       setTransacoes(transacoesDoCartao);
     } catch (error) {
@@ -133,7 +139,9 @@ export const useLimiteDinamicoCartao = (cartao: Cartao) => {
   // Calcular dados do limite dinâmico
   const limiteDinamico: LimiteDinamico = useMemo(() => {
     const limiteTotal = cartao.limite || 0;
-    const limiteInicialDisponivel = parseFloat((cartao.limite_disponivel || limiteTotal).toString());
+    const limiteInicialDisponivel = cartao.limite_disponivel 
+      ? parseFloat(cartao.limite_disponivel.toString()) 
+      : limiteTotal;
     
     // Separar compras e pagamentos do mês atual
     const agora = new Date();
@@ -168,6 +176,15 @@ export const useLimiteDinamicoCartao = (cartao: Cartao) => {
     const limiteUtilizado = limiteTotal - limiteAtualDisponivel;
     const percentualUtilizado = limiteTotal > 0 ? Math.max(0, (limiteUtilizado / limiteTotal) * 100) : 0;
     const diferenca = limiteAtualDisponivel - limiteInicialDisponivel;
+
+    console.log(`[DEBUG] Limite dinâmico para ${cartao.apelido}:`, {
+      limiteTotal,
+      limiteInicialDisponivel,
+      limiteAtualDisponivel,
+      comprasNoMes,
+      pagamentosNoMes,
+      diferenca
+    });
 
     return {
       limiteTotal,

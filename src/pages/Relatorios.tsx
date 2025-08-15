@@ -134,7 +134,6 @@ export const Relatorios = () => {
     }
   };
 
-
   if (data.isLoading) {
     return (
       <div className="container mx-auto p-4 space-y-6">
@@ -462,17 +461,17 @@ export const Relatorios = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-3">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
                     <h4 className="font-medium text-sm">Próximo Mês</h4>
                     <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between">
                         <span>Receitas previstas:</span>
                         <span className="text-green-600 font-medium">
                           {formatCurrency(data.projections.nextMonth.income)}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between">
                         <span>Gastos previstos:</span>
                         <span className="text-red-600 font-medium">
                           {formatCurrency(data.projections.nextMonth.expenses)}
@@ -487,16 +486,16 @@ export const Relatorios = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <h4 className="font-medium text-sm">Próximos 3 Meses</h4>
                     <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between">
                         <span>Receitas previstas:</span>
                         <span className="text-green-600 font-medium">
                           {formatCurrency(data.projections.next3Months.income)}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between">
                         <span>Gastos previstos:</span>
                         <span className="text-red-600 font-medium">
                           {formatCurrency(data.projections.next3Months.expenses)}

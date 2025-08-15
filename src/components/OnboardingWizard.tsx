@@ -5,6 +5,7 @@ import { OnboardingStep2 } from './onboarding/OnboardingStep2';
 import { OnboardingStep3 } from './onboarding/OnboardingStep3';
 import { OnboardingStep4 } from './onboarding/OnboardingStep4';
 import { OnboardingStep5 } from './onboarding/OnboardingStep5';
+import { OnboardingStep6 } from './onboarding/OnboardingStep6';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +22,7 @@ export interface OnboardingData {
   metaEconomia?: number;
   metaEconomiaMensal?: number;
   rendaMensal?: number;
+  saldoInicial?: number;
   gastosFixos?: Array<{
     nome: string;
     valor: number;
@@ -133,6 +135,25 @@ export const OnboardingWizard = () => {
         if (rendaError) throw rendaError;
       }
 
+      // Criar orçamento inicial com saldo inicial se informado
+      if (data.saldoInicial !== undefined) {
+        const hoje = new Date();
+        const mesAtual = hoje.getMonth() + 1;
+        const anoAtual = hoje.getFullYear();
+
+        const { error: orcamentoError } = await supabase
+          .from('orcamentos_mensais')
+          .insert([{
+            user_id: user.id,
+            mes: mesAtual,
+            ano: anoAtual,
+            saldo_inicial: data.saldoInicial,
+            meta_economia: data.metaEconomiaMensal || 0
+          }]);
+
+        if (orcamentoError) console.warn('Erro ao criar orçamento inicial:', orcamentoError);
+      }
+
       await verifySubscription();
       
       toast({
@@ -174,7 +195,9 @@ export const OnboardingWizard = () => {
       case 4:
         return <OnboardingStep4 data={data} setData={setData} onNext={nextStep} onPrev={prevStep} />;
       case 5:
-        return <OnboardingStep5 data={data} setData={setData} onComplete={completeOnboarding} onPrev={prevStep} isLoading={false} />;
+        return <OnboardingStep5 data={data} setData={setData} onNext={nextStep} onPrev={prevStep} />;
+      case 6:
+        return <OnboardingStep6 data={data} setData={setData} onComplete={completeOnboarding} onPrev={prevStep} isLoading={false} />;
       default:
         return <OnboardingStep1 data={data} setData={setData} onNext={nextStep} />;
     }
@@ -186,7 +209,7 @@ export const OnboardingWizard = () => {
       <div className="mb-6 sm:mb-8 bg-card/50 sm:bg-transparent rounded-2xl sm:rounded-none p-4 sm:p-0 backdrop-blur-sm sm:backdrop-blur-none border sm:border-0">
         {/* Mobile Step Indicators */}
         <div className="flex justify-center items-center mb-3 sm:mb-4 sm:justify-between">
-          {[1, 2, 3, 4, 5].map((step) => (
+          {[1, 2, 3, 4, 5, 6].map((step) => (
             <div key={step} className="flex items-center">
               <div
                 className={`flex items-center justify-center w-8 h-8 sm:w-8 sm:h-8 rounded-full text-sm font-semibold transition-all duration-300 ${
@@ -197,7 +220,7 @@ export const OnboardingWizard = () => {
               >
                 {currentStep > step ? '✓' : step}
               </div>
-              {step < 5 && (
+              {step < 6 && (
                 <div className="w-6 sm:w-8 h-0.5 mx-1 sm:mx-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className={`h-full bg-primary transition-all duration-500 ${
@@ -214,13 +237,13 @@ export const OnboardingWizard = () => {
         <div className="w-full bg-muted/40 sm:bg-muted rounded-full h-1.5 sm:h-2 mb-3 sm:mb-2">
           <div
             className="bg-gradient-to-r from-primary to-primary/80 sm:bg-primary h-full rounded-full transition-all duration-500 ease-out shadow-sm"
-            style={{ width: `${(currentStep / 5) * 100}%` }}
+            style={{ width: `${(currentStep / 6) * 100}%` }}
           />
         </div>
         
         {/* Step Text */}
         <p className="text-center text-xs sm:text-sm text-muted-foreground font-medium">
-          Etapa {currentStep} de 5
+          Etapa {currentStep} de 6
         </p>
       </div>
       

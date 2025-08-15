@@ -60,6 +60,10 @@ export const useOrcamentos = () => {
     return orcamentos.find(o => o.mes === mesAtual && o.ano === anoAtual);
   };
 
+  const getOrcamentoByMesAno = (mes: number, ano: number) => {
+    return orcamentos.find(o => o.mes === mes && o.ano === ano);
+  };
+
   const createOrcamento = async (orcamento: Omit<OrcamentoMensal, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return false;
 
@@ -155,6 +159,7 @@ export const useOrcamentos = () => {
     isLoading,
     error,
     getOrcamentoAtual,
+    getOrcamentoByMesAno,
     createOrcamento,
     updateOrcamento,
     deleteOrcamento,

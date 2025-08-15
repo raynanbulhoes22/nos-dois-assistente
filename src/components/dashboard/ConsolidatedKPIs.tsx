@@ -17,6 +17,8 @@ interface ConsolidatedKPIsProps {
   totalIncome: number;
   totalExpenses: number;
   balance: number;
+  initialBalance?: number;
+  computedBalance?: number;
   savingsRate: number;
   budgetUsage: number;
   monthlyTrend: 'positive' | 'negative';
@@ -29,6 +31,8 @@ export const ConsolidatedKPIs = ({
   totalIncome,
   totalExpenses,
   balance,
+  initialBalance = 0,
+  computedBalance,
   savingsRate,
   budgetUsage,
   monthlyTrend,
@@ -107,23 +111,39 @@ export const ConsolidatedKPIs = ({
 
         {/* Main Balance Section */}
         <div className="px-4 py-4 text-center">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center justify-center gap-2">
-              <span className="text-sm text-muted-foreground">Saldo</span>
+              <span className="text-sm text-muted-foreground">
+                {computedBalance !== undefined ? 'Saldo Total' : 'Saldo do Mês'}
+              </span>
               <Badge variant={getBalanceVariant()} className="h-4 px-2 text-xs">
                 {monthlyTrend === 'positive' ? '▲' : '▼'}
               </Badge>
             </div>
             <div className="flex items-center justify-center gap-2">
-              <span className={`text-2xl font-bold ${balance >= 0 ? 'text-success' : 'text-error'}`}>
-                {formatCurrency(balance)}
+              <span className={`text-2xl font-bold ${
+                (computedBalance !== undefined ? computedBalance : balance) >= 0 ? 'text-success' : 'text-error'
+              }`}>
+                {formatCurrency(computedBalance !== undefined ? computedBalance : balance)}
               </span>
-              {balance >= 0 ? (
+              {(computedBalance !== undefined ? computedBalance : balance) >= 0 ? (
                 <TrendingUp className="h-5 w-5 text-success" />
               ) : (
                 <TrendingDown className="h-5 w-5 text-error" />
               )}
             </div>
+            
+            {/* Saldo inicial e evolução */}
+            {computedBalance !== undefined && initialBalance !== 0 && (
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>Inicial: {formatCurrency(initialBalance)}</p>
+                <p>Evolução: <span className={`font-medium ${
+                  (computedBalance - initialBalance) >= 0 ? 'text-success' : 'text-error'
+                }`}>
+                  {(computedBalance - initialBalance) >= 0 ? '+' : ''}{formatCurrency(computedBalance - initialBalance)}
+                </span></p>
+              </div>
+            )}
           </div>
         </div>
 

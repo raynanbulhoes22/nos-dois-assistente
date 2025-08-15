@@ -10,9 +10,8 @@ import { FINANCIAL_CATEGORIES } from '@/constants/categories';
 interface OnboardingStep5Props {
   data: OnboardingData;
   setData: (data: OnboardingData) => void;
-  onComplete: () => void;
+  onNext: () => void;
   onPrev: () => void;
-  isLoading: boolean;
 }
 
 const objetivos = [
@@ -23,7 +22,7 @@ const objetivos = [
   'Planejamento familiar'
 ];
 
-export const OnboardingStep5 = ({ data, setData, onComplete, onPrev, isLoading }: OnboardingStep5Props) => {
+export const OnboardingStep5 = ({ data, setData, onNext, onPrev }: OnboardingStep5Props) => {
   const handleCategoriaChange = (categoria: string, checked: boolean) => {
     if (checked) {
       setData({
@@ -41,7 +40,7 @@ export const OnboardingStep5 = ({ data, setData, onComplete, onPrev, isLoading }
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!data.objetivoPrincipal) return;
-    onComplete();
+    onNext();
   };
 
   return (
@@ -114,17 +113,15 @@ export const OnboardingStep5 = ({ data, setData, onComplete, onPrev, isLoading }
               type="button" 
               variant="outline" 
               onClick={onPrev} 
-              disabled={isLoading}
               className="flex-1 h-12 sm:h-10 text-base sm:text-sm"
             >
               ← Anterior
             </Button>
             <Button 
               type="submit" 
-              disabled={isLoading}
               className="flex-1 h-12 sm:h-10 text-base sm:text-sm bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
             >
-              {isLoading ? 'Finalizando...' : 'Finalizar Configuração 🎉'}
+              Próximo →
             </Button>
           </div>
         </form>

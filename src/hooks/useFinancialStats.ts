@@ -3,6 +3,7 @@ import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 import { useFontesRenda } from "@/hooks/useFontesRenda";
 import { useCartoes } from "@/hooks/useCartoes";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrcamentos } from "@/hooks/useOrcamentos";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface FinancialStats {
@@ -10,6 +11,8 @@ export interface FinancialStats {
   rendaReal: number;
   gastosEsteMes: number;
   saldoAtual: number;
+  saldoInicial: number;
+  saldoComputado: number;
   percentualMetaEconomia: number;
   limiteCartaoTotal: number;
   limiteCartaoUsado: number;
@@ -32,12 +35,15 @@ export const useFinancialStats = () => {
   const { movimentacoes, entradas, saidas } = useMovimentacoes();
   const { fontes, getTotalRendaAtiva } = useFontesRenda();
   const { cartoes, getTotalLimite } = useCartoes();
+  const { getOrcamentoAtual } = useOrcamentos();
   
   const [stats, setStats] = useState<FinancialStats>({
     rendaRegistrada: 0,
     rendaReal: 0,
     gastosEsteMes: 0,
     saldoAtual: 0,
+    saldoInicial: 0,
+    saldoComputado: 0,
     percentualMetaEconomia: 0,
     limiteCartaoTotal: 0,
     limiteCartaoUsado: 0,
@@ -90,9 +96,17 @@ export const useFinancialStats = () => {
     ).reduce((total, saida) => total + saida.valor, 0);
 
     const rendaRegistrada = getTotalRendaAtiva();
-    const saldoAtual = entradasMes - saidasMes;
+    const saldoMovimentacoesMes = entradasMes - saidasMes;
+    
+    // Buscar saldo inicial do orçamento atual
+    const orcamentoAtual = getOrcamentoAtual();
+    const saldoInicial = orcamentoAtual?.saldo_inicial || 0;
+    
+    // Saldo computado = saldo inicial + movimentações do mês
+    const saldoComputado = saldoInicial + saldoMovimentacoesMes;
+    
     const metaEconomia = profile?.meta_economia_mensal || 0;
-    const percentualMeta = metaEconomia > 0 ? (saldoAtual / metaEconomia) * 100 : 0;
+    const percentualMeta = metaEconomia > 0 ? (saldoComputado / metaEconomia) * 100 : 0;
 
     // Gerar alertas inteligentes
     const alertas: Alert[] = [];
@@ -113,12 +127,12 @@ export const useFinancialStats = () => {
         mensagem: `Você está em ${percentualMeta.toFixed(1)}% da sua meta de economia.`,
         acao: 'Ajustar gastos'
       });
-    } else if (saldoAtual < 0) {
+    } else if (saldoComputado < 0) {
       alertas.push({
         id: '3',
         tipo: 'perigo',
         titulo: '⚠️ Saldo negativo',
-        mensagem: 'Seus gastos estão maiores que sua renda este mês.',
+        mensagem: 'Seu saldo atual está negativo. Considere revisar seus gastos.',
         acao: 'Revisar orçamento'
       });
     }
@@ -148,7 +162,9 @@ export const useFinancialStats = () => {
       rendaRegistrada,
       rendaReal: entradasMes,
       gastosEsteMes: saidasMes,
-      saldoAtual,
+      saldoAtual: saldoMovimentacoesMes,
+      saldoInicial,
+      saldoComputado,
       percentualMetaEconomia: percentualMeta,
       limiteCartaoTotal: limiteTotal,
       limiteCartaoUsado: gastosCartao,
@@ -158,7 +174,7 @@ export const useFinancialStats = () => {
       alertas
     });
 
-  }, [movimentacoes, entradas, saidas, fontes, cartoes, profile, getTotalRendaAtiva, getTotalLimite]);
+  }, [movimentacoes, entradas, saidas, fontes, cartoes, profile, getTotalRendaAtiva, getTotalLimite, getOrcamentoAtual]);
 
   return stats;
 };

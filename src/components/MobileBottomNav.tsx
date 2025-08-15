@@ -1,20 +1,39 @@
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
-import { Home, ListTodo, Wallet, BarChart3, Plus, TrendingUp, TrendingDown, ArrowLeftRight } from "lucide-react";
+import { Home, ListTodo, Wallet, BarChart3, Plus, TrendingUp, TrendingDown, ArrowLeftRight, Menu, Settings, CreditCard, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import * as React from "react";
 
 export function MobileBottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sheetOpen, setSheetOpen] = React.useState(false);
+  const [menuOpen, setMenuOpen] = React.useState(false);
 
   const items = [
     { to: "/dashboard", label: "Início", icon: Home },
     { to: "/movimentacoes", label: "Lista", icon: ListTodo },
     { to: "/orcamento", label: "Orçamento", icon: Wallet },
-    { to: "/relatorios", label: "Relatórios", icon: BarChart3 },
+    { to: "/configuracoes", label: "Menu", icon: Menu },
+  ];
+
+  const menuOptions = [
+    {
+      to: "/assinaturas",
+      label: "Assinaturas",
+      icon: CreditCard,
+      description: "Gerencie sua assinatura"
+    },
+    {
+      to: "/configuracoes",
+      label: "Configurações",
+      icon: Settings,
+      description: "Configurações da conta"
+    }
   ];
 
   const transactionOptions = [
@@ -45,6 +64,29 @@ export function MobileBottomNav() {
     setSheetOpen(false);
     // Navigate to movimentações with state to open form
     navigate("/movimentacoes", { state: { openForm: true, formType: type } });
+  }, [navigate]);
+
+  const handleMenuNavigation = React.useCallback((to: string) => {
+    setMenuOpen(false);
+    navigate(to);
+  }, [navigate]);
+
+  const handleLogout = React.useCallback(async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate("/");
+      toast({
+        title: "Logout realizado",
+        description: "Você foi desconectado com sucesso.",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao fazer logout",
+        description: "Tente novamente.",
+        variant: "destructive",
+      });
+    }
+    setMenuOpen(false);
   }, [navigate]);
 
   return (
@@ -105,7 +147,7 @@ export function MobileBottomNav() {
         aria-label="Navegação inferior"
       >
         <ul className="grid grid-cols-4">
-          {items.map(({ to, label, icon: Icon }) => (
+          {items.slice(0, 3).map(({ to, label, icon: Icon }) => (
             <li key={to}>
               <NavLink
                 to={to}
@@ -126,6 +168,78 @@ export function MobileBottomNav() {
               </NavLink>
             </li>
           ))}
+          <li>
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+              <SheetTrigger asChild>
+                <button
+                  className={cn(
+                    "flex flex-col items-center justify-center py-2 px-2 text-xs w-full",
+                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                    location.pathname === "/relatorios" || location.pathname === "/assinaturas" || location.pathname === "/configuracoes"
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  aria-label="Menu"
+                >
+                  <Menu className="h-5 w-5" />
+                  <span className="mt-0.5">Menu</span>
+                </button>
+              </SheetTrigger>
+              <SheetContent 
+                side="right" 
+                className="w-72 p-4"
+                onOpenAutoFocus={(e) => e.preventDefault()}
+              >
+                <div className="space-y-4 mt-4">
+                  <h3 className="font-semibold text-base mb-4">
+                    Menu
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 gap-2">
+                    <button
+                      onClick={() => handleMenuNavigation("/relatorios")}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors text-left"
+                    >
+                      <BarChart3 className="h-5 w-5" />
+                      <div>
+                        <div className="font-medium">Relatórios</div>
+                        <div className="text-sm text-muted-foreground">Análises financeiras</div>
+                      </div>
+                    </button>
+                    
+                    <Separator className="my-2" />
+                    
+                    {menuOptions.map((option) => (
+                      <button
+                        key={option.to}
+                        onClick={() => handleMenuNavigation(option.to)}
+                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors text-left"
+                      >
+                        <option.icon className="h-5 w-5" />
+                        <div>
+                          <div className="font-medium">{option.label}</div>
+                          <div className="text-sm text-muted-foreground">{option.description}</div>
+                        </div>
+                      </button>
+                    ))}
+                    
+                    <Separator className="my-2" />
+                    
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-destructive/10 text-destructive transition-colors text-left"
+                    >
+                      <LogOut className="h-5 w-5" />
+                      <div>
+                        <div className="font-medium">Sair</div>
+                        <div className="text-sm text-muted-foreground">Fazer logout</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </li>
         </ul>
       </nav>
     </div>

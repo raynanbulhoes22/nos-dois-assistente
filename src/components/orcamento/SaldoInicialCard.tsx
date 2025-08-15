@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Wallet, Edit2, TrendingUp, TrendingDown } from 'lucide-react';
 import { useOrcamentos } from '@/hooks/useOrcamentos';
 import { useFinancialStats } from '@/hooks/useFinancialStats';
@@ -63,71 +62,70 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
 
   return (
     <>
-      <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
+      <div className="mt-3 pt-3 border-t border-border/40">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
             <Wallet className="h-4 w-4 text-primary" />
-            Saldo Inicial
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleEditSaldo}
-              className="h-6 w-6 p-0 ml-auto"
-            >
-              <Edit2 className="h-3 w-3" />
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Layout Horizontal para Web, Vertical para Mobile */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Saldo Inicial */}
-            <div className="text-center p-3 rounded-lg bg-muted/50">
-              <span className="text-xs text-muted-foreground block mb-1">SALDO INICIAL</span>
-              <p className="text-lg font-semibold text-foreground">
-                {formatCurrency(saldoInicialAtual)}
-              </p>
-            </div>
+            <span className="text-sm font-medium text-foreground">Saldo Inicial</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleEditSaldo}
+            className="h-6 w-6 p-0"
+          >
+            <Edit2 className="h-3 w-3" />
+          </Button>
+        </div>
+        
+        {/* Layout Horizontal Compacto */}
+        <div className="grid grid-cols-3 gap-3">
+          {/* Saldo Inicial */}
+          <div className="text-center p-2 rounded-lg bg-muted/30">
+            <span className="text-xs text-muted-foreground block mb-1">SALDO INICIAL</span>
+            <p className="text-sm font-semibold text-foreground">
+              {formatCurrency(saldoInicialAtual)}
+            </p>
+          </div>
 
-            {/* Saldo Atual Computado */}
-            <div className={`text-center p-3 rounded-lg ${
-              isPositiveEvolution ? 'bg-success/10 border border-success/20' : 'bg-error/10 border border-error/20'
-            }`}>
-              <span className="text-xs text-muted-foreground block mb-1">SALDO ATUAL</span>
-              <div className="flex items-center justify-center gap-2">
-                <p className={`text-lg font-semibold ${
-                  isPositiveEvolution ? 'text-success' : 'text-error'
-                }`}>
-                  {formatCurrency(saldoComputado)}
-                </p>
-                {isPositiveEvolution ? (
-                  <TrendingUp className="h-4 w-4 text-success" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-error" />
-                )}
-              </div>
-            </div>
-
-            {/* Evolução */}
-            <div className="text-center p-3 rounded-lg bg-muted/30">
-              <span className="text-xs text-muted-foreground block mb-1">EVOLUÇÃO</span>
-              <p className={`text-lg font-semibold ${
+          {/* Saldo Atual Computado */}
+          <div className={`text-center p-2 rounded-lg ${
+            isPositiveEvolution ? 'bg-success/10 border border-success/20' : 'bg-error/10 border border-error/20'
+          }`}>
+            <span className="text-xs text-muted-foreground block mb-1">SALDO ATUAL</span>
+            <div className="flex items-center justify-center gap-1">
+              <p className={`text-sm font-semibold ${
                 isPositiveEvolution ? 'text-success' : 'text-error'
               }`}>
-                {isPositiveEvolution ? '+' : ''}{formatCurrency(evolucaoSaldo)}
+                {formatCurrency(saldoComputado)}
               </p>
+              {isPositiveEvolution ? (
+                <TrendingUp className="h-3 w-3 text-success" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-error" />
+              )}
             </div>
           </div>
 
-          {saldoInicialAtual === 0 && (
-            <div className="text-center p-3 rounded-lg bg-warning/10 border border-warning/20">
-              <p className="text-xs text-warning">
-                Configure seu saldo inicial para um controle mais preciso
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          {/* Evolução */}
+          <div className="text-center p-2 rounded-lg bg-muted/20">
+            <span className="text-xs text-muted-foreground block mb-1">EVOLUÇÃO</span>
+            <p className={`text-sm font-semibold ${
+              isPositiveEvolution ? 'text-success' : 'text-error'
+            }`}>
+              {isPositiveEvolution ? '+' : ''}{formatCurrency(evolucaoSaldo)}
+            </p>
+          </div>
+        </div>
+
+        {saldoInicialAtual === 0 && (
+          <div className="mt-2 text-center p-2 rounded-lg bg-warning/10 border border-warning/20">
+            <p className="text-xs text-warning">
+              Configure seu saldo inicial para um controle mais preciso
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Modal de Edição */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>

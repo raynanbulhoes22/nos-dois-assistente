@@ -476,6 +476,9 @@ export const Orcamento = () => {
               onMonthSelect={onMonthSelect}
             />
           </div>
+          
+          {/* Saldo Inicial no Header */}
+          <SaldoInicialCard mes={mesAtual} ano={anoAtual} />
         </div>
 
         <div className="space-y-3 sm:space-y-6">
@@ -484,12 +487,6 @@ export const Orcamento = () => {
             <AlertaFluxo alertas={alertas} />
           )}
 
-          {/* Saldo Inicial */}
-          <div className="mb-4">
-            <div className="max-w-md">
-              <SaldoInicialCard mes={mesAtual} ano={anoAtual} />
-            </div>
-          </div>
 
           {/* Calendário Principal */}
           <CalendarioFinanceiro 

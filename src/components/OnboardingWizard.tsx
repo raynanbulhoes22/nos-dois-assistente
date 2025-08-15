@@ -121,18 +121,24 @@ export const OnboardingWizard = () => {
         if (cartoesError) throw cartoesError;
       }
 
-      // Criar fonte de renda se informada
-      if (data.rendaMensal && data.rendaMensal > 0) {
-        const { error: rendaError } = await supabase
-          .from('fontes_renda')
-          .insert([{
+      // Criar fontes de renda
+      if (data.fontes && data.fontes.length > 0) {
+        const fontesData = data.fontes
+          .filter(fonte => fonte.valor > 0)
+          .map(fonte => ({
             user_id: user.id,
-            tipo: 'Salário Principal',
-            valor: data.rendaMensal,
-            descricao: 'Renda informada no onboarding'
-          }]);
+            tipo: fonte.tipo,
+            valor: fonte.valor,
+            descricao: fonte.descricao || null
+          }));
 
-        if (rendaError) throw rendaError;
+        if (fontesData.length > 0) {
+          const { error: rendaError } = await supabase
+            .from('fontes_renda')
+            .insert(fontesData);
+
+          if (rendaError) throw rendaError;
+        }
       }
 
       // Criar orçamento inicial com saldo inicial se informado

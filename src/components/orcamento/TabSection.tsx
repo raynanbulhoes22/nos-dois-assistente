@@ -3,6 +3,7 @@ import { MobileSection } from "./MobileSection";
 import { Button } from "@/components/ui/button";
 import { Edit3, Trash2, TrendingUp, CreditCard, Building2, Home } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { LimiteCartaoDisplay } from "@/components/cartoes/LimiteCartaoDisplay";
 
 interface TabSectionProps {
   fontes: any[];
@@ -137,48 +138,14 @@ export const TabSection = ({
           isEmpty={activeCartoes.length === 0}
           emptyMessage="Nenhum cartão cadastrado"
         >
-          <div className="space-y-3">
+          <div className="space-y-4">
             {activeCartoes.map((cartao) => (
-              <div key={cartao.id} className="list-item group">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm truncate">{cartao.apelido}</h3>
-                    <p className="text-xs text-muted-foreground">
-                      Final: •••• {cartao.ultimos_digitos}
-                    </p>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-2">
-                      {cartao.limite && (
-                        <p className="text-sm font-semibold text-primary">
-                          Limite: {formatCurrency(cartao.limite)}
-                        </p>
-                      )}
-                      {cartao.dia_vencimento && (
-                        <p className="text-xs text-muted-foreground">
-                          Venc: dia {cartao.dia_vencimento}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex gap-1 group-hover-actions">
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      onClick={() => onEditCartao(cartao)} 
-                      className="h-8 w-8 p-0 focus-ring"
-                    >
-                      <Edit3 className="h-3 w-3" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      onClick={() => onDeleteCartao(cartao.id)} 
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive focus-ring"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <LimiteCartaoDisplay
+                key={cartao.id}
+                cartao={cartao}
+                onClick={() => onEditCartao(cartao)}
+                className="cursor-pointer"
+              />
             ))}
           </div>
         </MobileSection>

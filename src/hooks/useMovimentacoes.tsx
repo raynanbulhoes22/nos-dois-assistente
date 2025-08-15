@@ -17,6 +17,8 @@ export interface Movimentacao {
   numero_wpp?: string;
   instituicao?: string;
   cartao_final?: string;
+  ultimos_digitos?: string;
+  apelido?: string;
   origem?: string;
   recorrente?: boolean;
   id_transacao?: string;
@@ -197,6 +199,8 @@ export const useMovimentacoes = () => {
           numero_wpp: item.numero_wpp,
           instituicao: item.instituicao,
           cartao_final: item.cartao_final,
+          ultimos_digitos: item.ultimos_digitos,
+          apelido: item.apelido,
           origem: item.origem,
           recorrente: item.recorrente,
           id_transacao: item.id_transacao,

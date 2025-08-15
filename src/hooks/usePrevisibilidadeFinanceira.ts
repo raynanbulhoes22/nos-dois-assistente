@@ -4,6 +4,7 @@ import { useContasParceladas } from '@/hooks/useContasParceladas';
 import { useFontesRenda } from '@/hooks/useFontesRenda';
 import { useMovimentacoes } from '@/hooks/useMovimentacoes';
 import { useCartoes } from '@/hooks/useCartoes';
+import { calcularGastoCartao } from '@/lib/cartao-utils';
 
 export interface PrevisaoMensal {
   mes: number;
@@ -48,6 +49,19 @@ export const usePrevisibilidadeFinanceira = () => {
   const [alertas, setAlertas] = useState<AlertaFinanceiro[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Convertendo movimentações para o formato esperado pela função utilitária
+  const transacoesFormatadas = useMemo(() => {
+    return movimentacoes.map(mov => ({
+      id: mov.id,
+      cartao_final: mov.cartao_final,
+      ultimos_digitos: mov.ultimos_digitos,
+      apelido: mov.apelido,
+      valor: mov.valor,
+      data: mov.data,
+      isEntrada: mov.isEntrada,
+    }));
+  }, [movimentacoes]);
+
   // Helper function - must be declared before useMemo hooks that use it
   const getMesNome = (mes: number) => {
     const meses = [
@@ -58,7 +72,7 @@ export const usePrevisibilidadeFinanceira = () => {
   };
 
   // Função para calcular valor médio da fatura do cartão baseado no histórico
-  const calcularValorMedioCartao = (cartaoDigitos: string, mesesParaAnalise: number = 3) => {
+  const calcularValorMedioCartao = (cartao: any, mesesParaAnalise: number = 3) => {
     const hoje = new Date();
     let totalGastos = 0;
     let mesesComGastos = 0;
@@ -68,22 +82,9 @@ export const usePrevisibilidadeFinanceira = () => {
       const mesAnalise = mesRef.getMonth() + 1;
       const anoAnalise = mesRef.getFullYear();
 
-      const gastosDoMes = movimentacoes.filter(mov => {
-        if (mov.isEntrada) return false;
-        
-        const dataMovimentacao = new Date(mov.data);
-        const mesMovimentacao = dataMovimentacao.getMonth() + 1;
-        const anoMovimentacao = dataMovimentacao.getFullYear();
-        
-        const isCartaoCorreto = mov.cartao_final && mov.cartao_final.includes(cartaoDigitos);
-        const isPeriodoCorreto = mesMovimentacao === mesAnalise && anoMovimentacao === anoAnalise;
-        
-        return isCartaoCorreto && isPeriodoCorreto;
-      });
-
-      const valorMes = gastosDoMes.reduce((total, gasto) => total + gasto.valor, 0);
-      if (valorMes > 0) {
-        totalGastos += valorMes;
+      const totalMes = calcularGastoCartao(transacoesFormatadas, cartao, mesAnalise, anoAnalise);
+      if (totalMes > 0) {
+        totalGastos += totalMes;
         mesesComGastos++;
       }
     }
@@ -146,7 +147,7 @@ export const usePrevisibilidadeFinanceira = () => {
       const cartoesDoMes = cartoes
         .filter(cartao => cartao.ativo)
         .map(cartao => {
-          const valorMedio = calcularValorMedioCartao(cartao.ultimos_digitos);
+          const valorMedio = calcularValorMedioCartao(cartao);
           
           return {
             id: `cartao-${cartao.id}`,
@@ -193,7 +194,7 @@ export const usePrevisibilidadeFinanceira = () => {
     }
 
     return previsoesMensais;
-  }, [contas, cartoes, movimentacoes, getTotalRendaAtiva, user, calcularValorMedioCartao]);
+  }, [contas, cartoes, movimentacoes, getTotalRendaAtiva, user, transacoesFormatadas]);
 
   // Gerar alertas baseados nas previsões
   const gerarAlertas = useMemo(() => {

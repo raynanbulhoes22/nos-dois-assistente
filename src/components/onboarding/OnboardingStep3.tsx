@@ -46,8 +46,15 @@ export const OnboardingStep3 = ({ data, setData, onNext, onPrev }: OnboardingSte
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const hasValidSalary = data.fontes.some(f => f.tipo === 'Salário' && f.valor > 0);
-    if (!hasValidSalary) return;
+    // Permitir prosseguir mesmo sem salário informado, mas com pelo menos uma fonte de renda
+    const hasValidIncome = data.fontes.some(f => f.valor > 0);
+    if (!hasValidIncome) {
+      // Se não há renda informada, adiciona uma fonte padrão para não bloquear o onboarding
+      setData({
+        ...data,
+        fontes: [{ tipo: 'Outros', valor: 0, descricao: 'A definir' }]
+      });
+    }
     onNext();
   };
 

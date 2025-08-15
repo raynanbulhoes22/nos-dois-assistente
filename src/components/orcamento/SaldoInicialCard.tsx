@@ -226,28 +226,9 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   return (
     <TooltipProvider>
       <div className="mt-3 pt-3 border-t border-border/40">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Wallet className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium text-foreground">Saldo Inicial</span>
-          </div>
-          
-          {/* Botão de edição secundário (menor e menos proeminente) */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleEditSaldo}
-                className="h-5 w-5 p-0 opacity-60 hover:opacity-100"
-              >
-                <Edit2 className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Editar saldo inicial</p>
-            </TooltipContent>
-          </Tooltip>
+        <div className="flex items-center gap-2 mb-3">
+          <Wallet className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium text-foreground">Saldo Inicial</span>
         </div>
         
         {/* Layout Horizontal Compacto - 3 colunas como antes */}

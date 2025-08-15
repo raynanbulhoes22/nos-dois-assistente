@@ -485,8 +485,10 @@ export const Orcamento = () => {
           )}
 
           {/* Saldo Inicial */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <SaldoInicialCard mes={mesAtual} ano={anoAtual} />
+          <div className="mb-4">
+            <div className="max-w-md">
+              <SaldoInicialCard mes={mesAtual} ano={anoAtual} />
+            </div>
           </div>
 
           {/* Calendário Principal */}

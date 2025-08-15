@@ -28,7 +28,10 @@ serve(async (req) => {
     console.log("[WEBHOOK] Environment variables verified");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Create Supabase client with service role key (no auth needed for webhooks)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { persistSession: false }
+    });
 
     // Get raw body for signature verification
     const body = await req.text();

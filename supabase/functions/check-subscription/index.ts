@@ -77,7 +77,15 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     log("Found customer", { customerId });
 
-    const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
+    // Check for active subscriptions with expanded status checking
+    const subscriptions = await stripe.subscriptions.list({ 
+      customer: customerId, 
+      status: "active",
+      limit: 10 // Check more subscriptions to be thorough
+    });
+    
+    log("Found subscriptions", { count: subscriptions.data.length, subscriptions: subscriptions.data.map(s => ({ id: s.id, status: s.status, product: s.items.data[0].price.product })) });
+    
     const hasActive = subscriptions.data.length > 0;
     let tier: string | null = null;
     let endISO: string | null = null;
@@ -88,16 +96,44 @@ serve(async (req) => {
       const price = sub.items.data[0].price;
       const productId = price.product as string;
       
-      // Map product IDs to tiers
-      if (productId === "prod_SrRMO9vUS3N86x") {
+      log("Processing subscription", { subscriptionId: sub.id, productId, priceId: price.id });
+      
+      // Map product IDs to tiers - Updated with correct product IDs
+      if (productId === "prod_SrRMO9vUS3N86x" || productId === "prod_SrRfAWgOkJYu0D") {
         tier = "Solo";
-      } else if (productId === "prod_SrRNeVQBvuq7Vm") {
+      } else if (productId === "prod_SrRNeVQBvuq7Vm" || productId === "prod_SrRfG2qGJ4bkjZ") {
         tier = "Casal";
       } else {
-        tier = "Desconhecido";
+        // If we don't recognize the product ID, let's check by price amount
+        const amount = price.unit_amount || 0;
+        if (amount === 1197) { // R$ 11,97 in cents
+          tier = "Solo";
+        } else if (amount === 1997) { // R$ 19,97 in cents  
+          tier = "Casal";
+        } else {
+          tier = "Premium"; // Default to Premium for unknown products
+        }
       }
       
-      log("Determined subscription tier", { productId, tier });
+      log("Determined subscription tier", { productId, priceId: price.id, amount: price.unit_amount, tier });
+    } else {
+      // Also check for incomplete or past_due subscriptions that might need attention
+      const incompleteSubscriptions = await stripe.subscriptions.list({ 
+        customer: customerId, 
+        status: "incomplete",
+        limit: 5
+      });
+      
+      const pastDueSubscriptions = await stripe.subscriptions.list({ 
+        customer: customerId, 
+        status: "past_due",
+        limit: 5
+      });
+      
+      log("Checking other subscription statuses", { 
+        incomplete: incompleteSubscriptions.data.length,
+        pastDue: pastDueSubscriptions.data.length 
+      });
     }
 
     if (supabaseServiceClient) {

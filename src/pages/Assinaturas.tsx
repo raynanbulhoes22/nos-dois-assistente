@@ -151,6 +151,24 @@ export const Assinaturas = () => {
     }
     fetchPricing();
   }, [user]);
+
+  // Check for successful payment return and force refresh
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const sessionId = urlParams.get('session_id');
+    
+    if (success === 'true' || sessionId) {
+      console.log('🎉 Retorno do pagamento detectado, forçando atualização...');
+      // Force refresh subscription status after successful payment
+      setTimeout(() => {
+        handleRefresh();
+      }, 2000); // Wait 2 seconds for Stripe to process
+      
+      // Clear URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
   const isFirstTimeUser = localStorage.getItem('redirect_to_subscription') === 'true' || !status?.subscribed && localStorage.getItem(`user_accessed_${user?.email}`) === null;
   return <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <div className="container mx-auto px-4 py-8">

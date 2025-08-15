@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizePhoneNumber } from "@/lib/phone-utils";
+import { detectarECriarCartoesAutomaticos } from "@/lib/cartao-utils";
+import { useToast } from "@/hooks/use-toast";
 
 export interface Movimentacao {
   id: string;
@@ -27,6 +29,7 @@ export interface Movimentacao {
 
 export const useMovimentacoes = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([]);
   const [entradas, setEntradas] = useState<Movimentacao[]>([]);
   const [saidas, setSaidas] = useState<Movimentacao[]>([]);
@@ -214,6 +217,31 @@ export const useMovimentacoes = () => {
 
       console.log(`Processadas: ${movimentacoesProcessadas.length} movimentações`);
       console.log(`Entradas: ${entradasList.length}, Saídas: ${saidasList.length}`);
+
+      // Detectar e criar cartões automaticamente
+      try {
+        // Buscar cartões existentes
+        const { data: cartoesExistentes } = await supabase
+          .from('cartoes_credito')
+          .select('*')
+          .eq('user_id', user.id);
+
+        // Detectar cartões órfãos e criar automaticamente
+        const resultado = await detectarECriarCartoesAutomaticos(
+          movimentacoesProcessadas,
+          cartoesExistentes || [],
+          user.id
+        );
+
+        if (resultado.cartoesCriados > 0) {
+          toast({
+            title: "🎉 Cartões detectados!",
+            description: `${resultado.cartoesCriados} cartão(s) criado(s) automaticamente baseado nas suas transações.`
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao detectar cartões automaticamente:', error);
+      }
 
       setMovimentacoes(movimentacoesProcessadas);
       setEntradas(entradasList);

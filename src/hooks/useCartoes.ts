@@ -141,6 +141,35 @@ export const useCartoes = () => {
     );
   };
 
+  const criarCartaoAutomatico = async (dadosCartao: { apelido: string; ultimos_digitos: string }) => {
+    if (!user) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('cartoes_credito')
+        .insert({
+          user_id: user.id,
+          apelido: dadosCartao.apelido,
+          ultimos_digitos: dadosCartao.ultimos_digitos,
+          limite: null,
+          dia_vencimento: null,
+          ativo: true
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Atualizar lista local
+      await fetchCartoes();
+      
+      return data;
+    } catch (error) {
+      console.error('Erro ao criar cartão automaticamente:', error);
+      return null;
+    }
+  };
+
   const getTotalLimite = () => {
     return cartoes
       .filter(cartao => cartao.ativo && cartao.limite)
@@ -160,6 +189,7 @@ export const useCartoes = () => {
     deleteCartao,
     findCartaoByFinal,
     getTotalLimite,
+    criarCartaoAutomatico,
     refetch: fetchCartoes
   };
 };

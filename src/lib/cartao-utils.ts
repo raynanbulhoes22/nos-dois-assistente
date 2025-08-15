@@ -120,3 +120,153 @@ export const isPagamentoFatura = (transacao: TransacaoCartao): boolean => {
          tituloLower.includes('cartão') ||
          tituloLower.includes('cartao');
 };
+
+/**
+ * Gera apelido inteligente para cartão baseado no contexto da transação
+ */
+export const gerarApelidoInteligente = (
+  ultimosDigitos: string,
+  contexto?: string
+): string => {
+  const contextoLower = (contexto || '').toLowerCase();
+  
+  // Padrões conhecidos de bancos/instituições
+  const padroesBancos = [
+    { pattern: /nubank|nu\s*bank/i, nome: 'NuBank' },
+    { pattern: /bradesco/i, nome: 'Bradesco' },
+    { pattern: /santander/i, nome: 'Santander' },
+    { pattern: /itau|itaú/i, nome: 'Itaú' },
+    { pattern: /bb|banco.*brasil/i, nome: 'Banco do Brasil' },
+    { pattern: /caixa/i, nome: 'Caixa' },
+    { pattern: /inter/i, nome: 'Inter' },
+    { pattern: /c6\s*bank|c6bank/i, nome: 'C6 Bank' },
+    { pattern: /sicredi/i, nome: 'Sicredi' },
+    { pattern: /original/i, nome: 'Original' },
+    { pattern: /will\s*bank/i, nome: 'Will Bank' }
+  ];
+
+  // Tentar identificar o banco pelo contexto
+  for (const padrao of padroesBancos) {
+    if (padrao.pattern.test(contextoLower)) {
+      return `${padrao.nome} ••••${ultimosDigitos}`;
+    }
+  }
+
+  // Fallback genérico
+  return `Cartão ••••${ultimosDigitos}`;
+};
+
+/**
+ * Detecta dados de cartão a partir de uma transação
+ */
+export const detectarDadosCartao = (
+  transacao: TransacaoCartao
+): { ultimosDigitos: string; apelido: string } | null => {
+  let ultimosDigitos = '';
+
+  // Prioridade 1: usar ultimos_digitos se disponível
+  if (transacao.ultimos_digitos) {
+    ultimosDigitos = transacao.ultimos_digitos;
+  }
+  // Prioridade 2: extrair de cartao_final usando regex
+  else if (transacao.cartao_final) {
+    const match = transacao.cartao_final.match(/(\d{4})$/);
+    if (match) {
+      ultimosDigitos = match[1];
+    }
+  }
+
+  if (!ultimosDigitos) return null;
+
+  // Gerar contexto a partir da transação
+  const contexto = [
+    (transacao as any).titulo,
+    (transacao as any).nome,
+    (transacao as any).estabelecimento,
+    (transacao as any).instituicao
+  ].filter(Boolean).join(' ');
+
+  const apelido = gerarApelidoInteligente(ultimosDigitos, contexto);
+
+  return { ultimosDigitos, apelido };
+};
+
+/**
+ * Cria um cartão automaticamente baseado nos dados da transação
+ */
+export const criarCartaoAutomatico = async (
+  dadosCartao: { ultimosDigitos: string; apelido: string },
+  userId: string
+): Promise<boolean> => {
+  try {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const { error } = await supabase
+      .from('cartoes_credito')
+      .insert({
+        user_id: userId,
+        apelido: dadosCartao.apelido,
+        ultimos_digitos: dadosCartao.ultimosDigitos,
+        limite: null,
+        dia_vencimento: null,
+        ativo: true
+      });
+
+    if (error) {
+      console.error('Erro ao criar cartão automaticamente:', error);
+      return false;
+    }
+
+    console.log(`Cartão criado automaticamente: ${dadosCartao.apelido}`);
+    return true;
+  } catch (error) {
+    console.error('Erro ao criar cartão automaticamente:', error);
+    return false;
+  }
+};
+
+/**
+ * Detecta e cria cartões automaticamente para transações órfãs
+ */
+export const detectarECriarCartoesAutomaticos = async (
+  transacoes: TransacaoCartao[],
+  cartoesExistentes: any[],
+  userId: string
+): Promise<{ cartoesDetectados: Array<{ ultimosDigitos: string; apelido: string }>; cartoesCriados: number }> => {
+  const cartoesDetectados: Array<{ ultimosDigitos: string; apelido: string }> = [];
+  const digitosExistentes = new Set(cartoesExistentes.map(c => c.ultimos_digitos));
+  let cartoesCriados = 0;
+
+  for (const transacao of transacoes) {
+    // Pular se for entrada (não queremos cartões para entradas)
+    if (transacao.isEntrada) continue;
+
+    // Tentar encontrar cartão existente
+    const cartaoExistente = encontrarCartaoParaTransacao(transacao, cartoesExistentes);
+    if (cartaoExistente) continue;
+
+    // Detectar dados do cartão
+    const dadosDetectados = detectarDadosCartao(transacao);
+    if (!dadosDetectados) continue;
+
+    // Verificar se já temos um cartão com esses dígitos
+    if (digitosExistentes.has(dadosDetectados.ultimosDigitos)) continue;
+
+    // Verificar se já detectamos esse cartão nesta sessão
+    const jaDetectado = cartoesDetectados.some(
+      c => c.ultimosDigitos === dadosDetectados.ultimosDigitos
+    );
+    if (jaDetectado) continue;
+
+    cartoesDetectados.push(dadosDetectados);
+    digitosExistentes.add(dadosDetectados.ultimosDigitos);
+
+    // Criar o cartão automaticamente
+    const sucesso = await criarCartaoAutomatico(dadosDetectados, userId);
+    if (sucesso) {
+      cartoesCriados++;
+    }
+  }
+
+  return { cartoesDetectados, cartoesCriados };
+};

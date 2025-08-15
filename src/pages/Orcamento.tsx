@@ -80,6 +80,7 @@ export const Orcamento = () => {
     apelido: '',
     ultimos_digitos: '',
     limite: '',
+    limite_disponivel: '',
     dia_vencimento: '',
     ativo: true
   });
@@ -264,6 +265,7 @@ export const Orcamento = () => {
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
         limite: parseFloat(cartaoForm.limite),
+        limite_disponivel: parseFloat(cartaoForm.limite_disponivel || cartaoForm.limite),
         dia_vencimento: parseInt(cartaoForm.dia_vencimento),
         ativo: cartaoForm.ativo
       });
@@ -281,6 +283,7 @@ export const Orcamento = () => {
       apelido: cartao.apelido,
       ultimos_digitos: cartao.ultimos_digitos,
       limite: cartao.limite.toString(),
+      limite_disponivel: (cartao.limite_disponivel || cartao.limite).toString(),
       dia_vencimento: cartao.dia_vencimento.toString(),
       ativo: cartao.ativo
     });
@@ -294,6 +297,7 @@ export const Orcamento = () => {
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
         limite: parseFloat(cartaoForm.limite),
+        limite_disponivel: parseFloat(cartaoForm.limite_disponivel),
         dia_vencimento: parseInt(cartaoForm.dia_vencimento),
         ativo: cartaoForm.ativo
       });
@@ -356,6 +360,7 @@ export const Orcamento = () => {
       apelido: '',
       ultimos_digitos: '',
       limite: '',
+      limite_disponivel: '',
       dia_vencimento: '',
       ativo: true
     });
@@ -616,7 +621,7 @@ export const Orcamento = () => {
               />
             </div>
             <div>
-              <Label htmlFor="limite">Limite</Label>
+              <Label htmlFor="limite">Limite Total</Label>
               <Input
                 id="limite"
                 type="number"
@@ -626,6 +631,21 @@ export const Orcamento = () => {
                 placeholder="0,00"
                 required
               />
+            </div>
+            <div>
+              <Label htmlFor="limite_disponivel">Limite Disponível</Label>
+              <Input
+                id="limite_disponivel"
+                type="number"
+                step="0.01"
+                value={cartaoForm.limite_disponivel}
+                onChange={(e) => setCartaoForm({...cartaoForm, limite_disponivel: e.target.value})}
+                placeholder={cartaoForm.limite || "0,00"}
+                required
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Valor atualmente disponível para uso no cartão
+              </p>
             </div>
             <div>
               <Label htmlFor="dia_vencimento">Dia do Vencimento</Label>

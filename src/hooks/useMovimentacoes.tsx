@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { normalizePhoneNumber } from "@/lib/phone-utils";
 import { detectarECriarCartoesAutomaticos } from "@/lib/cartao-utils";
 import { useToast } from "@/hooks/use-toast";
+import { useCartaoProcessamento } from "@/hooks/useCartaoProcessamento";
 
 export interface Movimentacao {
   id: string;
@@ -30,6 +31,7 @@ export interface Movimentacao {
 export const useMovimentacoes = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { processarTransacoes, verificarAlertas, atualizarLimitesDisponiveis } = useCartaoProcessamento();
   const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([]);
   const [entradas, setEntradas] = useState<Movimentacao[]>([]);
   const [saidas, setSaidas] = useState<Movimentacao[]>([]);
@@ -253,6 +255,34 @@ export const useMovimentacoes = () => {
       setMovimentacoes(movimentacoesProcessadas);
       setEntradas(entradasList);
       setSaidas(saidasList);
+
+      // Processar transações de cartão automaticamente
+      if (saidasList.length > 0) {
+        try {
+          // Buscar cartões ativos
+          const { data: cartoesData } = await supabase
+            .from('cartoes_credito')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('ativo', true);
+
+          if (cartoesData && cartoesData.length > 0) {
+            // Atualizar limites disponíveis se necessário
+            await atualizarLimitesDisponiveis(cartoesData, movimentacoesProcessadas);
+            
+            // Processar transações automaticamente
+            await processarTransacoes(movimentacoesProcessadas, cartoesData);
+            
+            // Verificar alertas de limite
+            const alertas = verificarAlertas(cartoesData);
+            if (alertas.length > 0) {
+              console.log('Alertas de cartão:', alertas);
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao processar cartões:', error);
+        }
+      }
 
     } catch (error) {
       console.error('Erro ao buscar movimentações:', error);

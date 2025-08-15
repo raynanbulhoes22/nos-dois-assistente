@@ -17,7 +17,7 @@ interface SaldoInicialCardProps {
 
 export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const { user } = useAuth();
-  const { getOrcamentoByMesAno, updateOrcamento, createOrcamento } = useOrcamentos();
+  const { getOrcamentoByMesAno, updateOrcamento, createOrcamento, refetch } = useOrcamentos();
   const { saldoInicial, saldoComputado, saldoAtual } = useFinancialStats();
   const { toast } = useToast();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -133,6 +133,9 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
         }
         console.log('✅ Registro de saldo inicial criado');
       }
+      
+      // 4. Recarregar dados do orçamento
+      await refetch();
       
       toast({
         title: "✅ Sucesso!",

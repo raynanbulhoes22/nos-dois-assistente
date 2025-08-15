@@ -106,25 +106,35 @@ export const BehavioralAnalysisCharts = ({ data, isLoading }: BehavioralAnalysis
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="weekday" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="weekday">Por Dia da Semana</TabsTrigger>
-            <TabsTrigger value="establishments">Estabelecimentos</TabsTrigger>
-            <TabsTrigger value="patterns">Padrões</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 gap-1 h-auto p-1">
+            <TabsTrigger value="weekday" className="text-xs md:text-sm px-2 py-2 md:px-3">
+              <span className="hidden md:inline">Por Dia da Semana</span>
+              <span className="md:hidden">Semana</span>
+            </TabsTrigger>
+            <TabsTrigger value="establishments" className="text-xs md:text-sm px-2 py-2 md:px-3">
+              <span className="hidden md:inline">Estabelecimentos</span>
+              <span className="md:hidden">Locais</span>
+            </TabsTrigger>
+            <TabsTrigger value="patterns" className="text-xs md:text-sm px-2 py-2 md:px-3">
+              <span className="hidden md:inline">Padrões</span>
+              <span className="md:hidden">Padrões</span>
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="weekday" className="mt-6">
+          <TabsContent value="weekday" className="mt-4 md:mt-6">
             <div className="space-y-4">
-              <div className="h-80">
+              <div className="h-56 md:h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={weekdayData}>
+                  <BarChart data={weekdayData} margin={{ left: window.innerWidth < 768 ? 10 : 20, right: window.innerWidth < 768 ? 10 : 20 }}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="day" 
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
                     />
                     <YAxis 
                       tickFormatter={formatCurrency}
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
+                      width={window.innerWidth < 768 ? 50 : 60}
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="amount" fill="#2563eb" name="Valor Gasto" />
@@ -132,11 +142,11 @@ export const BehavioralAnalysisCharts = ({ data, isLoading }: BehavioralAnalysis
                 </ResponsiveContainer>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
                 {weekdayData.map((day, index) => (
-                  <div key={day.day} className="text-center p-3 bg-muted/30 rounded-lg">
-                    <div className="font-medium text-sm">{day.day}</div>
-                    <div className="text-lg font-bold text-primary">
+                  <div key={day.day} className="text-center p-2 md:p-3 bg-muted/30 rounded-lg">
+                    <div className="font-medium text-xs md:text-sm">{day.day}</div>
+                    <div className="text-sm md:text-lg font-bold text-primary">
                       {formatCurrency(day.amount)}
                     </div>
                     <div className="text-xs text-muted-foreground">
@@ -151,36 +161,36 @@ export const BehavioralAnalysisCharts = ({ data, isLoading }: BehavioralAnalysis
             </div>
           </TabsContent>
 
-          <TabsContent value="establishments" className="mt-6">
+          <TabsContent value="establishments" className="mt-4 md:mt-6">
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-4">
-                <Store className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm font-medium">Top Estabelecimentos Frequentados</span>
+                <Store className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
+                <span className="text-xs md:text-sm font-medium">Top Estabelecimentos Frequentados</span>
               </div>
               
               {data.topEstablishments.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Store className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhum estabelecimento identificado no período</p>
+                <div className="text-center py-6 md:py-8 text-muted-foreground">
+                  <Store className="h-8 w-8 md:h-12 md:w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-sm md:text-base">Nenhum estabelecimento identificado no período</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {data.topEstablishments.map((establishment, index) => (
                     <div key={establishment.name} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <Badge variant="outline" className="w-8 h-8 rounded-full p-0 flex items-center justify-center">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3">
+                        <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                          <Badge variant="outline" className="w-6 h-6 md:w-8 md:h-8 rounded-full p-0 flex items-center justify-center text-xs">
                             {index + 1}
                           </Badge>
-                          <div>
-                            <div className="font-medium">{establishment.name}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {establishment.count} visitas • Média por visita: {formatCurrency(establishment.avgPerVisit)}
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-sm md:text-base truncate">{establishment.name}</div>
+                            <div className="text-xs md:text-sm text-muted-foreground">
+                              {establishment.count} visitas • Média: {formatCurrency(establishment.avgPerVisit)}
                             </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="font-bold">{formatCurrency(establishment.amount)}</div>
+                        <div className="text-left md:text-right">
+                          <div className="font-bold text-sm md:text-base">{formatCurrency(establishment.amount)}</div>
                         </div>
                       </div>
                       <Progress 
@@ -194,17 +204,17 @@ export const BehavioralAnalysisCharts = ({ data, isLoading }: BehavioralAnalysis
             </div>
           </TabsContent>
 
-          <TabsContent value="patterns" className="mt-6">
-            <div className="space-y-6">
+          <TabsContent value="patterns" className="mt-4 md:mt-6">
+            <div className="space-y-4 md:space-y-6">
               {/* Recurrent vs One-time Transactions */}
               <div>
                 <div className="flex items-center gap-2 mb-4">
-                  <Repeat className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm font-medium">Padrão de Transações</span>
+                  <Repeat className="h-4 w-4 md:h-5 md:w-5 text-muted-foreground" />
+                  <span className="text-xs md:text-sm font-medium">Padrão de Transações</span>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="h-60">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  <div className="h-48 md:h-60">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -217,7 +227,7 @@ export const BehavioralAnalysisCharts = ({ data, isLoading }: BehavioralAnalysis
                             const percentage = total > 0 ? (value / total) * 100 : 0;
                             return `${percentage.toFixed(1)}%`;
                           }}
-                          outerRadius={80}
+                          outerRadius={window.innerWidth < 768 ? 60 : 80}
                           fill="#8884d8"
                           dataKey="value"
                         >
@@ -230,16 +240,16 @@ export const BehavioralAnalysisCharts = ({ data, isLoading }: BehavioralAnalysis
                     </ResponsiveContainer>
                   </div>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-3 md:space-y-4">
                     {recurrentData.map((item, index) => (
-                      <div key={item.name} className="flex items-center gap-3">
+                      <div key={item.name} className="flex items-center gap-2 md:gap-3">
                         <div 
-                          className="w-4 h-4 rounded-full"
+                          className="w-3 h-3 md:w-4 md:h-4 rounded-full flex-shrink-0"
                           style={{ backgroundColor: item.color }}
                         />
-                        <div className="flex-1">
-                          <div className="font-medium text-sm">{item.name}</div>
-                          <div className="text-lg font-bold">{item.value}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-xs md:text-sm truncate">{item.name}</div>
+                          <div className="text-base md:text-lg font-bold">{item.value}</div>
                           <div className="text-xs text-muted-foreground">
                             {item.name === 'Transações Recorrentes' 
                               ? 'Gastos que se repetem mensalmente'
@@ -254,20 +264,20 @@ export const BehavioralAnalysisCharts = ({ data, isLoading }: BehavioralAnalysis
               </div>
 
               {/* Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                 <Card>
-                  <CardContent className="p-4">
+                  <CardContent className="p-3 md:p-4">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Dia Mais Ativo</span>
+                      <span className="text-xs md:text-sm font-medium">Dia Mais Ativo</span>
                     </div>
                     <div className="mt-2">
                       {weekdayData.length > 0 && (
                         <>
-                          <div className="font-bold">
+                          <div className="font-bold text-sm md:text-base">
                             {weekdayData.reduce((max, day) => day.amount > max.amount ? day : max, weekdayData[0]).day}
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-xs md:text-sm text-muted-foreground">
                             {formatCurrency(Math.max(...weekdayData.map(d => d.amount)))}
                           </div>
                         </>
@@ -277,14 +287,14 @@ export const BehavioralAnalysisCharts = ({ data, isLoading }: BehavioralAnalysis
                 </Card>
 
                 <Card>
-                  <CardContent className="p-4">
+                  <CardContent className="p-3 md:p-4">
                     <div className="flex items-center gap-2">
                       <Store className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Estabelecimentos</span>
+                      <span className="text-xs md:text-sm font-medium">Estabelecimentos</span>
                     </div>
                     <div className="mt-2">
-                      <div className="font-bold">{data.topEstablishments.length}</div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="font-bold text-sm md:text-base">{data.topEstablishments.length}</div>
+                      <div className="text-xs md:text-sm text-muted-foreground">
                         Locais diferentes
                       </div>
                     </div>
@@ -292,19 +302,19 @@ export const BehavioralAnalysisCharts = ({ data, isLoading }: BehavioralAnalysis
                 </Card>
 
                 <Card>
-                  <CardContent className="p-4">
+                  <CardContent className="p-3 md:p-4">
                     <div className="flex items-center gap-2">
                       <Repeat className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium">Recorrência</span>
+                      <span className="text-xs md:text-sm font-medium">Recorrência</span>
                     </div>
                     <div className="mt-2">
-                      <div className="font-bold">
+                      <div className="font-bold text-sm md:text-base">
                         {data.recurrentVsOneTime.recurrent + data.recurrentVsOneTime.oneTime > 0 
                           ? ((data.recurrentVsOneTime.recurrent / (data.recurrentVsOneTime.recurrent + data.recurrentVsOneTime.oneTime)) * 100).toFixed(0)
                           : 0
                         }%
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-xs md:text-sm text-muted-foreground">
                         Gastos recorrentes
                       </div>
                     </div>

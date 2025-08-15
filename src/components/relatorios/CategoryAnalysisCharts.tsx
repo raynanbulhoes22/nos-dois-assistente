@@ -145,34 +145,46 @@ export const CategoryAnalysisCharts = ({ data, isLoading }: CategoryAnalysisChar
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="ranking" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="ranking">Ranking</TabsTrigger>
-            <TabsTrigger value="distribution">Distribuição</TabsTrigger>
-            <TabsTrigger value="comparison">Comparativo</TabsTrigger>
-            <TabsTrigger value="evolution">Evolução</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1 h-auto p-1">
+            <TabsTrigger value="ranking" className="text-xs md:text-sm px-2 py-2 md:px-3">
+              <span className="hidden md:inline">Ranking</span>
+              <span className="md:hidden">Rank</span>
+            </TabsTrigger>
+            <TabsTrigger value="distribution" className="text-xs md:text-sm px-2 py-2 md:px-3">
+              <span className="hidden md:inline">Distribuição</span>
+              <span className="md:hidden">Distr</span>
+            </TabsTrigger>
+            <TabsTrigger value="comparison" className="text-xs md:text-sm px-2 py-2 md:px-3">
+              <span className="hidden md:inline">Comparativo</span>
+              <span className="md:hidden">Comp</span>
+            </TabsTrigger>
+            <TabsTrigger value="evolution" className="text-xs md:text-sm px-2 py-2 md:px-3">
+              <span className="hidden md:inline">Evolução</span>
+              <span className="md:hidden">Evol</span>
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="ranking" className="mt-6">
-            <div className="space-y-4">
+          <TabsContent value="ranking" className="mt-4 md:mt-6">
+            <div className="space-y-3 md:space-y-4">
               {data.slice(0, 10).map((category, index) => (
                 <div key={category.name} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-3">
+                    <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
                       <div 
-                        className="w-4 h-4 rounded-full"
+                        className="w-3 h-3 md:w-4 md:h-4 rounded-full flex-shrink-0"
                         style={{ backgroundColor: COLORS[index % COLORS.length] }}
                       />
-                      <span className="font-medium">{category.name}</span>
-                      <div className="flex items-center gap-1">
+                      <span className="font-medium text-sm md:text-base truncate">{category.name}</span>
+                      <div className="flex items-center gap-1 ml-auto md:ml-0">
                         {getTrendIcon(category.trend)}
                         <span className={`text-xs ${getTrendColor(category.trend)}`}>
                           {category.trendPercentage.toFixed(1)}%
                         </span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-bold">{formatCurrency(category.amount)}</div>
-                      <div className="text-sm text-muted-foreground">
+                    <div className="text-left md:text-right">
+                      <div className="font-bold text-sm md:text-base">{formatCurrency(category.amount)}</div>
+                      <div className="text-xs md:text-sm text-muted-foreground">
                         {category.percentage.toFixed(1)}% • {category.transactionCount} transações
                       </div>
                     </div>
@@ -186,8 +198,8 @@ export const CategoryAnalysisCharts = ({ data, isLoading }: CategoryAnalysisChar
             </div>
           </TabsContent>
 
-          <TabsContent value="distribution" className="mt-6">
-            <div className="h-80">
+          <TabsContent value="distribution" className="mt-4 md:mt-6">
+            <div className="h-64 md:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -196,9 +208,9 @@ export const CategoryAnalysisCharts = ({ data, isLoading }: CategoryAnalysisChar
                     cy="50%"
                     labelLine={false}
                     label={({ name, percentage }) => 
-                      percentage > 5 ? `${name} (${percentage.toFixed(1)}%)` : ''
+                      percentage > 8 ? `${name.length > 10 ? name.substring(0, 10) + '...' : name} (${percentage.toFixed(1)}%)` : ''
                     }
-                    outerRadius={100}
+                    outerRadius={window.innerWidth < 768 ? 70 : 100}
                     fill="#8884d8"
                     dataKey="value"
                   >
@@ -212,21 +224,23 @@ export const CategoryAnalysisCharts = ({ data, isLoading }: CategoryAnalysisChar
             </div>
           </TabsContent>
 
-          <TabsContent value="comparison" className="mt-6">
-            <div className="h-80">
+          <TabsContent value="comparison" className="mt-4 md:mt-6">
+            <div className="h-64 md:h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={comparisonData}>
+                <BarChart data={comparisonData} margin={{ bottom: window.innerWidth < 768 ? 60 : 80 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="name" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
                     angle={-45}
                     textAnchor="end"
-                    height={80}
+                    height={window.innerWidth < 768 ? 60 : 80}
+                    interval={0}
                   />
                   <YAxis 
                     tickFormatter={formatCurrency}
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
+                    width={window.innerWidth < 768 ? 50 : 60}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="amount" name="Valor Total">
@@ -239,29 +253,30 @@ export const CategoryAnalysisCharts = ({ data, isLoading }: CategoryAnalysisChar
             </div>
           </TabsContent>
 
-          <TabsContent value="evolution" className="mt-6">
-            <div className="h-80">
+          <TabsContent value="evolution" className="mt-4 md:mt-6">
+            <div className="h-64 md:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={monthlyEvolutionData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="month" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
                   />
                   <YAxis 
                     tickFormatter={formatCurrency}
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: window.innerWidth < 768 ? 10 : 12 }}
+                    width={window.innerWidth < 768 ? 50 : 60}
                   />
                   <Tooltip content={<CustomTooltip />} />
-                  <Legend />
+                  <Legend wrapperStyle={{ fontSize: window.innerWidth < 768 ? '12px' : '14px' }} />
                   {evolutionData.map((category, index) => (
                     <Line
                       key={category.name}
                       type="monotone"
                       dataKey={category.name}
                       stroke={COLORS[index % COLORS.length]}
-                      strokeWidth={2}
-                      dot={{ fill: COLORS[index % COLORS.length], strokeWidth: 2, r: 4 }}
+                      strokeWidth={window.innerWidth < 768 ? 1.5 : 2}
+                      dot={{ fill: COLORS[index % COLORS.length], strokeWidth: 2, r: window.innerWidth < 768 ? 3 : 4 }}
                     />
                   ))}
                 </LineChart>

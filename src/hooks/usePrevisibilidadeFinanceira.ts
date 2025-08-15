@@ -72,25 +72,27 @@ export const usePrevisibilidadeFinanceira = () => {
   };
 
   // Função para calcular valor médio da fatura do cartão baseado no histórico
-  const calcularValorMedioCartao = (cartao: any, mesesParaAnalise: number = 3) => {
-    const hoje = new Date();
-    let totalGastos = 0;
-    let mesesComGastos = 0;
+  const calcularValorMedioCartao = useMemo(() => {
+    return (cartao: any, mesesParaAnalise: number = 3) => {
+      const hoje = new Date();
+      let totalGastos = 0;
+      let mesesComGastos = 0;
 
-    for (let i = 1; i <= mesesParaAnalise; i++) {
-      const mesRef = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
-      const mesAnalise = mesRef.getMonth() + 1;
-      const anoAnalise = mesRef.getFullYear();
+      for (let i = 1; i <= mesesParaAnalise; i++) {
+        const mesRef = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+        const mesAnalise = mesRef.getMonth() + 1;
+        const anoAnalise = mesRef.getFullYear();
 
-      const totalMes = calcularGastoCartao(transacoesFormatadas, cartao, mesAnalise, anoAnalise);
-      if (totalMes > 0) {
-        totalGastos += totalMes;
-        mesesComGastos++;
+        const totalMes = calcularGastoCartao(transacoesFormatadas, cartao, mesAnalise, anoAnalise);
+        if (totalMes > 0) {
+          totalGastos += totalMes;
+          mesesComGastos++;
+        }
       }
-    }
 
-    return mesesComGastos > 0 ? totalGastos / mesesComGastos : 0;
-  };
+      return mesesComGastos > 0 ? totalGastos / mesesComGastos : 0;
+    };
+  }, [transacoesFormatadas]);
 
   // Calcular previsões para os próximos 12 meses
   const calcularPrevisoes12Meses = useMemo(() => {

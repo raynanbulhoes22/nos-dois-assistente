@@ -218,29 +218,36 @@ export const useMovimentacoes = () => {
       console.log(`Processadas: ${movimentacoesProcessadas.length} movimentações`);
       console.log(`Entradas: ${entradasList.length}, Saídas: ${saidasList.length}`);
 
-      // Detectar e criar cartões automaticamente
-      try {
-        // Buscar cartões existentes
-        const { data: cartoesExistentes } = await supabase
-          .from('cartoes_credito')
-          .select('*')
-          .eq('user_id', user.id);
+      // Detectar e criar cartões automaticamente (apenas uma vez por sessão)
+      const shouldDetectCards = !sessionStorage.getItem(`cards_detected_${user.id}`);
+      
+      if (shouldDetectCards && saidasList.length > 0) {
+        try {
+          // Buscar cartões existentes
+          const { data: cartoesExistentes } = await supabase
+            .from('cartoes_credito')
+            .select('*')
+            .eq('user_id', user.id);
 
-        // Detectar cartões órfãos e criar automaticamente
-        const resultado = await detectarECriarCartoesAutomaticos(
-          movimentacoesProcessadas,
-          cartoesExistentes || [],
-          user.id
-        );
+          // Detectar cartões órfãos e criar automaticamente
+          const resultado = await detectarECriarCartoesAutomaticos(
+            movimentacoesProcessadas,
+            cartoesExistentes || [],
+            user.id
+          );
 
-        if (resultado.cartoesCriados > 0) {
-          toast({
-            title: "🎉 Cartões detectados!",
-            description: `${resultado.cartoesCriados} cartão(s) criado(s) automaticamente baseado nas suas transações.`
-          });
+          if (resultado.cartoesCriados > 0) {
+            toast({
+              title: "🎉 Cartões detectados!",
+              description: `${resultado.cartoesCriados} cartão(s) criado(s) automaticamente baseado nas suas transações.`
+            });
+          }
+
+          // Marcar que já foi feita a detecção nesta sessão
+          sessionStorage.setItem(`cards_detected_${user.id}`, 'true');
+        } catch (error) {
+          console.error('Erro ao detectar cartões automaticamente:', error);
         }
-      } catch (error) {
-        console.error('Erro ao detectar cartões automaticamente:', error);
       }
 
       setMovimentacoes(movimentacoesProcessadas);

@@ -237,6 +237,9 @@ export const detectarECriarCartoesAutomaticos = async (
   const digitosExistentes = new Set(cartoesExistentes.map(c => c.ultimos_digitos));
   let cartoesCriados = 0;
 
+  // Usar Map para evitar duplicações durante o processamento
+  const cartoesParaCriar = new Map<string, { ultimosDigitos: string; apelido: string }>();
+
   for (const transacao of transacoes) {
     // Pular se for entrada (não queremos cartões para entradas)
     if (transacao.isEntrada) continue;
@@ -249,20 +252,20 @@ export const detectarECriarCartoesAutomaticos = async (
     const dadosDetectados = detectarDadosCartao(transacao);
     if (!dadosDetectados) continue;
 
-    // Verificar se já temos um cartão com esses dígitos
+    // Verificar se já temos um cartão com esses dígitos (existentes ou já detectados)
     if (digitosExistentes.has(dadosDetectados.ultimosDigitos)) continue;
+    if (cartoesParaCriar.has(dadosDetectados.ultimosDigitos)) continue;
 
-    // Verificar se já detectamos esse cartão nesta sessão
-    const jaDetectado = cartoesDetectados.some(
-      c => c.ultimosDigitos === dadosDetectados.ultimosDigitos
-    );
-    if (jaDetectado) continue;
-
-    cartoesDetectados.push(dadosDetectados);
+    // Adicionar à lista de cartões para criar
+    cartoesParaCriar.set(dadosDetectados.ultimosDigitos, dadosDetectados);
     digitosExistentes.add(dadosDetectados.ultimosDigitos);
+  }
 
-    // Criar o cartão automaticamente
-    const sucesso = await criarCartaoAutomatico(dadosDetectados, userId);
+  // Criar cartões únicos detectados
+  for (const dadosCartao of cartoesParaCriar.values()) {
+    cartoesDetectados.push(dadosCartao);
+    
+    const sucesso = await criarCartaoAutomatico(dadosCartao, userId);
     if (sucesso) {
       cartoesCriados++;
     }

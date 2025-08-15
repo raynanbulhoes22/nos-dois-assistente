@@ -146,27 +146,62 @@ export const OnboardingWizard = () => {
         const hoje = new Date();
         const mesAtual = hoje.getMonth() + 1;
         const anoAtual = hoje.getFullYear();
+        const primeiroDiaMes = new Date(anoAtual, mesAtual - 1, 1);
 
-        // Criar registro do saldo inicial como uma entrada
-        const { data: registroSaldo, error: saldoError } = await supabase
+        // Verificar se já existe um registro de saldo inicial para este mês
+        const { data: saldoExistente, error: checkError } = await supabase
           .from('registros_financeiros')
-          .insert([{
-            user_id: user.id,
-            valor: data.saldoInicial,
-            data: hoje.toISOString().split('T')[0],
-            tipo: 'entrada_manual', // Valor correto conforme constraint
-            tipo_movimento: 'entrada',
-            categoria: 'Saldo Inicial',
-            nome: 'Saldo Inicial da Conta',
-            observacao: 'Saldo inicial informado durante configuração da conta',
-            origem: 'manual'
-          }])
-          .select();
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('categoria', 'Saldo Inicial')
+          .gte('data', primeiroDiaMes.toISOString().split('T')[0])
+          .lt('data', new Date(anoAtual, mesAtual, 1).toISOString().split('T')[0])
+          .maybeSingle();
 
-        if (saldoError) {
-          console.error('Erro ao criar registro de saldo inicial:', saldoError);
-          throw saldoError;
+        if (checkError) {
+          console.error('Erro ao verificar saldo existente:', checkError);
+          throw checkError;
+        }
+
+        if (saldoExistente) {
+          // Atualizar registro existente
+          const { error: updateError } = await supabase
+            .from('registros_financeiros')
+            .update({
+              valor: Math.abs(data.saldoInicial),
+              tipo: 'entrada_manual',
+              tipo_movimento: data.saldoInicial >= 0 ? 'entrada' : 'saida',
+              nome: `Saldo Inicial - ${new Date(anoAtual, mesAtual - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
+              observacao: 'Saldo inicial informado durante configuração da conta'
+            })
+            .eq('id', saldoExistente.id);
+
+          if (updateError) {
+            console.error('Erro ao atualizar registro de saldo inicial:', updateError);
+            throw updateError;
+          }
+          console.log('✅ Registro de saldo inicial atualizado');
         } else {
+          // Criar novo registro
+          const { data: registroSaldo, error: saldoError } = await supabase
+            .from('registros_financeiros')
+            .insert([{
+              user_id: user.id,
+              valor: Math.abs(data.saldoInicial),
+              data: primeiroDiaMes.toISOString().split('T')[0],
+              tipo: 'entrada_manual',
+              tipo_movimento: data.saldoInicial >= 0 ? 'entrada' : 'saida',
+              categoria: 'Saldo Inicial',
+              nome: `Saldo Inicial - ${new Date(anoAtual, mesAtual - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
+              observacao: 'Saldo inicial informado durante configuração da conta',
+              origem: 'manual'
+            }])
+            .select();
+
+          if (saldoError) {
+            console.error('Erro ao criar registro de saldo inicial:', saldoError);
+            throw saldoError;
+          }
           console.log('✅ Registro de saldo inicial criado:', registroSaldo);
         }
 

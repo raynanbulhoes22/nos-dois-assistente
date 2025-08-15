@@ -155,17 +155,8 @@ async function handleSubscriptionChange(
 
     // Update subscribers table
     log("Attempting to upsert subscriber", { email: customerEmail, isActive, tier });
-    
-    // Get user_id from existing record or leave null for new records
-    const { data: existingUser } = await supabaseClient
-      .from("subscribers")
-      .select("user_id")
-      .eq("email", customerEmail)
-      .maybeSingle();
-    
     const { error } = await supabaseClient.from("subscribers").upsert({
       email: customerEmail,
-      user_id: existingUser?.user_id || null,
       stripe_customer_id: subscription.customer,
       subscribed: isActive,
       subscription_tier: isActive ? tier : null,

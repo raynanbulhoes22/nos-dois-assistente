@@ -73,6 +73,9 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
+      subscription_data: {
+        trial_period_days: 7, // 7 dias de teste grátis
+      },
       success_url: `${origin}/assinaturas?success=1`,
       cancel_url: `${origin}/assinaturas?canceled=1`,
     });

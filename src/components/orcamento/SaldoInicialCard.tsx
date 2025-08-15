@@ -23,6 +23,7 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [novoSaldo, setNovoSaldo] = useState('');
   const [saldoInicialFromDB, setSaldoInicialFromDB] = useState<number>(0);
+  const [saldoAtualComputado, setSaldoAtualComputado] = useState<number>(0);
 
   const orcamento = getOrcamentoByMesAno(mes, ano);
   // Usar o saldo dos registros financeiros em vez do orçamento
@@ -57,6 +58,36 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
     
     buscarSaldoInicial();
   }, [user, mes, ano]);
+
+  // Calcular saldo atual corretamente baseado no saldo inicial dos registros financeiros
+  useEffect(() => {
+    const calcularSaldoAtual = async () => {
+      if (!user) return;
+      
+      const primeiroDiaMes = new Date(ano, mes - 1, 1);
+      const ultimoDiaMes = new Date(ano, mes, 0);
+      
+      // Buscar todas as movimentações do mês (exceto saldo inicial)
+      const { data: movimentacoes, error } = await supabase
+        .from('registros_financeiros')
+        .select('valor, tipo_movimento')
+        .eq('user_id', user.id)
+        .neq('categoria', 'Saldo Inicial')
+        .gte('data', primeiroDiaMes.toISOString().split('T')[0])
+        .lte('data', ultimoDiaMes.toISOString().split('T')[0]);
+      
+      if (!error && movimentacoes) {
+        const totalMovimentacoes = movimentacoes.reduce((total, mov) => {
+          const valor = mov.tipo_movimento === 'entrada' ? mov.valor : -mov.valor;
+          return total + valor;
+        }, 0);
+        
+        setSaldoAtualComputado(saldoInicialFromDB + totalMovimentacoes);
+      }
+    };
+    
+    calcularSaldoAtual();
+  }, [user, mes, ano, saldoInicialFromDB]);
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -187,7 +218,8 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
     }
   };
 
-  const evolucaoSaldo = saldoComputado - saldoInicialAtual;
+  // Calcular evolução corretamente baseado nos dados dos registros financeiros
+  const evolucaoSaldo = saldoAtualComputado - saldoInicialAtual;
   const isPositiveEvolution = evolucaoSaldo >= 0;
 
   return (
@@ -220,16 +252,16 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
 
           {/* Saldo Atual Computado */}
           <div className={`text-center p-2 rounded-lg ${
-            isPositiveEvolution ? 'bg-success/10 border border-success/20' : 'bg-error/10 border border-error/20'
+            saldoAtualComputado >= 0 ? 'bg-success/10 border border-success/20' : 'bg-error/10 border border-error/20'
           }`}>
             <span className="text-xs text-muted-foreground block mb-1">SALDO ATUAL</span>
             <div className="flex items-center justify-center gap-1">
               <p className={`text-sm font-semibold ${
-                isPositiveEvolution ? 'text-success' : 'text-error'
+                saldoAtualComputado >= 0 ? 'text-success' : 'text-error'
               }`}>
-                {formatCurrency(saldoComputado)}
+                {formatCurrency(saldoAtualComputado)}
               </p>
-              {isPositiveEvolution ? (
+              {saldoAtualComputado >= 0 ? (
                 <TrendingUp className="h-3 w-3 text-success" />
               ) : (
                 <TrendingDown className="h-3 w-3 text-error" />

@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -59,7 +59,7 @@ serve(async (req) => {
     }
 
     // Initialize Supabase client with service role key to bypass RLS
-    const supabaseClient = createClient(
+    const supabaseClient: SupabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
@@ -110,7 +110,7 @@ serve(async (req) => {
 
 async function handleSubscriptionChange(
   event: Stripe.Event,
-  supabaseClient: any,
+  supabaseClient: SupabaseClient,
   stripe: Stripe
 ) {
   const subscription = event.data.object as Stripe.Subscription;
@@ -135,7 +135,8 @@ async function handleSubscriptionChange(
     }
 
     // Determine subscription tier based on price
-    const price = subscription.items.data[0].price;
+    // Lógica atualizada para usar apenas os dados do objeto `price`
+    const price = subscription.items.data[0].price as Stripe.Price;
     const productId = price.product as string;
     const amount = price.unit_amount || 0;
     
@@ -155,17 +156,8 @@ async function handleSubscriptionChange(
 
     // Update subscribers table
     log("Attempting to upsert subscriber", { email: customerEmail, isActive, tier });
-    
-    // Get user_id from existing record or leave null for new records
-    const { data: existingUser } = await supabaseClient
-      .from("subscribers")
-      .select("user_id")
-      .eq("email", customerEmail)
-      .maybeSingle();
-    
     const { error } = await supabaseClient.from("subscribers").upsert({
       email: customerEmail,
-      user_id: existingUser?.user_id || null,
       stripe_customer_id: subscription.customer,
       subscribed: isActive,
       subscription_tier: isActive ? tier : null,
@@ -193,7 +185,7 @@ async function handleSubscriptionChange(
 
 async function handleSubscriptionDeleted(
   event: Stripe.Event,
-  supabaseClient: any,
+  supabaseClient: SupabaseClient,
   stripe: Stripe
 ) {
   const subscription = event.data.object as Stripe.Subscription;
@@ -238,7 +230,7 @@ async function handleSubscriptionDeleted(
 
 async function handlePaymentSucceeded(
   event: Stripe.Event,
-  supabaseClient: any,
+  supabaseClient: SupabaseClient,
   stripe: Stripe
 ) {
   const invoice = event.data.object as Stripe.Invoice;
@@ -263,7 +255,7 @@ async function handlePaymentSucceeded(
 
 async function handlePaymentFailed(
   event: Stripe.Event,
-  supabaseClient: any,
+  supabaseClient: SupabaseClient,
   stripe: Stripe
 ) {
   const invoice = event.data.object as Stripe.Invoice;

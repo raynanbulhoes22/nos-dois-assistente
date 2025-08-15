@@ -80,11 +80,14 @@ export const AuthForm = () => {
       });
 
       if (error) {
-        if (error.message.includes('already registered')) {
+        if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+          // Usuário já existe, mostrar tela de confirmação mesmo assim
+          setRegisteredEmail(sanitizedEmail);
+          setShowEmailConfirmation(true);
           toast({
             title: "Email já cadastrado",
-            description: "Este email já está cadastrado. Tente fazer login.",
-            variant: "destructive"
+            description: "Este email já está registrado. Verifique sua caixa de entrada para confirmar seu email ou tente fazer login se já confirmou.",
+            variant: "default"
           });
         } else if (error.message.includes('Password should be')) {
           toast({
@@ -92,16 +95,16 @@ export const AuthForm = () => {
             description: "A senha deve ter pelo menos 8 caracteres e conter letras maiúsculas, minúsculas e números.",
             variant: "destructive"
           });
-        } else if (error.message.includes('User already registered')) {
-          toast({
-            title: "Usuário já cadastrado",
-            description: "Faça login ou use outro email.",
-            variant: "destructive"
-          });
         } else if (error.message.includes('Invalid email')) {
           toast({
             title: "Email inválido",
             description: "Verifique o formato do email.",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('Signup disabled')) {
+          toast({
+            title: "Cadastro temporariamente indisponível",
+            description: "Tente novamente em alguns minutos ou entre em contato conosco.",
             variant: "destructive"
           });
         } else {
@@ -309,6 +312,36 @@ export const AuthForm = () => {
                   className="w-full"
                 >
                   Voltar para o login
+                </Button>
+                
+                <Button
+                  onClick={() => {
+                    // Tentar reenviar email de confirmação
+                    supabase.auth.resend({
+                      type: 'signup',
+                      email: registeredEmail,
+                      options: {
+                        emailRedirectTo: `${window.location.origin}/`
+                      }
+                    }).then(({ error }) => {
+                      if (error) {
+                        toast({
+                          title: "Erro ao reenviar email",
+                          description: "Tente novamente em alguns minutos.",
+                          variant: "destructive"
+                        });
+                      } else {
+                        toast({
+                          title: "Email reenviado!",
+                          description: "Verifique sua caixa de entrada.",
+                        });
+                      }
+                    });
+                  }}
+                  variant="default"
+                  className="w-full"
+                >
+                  Reenviar email de confirmação
                 </Button>
                 
                 <div className="text-xs text-gray-500">

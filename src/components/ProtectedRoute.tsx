@@ -22,6 +22,12 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       // If user has subscription but hasn't completed onboarding
       if (subscriptionStatus.subscribed && !onboardingCompleted && location.pathname !== '/primeiros-passos') {
         navigate('/primeiros-passos', { replace: true });
+        return;
+      }
+
+      // If user has subscription and completed onboarding, redirect to dashboard
+      if (subscriptionStatus.subscribed && onboardingCompleted && location.pathname === '/') {
+        navigate('/dashboard', { replace: true });
       }
     }
   }, [loading, user, subscriptionStatus, onboardingCompleted, location.pathname, navigate]);

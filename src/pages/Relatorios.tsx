@@ -16,7 +16,7 @@ import { useAdvancedReportsData } from "@/hooks/useAdvancedReportsData";
 import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
-import { exportToPDF, exportToExcel, exportToCSV } from "@/lib/export-utils";
+import { exportToPDF } from "@/lib/export-utils";
 import { Progress } from "@/components/ui/progress";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { 
@@ -37,7 +37,7 @@ import { useMemo } from "react";
 export const Relatorios = () => {
   const data = useAdvancedReportsData();
   const { toast } = useToast();
-  const [exportLoading, setExportLoading] = useState<'pdf' | 'excel' | 'csv' | null>(null);
+  const [exportLoading, setExportLoading] = useState<'pdf' | null>(null);
   const [activeTab, setActiveTab] = useState("visao-geral");
   const isMobile = useIsMobile();
 
@@ -134,73 +134,6 @@ export const Relatorios = () => {
     }
   };
 
-  const handleExportExcel = async () => {
-    if (!data.kpis || !hasTransactions) {
-      toast({
-        title: "Nenhum dado disponível",
-        description: "Aguarde o carregamento dos dados ou aplique filtros válidos.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setExportLoading('excel');
-    try {
-      const exportData = {
-        reportData: data,
-        filteredTransactions: [] // Usar array vazio já que os dados estão nos KPIs
-      };
-      
-      const result = await exportToExcel(exportData, data.filters);
-      toast({
-        title: "Excel gerado com sucesso!",
-        description: `Arquivo ${result.fileName} baixado.`,
-      });
-    } catch (error) {
-      console.error('Erro ao exportar Excel:', error);
-      toast({
-        title: "Erro ao gerar Excel",
-        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado",
-        variant: "destructive",
-      });
-    } finally {
-      setExportLoading(null);
-    }
-  };
-
-  const handleExportCSV = async () => {
-    if (!data.kpis || !hasTransactions) {
-      toast({
-        title: "Nenhum dado disponível",
-        description: "Aguarde o carregamento dos dados ou aplique filtros válidos.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setExportLoading('csv');
-    try {
-      const exportData = {
-        reportData: data,
-        filteredTransactions: [] // Usar array vazio já que os dados estão nos KPIs
-      };
-      
-      const result = await exportToCSV(exportData, data.filters);
-      toast({
-        title: "CSV gerado com sucesso!",
-        description: `Arquivo ${result.fileName} baixado.`,
-      });
-    } catch (error) {
-      console.error('Erro ao exportar CSV:', error);
-      toast({
-        title: "Erro ao gerar CSV",
-        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado",
-        variant: "destructive",
-      });
-    } finally {
-      setExportLoading(null);
-    }
-  };
 
   if (data.isLoading) {
     return (
@@ -249,8 +182,6 @@ export const Relatorios = () => {
               availableCategories={availableCategories}
               availablePaymentMethods={availablePaymentMethods}
               onExportPDF={handleExportPDF}
-              onExportExcel={handleExportExcel}
-              onExportCSV={handleExportCSV}
               exportLoading={exportLoading}
             />
           </div>
@@ -274,22 +205,6 @@ export const Relatorios = () => {
               variant="outline"
             >
               {exportLoading === 'pdf' ? 'Gerando PDF...' : 'Exportar PDF'}
-            </Button>
-            <Button 
-              onClick={handleExportExcel}
-              disabled={exportLoading === 'excel'}
-              className="w-full h-12"
-              variant="outline"
-            >
-              {exportLoading === 'excel' ? 'Gerando Excel...' : 'Exportar Excel'}
-            </Button>
-            <Button 
-              onClick={handleExportCSV}
-              disabled={exportLoading === 'csv'}
-              className="w-full h-12"
-              variant="outline"
-            >
-              {exportLoading === 'csv' ? 'Gerando CSV...' : 'Exportar CSV'}
             </Button>
           </div>
         </SheetContent>
@@ -532,8 +447,6 @@ export const Relatorios = () => {
               availableCategories={availableCategories}
               availablePaymentMethods={availablePaymentMethods}
               onExportPDF={handleExportPDF}
-              onExportExcel={handleExportExcel}
-              onExportCSV={handleExportCSV}
               exportLoading={exportLoading}
             />
 

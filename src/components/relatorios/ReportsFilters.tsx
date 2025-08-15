@@ -17,9 +17,7 @@ interface ReportsFiltersProps {
   availableCategories: string[];
   availablePaymentMethods: string[];
   onExportPDF: () => void;
-  onExportExcel: () => void;
-  onExportCSV: () => void;
-  exportLoading?: 'pdf' | 'excel' | 'csv' | null;
+  exportLoading?: 'pdf' | null;
 }
 
 export const ReportsFilters = ({
@@ -28,8 +26,6 @@ export const ReportsFilters = ({
   availableCategories,
   availablePaymentMethods,
   onExportPDF,
-  onExportExcel,
-  onExportCSV,
   exportLoading
 }: ReportsFiltersProps) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -90,9 +86,13 @@ export const ReportsFilters = ({
           <div className="flex items-center gap-2">
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  disabled={exportLoading === 'pdf'}
+                >
                   <Download className="h-4 w-4 mr-2" />
-                  Exportar
+                  {exportLoading === 'pdf' ? 'Gerando PDF...' : 'Exportar PDF'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-48" align="end">
@@ -104,25 +104,7 @@ export const ReportsFilters = ({
                     onClick={onExportPDF}
                     disabled={exportLoading === 'pdf'}
                   >
-                    {exportLoading === 'pdf' ? 'Gerando PDF...' : 'Relatório PDF'}
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full justify-start"
-                    onClick={onExportExcel}
-                    disabled={exportLoading === 'excel'}
-                  >
-                    {exportLoading === 'excel' ? 'Gerando Excel...' : 'Planilha Excel'}
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="w-full justify-start"
-                    onClick={onExportCSV}
-                    disabled={exportLoading === 'csv'}
-                  >
-                    {exportLoading === 'csv' ? 'Gerando CSV...' : 'Dados CSV'}
+                    {exportLoading === 'pdf' ? 'Gerando PDF...' : 'Relatório em PDF'}
                   </Button>
                 </div>
               </PopoverContent>

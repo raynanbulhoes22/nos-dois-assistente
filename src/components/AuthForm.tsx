@@ -64,11 +64,12 @@ export const AuthForm = () => {
     const sanitizedName = sanitizeInput(data.name || '');
 
     setIsLoading(true);
+    console.log('🔄 Iniciando cadastro para:', sanitizedEmail);
 
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpResult, error } = await supabase.auth.signUp({
         email: sanitizedEmail,
         password: data.password,
         options: {
@@ -79,9 +80,13 @@ export const AuthForm = () => {
         }
       });
 
+      console.log('📝 Resultado do cadastro:', { signUpResult, error });
+
       if (error) {
+        console.error('❌ Erro no cadastro:', error);
         if (error.message.includes('already registered') || error.message.includes('User already registered')) {
           // Usuário já existe, mostrar tela de confirmação mesmo assim
+          console.log('👤 Usuário já existe, mostrando tela de confirmação');
           setRegisteredEmail(sanitizedEmail);
           setShowEmailConfirmation(true);
           toast({
@@ -115,16 +120,32 @@ export const AuthForm = () => {
           });
         }
       } else {
+        console.log('✅ Cadastro realizado com sucesso');
+        // Cadastro realizado com sucesso
         setRegisteredEmail(sanitizedEmail);
         setShowEmailConfirmation(true);
-        toast({
-          title: "Cadastro realizado com sucesso! 🎉",
-          description: "Verifique sua caixa de entrada para confirmar seu email.",
-        });
+        
+        // Verificar se precisa confirmar email
+        if (!signUpResult.session && signUpResult.user) {
+          console.log('📧 Email de confirmação enviado');
+          toast({
+            title: "Cadastro realizado com sucesso! 🎉",
+            description: "Verifique sua caixa de entrada para confirmar seu email.",
+          });
+        } else if (signUpResult.session) {
+          console.log('🎯 Login automático realizado');
+          toast({
+            title: "Cadastro e login realizados! 🎉",
+            description: "Bem-vindo ao LucraAI!",
+          });
+          // Se já logou automaticamente, não precisamos da tela de confirmação
+          setShowEmailConfirmation(false);
+        }
+        
         signUpForm.reset();
       }
     } catch (error) {
-      console.error('Signup error:', error);
+      console.error('💥 Erro inesperado no cadastro:', error);
       toast({
         title: "Erro inesperado",
         description: "Tente novamente mais tarde.",
@@ -132,6 +153,7 @@ export const AuthForm = () => {
       });
     } finally {
       setIsLoading(false);
+      console.log('🏁 Processo de cadastro finalizado');
     }
   };
 

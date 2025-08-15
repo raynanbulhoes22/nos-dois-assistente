@@ -6,6 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Wallet, Edit2, TrendingUp, TrendingDown } from 'lucide-react';
 import { useOrcamentos } from '@/hooks/useOrcamentos';
 import { useFinancialStats } from '@/hooks/useFinancialStats';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface SaldoInicialCardProps {
@@ -14,6 +16,7 @@ interface SaldoInicialCardProps {
 }
 
 export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
+  const { user } = useAuth();
   const { getOrcamentoByMesAno, updateOrcamento, createOrcamento } = useOrcamentos();
   const { saldoInicial, saldoComputado, saldoAtual } = useFinancialStats();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -35,9 +38,12 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   };
 
   const handleSaveSaldo = async () => {
+    if (!user) return;
+    
     try {
       const valorSaldo = parseFloat(novoSaldo.replace(',', '.')) || 0;
       
+      // 1. Atualizar/criar orçamento
       if (orcamento) {
         await updateOrcamento(orcamento.id, { saldo_inicial: valorSaldo });
       } else {
@@ -47,6 +53,51 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
           saldo_inicial: valorSaldo,
           meta_economia: 0
         });
+      }
+      
+      // 2. Verificar se já existe registro de saldo inicial para este mês
+      const primeiroDiaMes = new Date(ano, mes - 1, 1);
+      
+      const { data: registroExistente } = await supabase
+        .from('registros_financeiros')
+        .select('id, valor')
+        .eq('user_id', user.id)
+        .eq('categoria', 'Saldo Inicial')
+        .eq('data', primeiroDiaMes.toISOString().split('T')[0])
+        .maybeSingle();
+      
+      if (registroExistente) {
+        // 3a. Atualizar registro existente
+        const { error: updateError } = await supabase
+          .from('registros_financeiros')
+          .update({
+            valor: Math.abs(valorSaldo),
+            tipo: valorSaldo >= 0 ? 'entrada' : 'saida',
+            nome: `Saldo Inicial - ${new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
+            observacao: 'Saldo inicial atualizado pelo usuário'
+          })
+          .eq('id', registroExistente.id);
+          
+        if (updateError) throw updateError;
+        console.log('✅ Registro de saldo inicial atualizado');
+      } else {
+        // 3b. Criar novo registro
+        const { error: insertError } = await supabase
+          .from('registros_financeiros')
+          .insert([{
+            user_id: user.id,
+            valor: Math.abs(valorSaldo),
+            data: primeiroDiaMes.toISOString().split('T')[0],
+            tipo: valorSaldo >= 0 ? 'entrada' : 'saida',
+            categoria: 'Saldo Inicial',
+            nome: `Saldo Inicial - ${new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
+            observacao: 'Saldo inicial definido pelo usuário',
+            origem: 'manual',
+            tipo_movimento: valorSaldo >= 0 ? 'entrada' : 'saida'
+          }]);
+          
+        if (insertError) throw insertError;
+        console.log('✅ Registro de saldo inicial criado');
       }
       
       toast.success('Saldo inicial atualizado com sucesso!');

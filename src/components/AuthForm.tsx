@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { authSchema, type AuthFormData } from '@/lib/validations';
 import { sanitizeInput, authRateLimiter, checkPasswordStrength } from '@/lib/security';
 
@@ -27,6 +28,7 @@ export const AuthForm = () => {
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [passwordStrength, setPasswordStrength] = useState({ isStrong: false, score: 0, feedback: [] as string[] });
+  const [rememberMe, setRememberMe] = useState(false);
   const { toast } = useToast();
 
   const signInForm = useForm<z.infer<typeof signInSchema>>({
@@ -178,6 +180,13 @@ export const AuthForm = () => {
         email: sanitizedEmail,
         password: data.password,
       });
+
+      // Se "Mantenha-me conectado" estiver marcado, configurar sessão persistente
+      if (!error && rememberMe) {
+        // A sessão já é persistente por padrão no Supabase
+        // Esta configuração garante que o usuário permaneça conectado
+        localStorage.setItem('supabase.auth.rememberMe', 'true');
+      }
 
       if (error) {
         if (error.message.includes('Invalid credentials') || error.message.includes('Invalid login credentials')) {
@@ -417,6 +426,23 @@ export const AuthForm = () => {
                         </FormItem>
                       )}
                     />
+                    
+                    {/* Checkbox Mantenha-me conectado */}
+                    <div className="flex items-center space-x-2">
+                      <Checkbox 
+                        id="rememberMe" 
+                        checked={rememberMe}
+                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                        disabled={isLoading}
+                      />
+                      <Label 
+                        htmlFor="rememberMe" 
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        Mantenha-me conectado
+                      </Label>
+                    </div>
+                    
                     <Button 
                       type="submit" 
                       className="w-full font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"

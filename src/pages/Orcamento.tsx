@@ -264,8 +264,8 @@ export const Orcamento = () => {
       await addCartao({
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
-        limite: parseFloat(cartaoForm.limite.replace(',', '.')),
-        limite_disponivel: parseFloat(cartaoForm.limite_disponivel.replace(',', '.') || cartaoForm.limite.replace(',', '.')),
+        limite: parseFloat(cartaoForm.limite.replace(/\./g, '').replace(',', '.')),
+        limite_disponivel: parseFloat((cartaoForm.limite_disponivel || cartaoForm.limite).replace(/\./g, '').replace(',', '.')),
         dia_vencimento: parseInt(cartaoForm.dia_vencimento),
         ativo: cartaoForm.ativo
       });
@@ -296,8 +296,8 @@ export const Orcamento = () => {
       await updateCartao(editingCartao.id, {
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
-        limite: parseFloat(cartaoForm.limite.replace(',', '.')),
-        limite_disponivel: parseFloat(cartaoForm.limite_disponivel.replace(',', '.')),
+        limite: parseFloat(cartaoForm.limite.replace(/\./g, '').replace(',', '.')),
+        limite_disponivel: parseFloat(cartaoForm.limite_disponivel.replace(/\./g, '').replace(',', '.')),
         dia_vencimento: parseInt(cartaoForm.dia_vencimento),
         ativo: cartaoForm.ativo
       });
@@ -640,12 +640,12 @@ export const Orcamento = () => {
                 value={cartaoForm.limite_disponivel}
                 onChange={(e) => {
                   const value = e.target.value;
-                  // Permitir números negativos, vírgulas e pontos
-                  if (value === '' || /^-?\d*[.,]?\d*$/.test(value)) {
+                  // Permitir formato brasileiro: -4.366,93 ou -4366,93 ou -4366.93
+                  if (value === '' || /^-?\d{1,3}(\.\d{3})*,?\d*$|^-?\d+\.?\d*$/.test(value)) {
                     setCartaoForm({...cartaoForm, limite_disponivel: value});
                   }
                 }}
-                placeholder={cartaoForm.limite || "0,00"}
+                placeholder="-4.366,93 ou 1.500,00"
                 required
               />
               <p className="text-xs text-muted-foreground mt-1">

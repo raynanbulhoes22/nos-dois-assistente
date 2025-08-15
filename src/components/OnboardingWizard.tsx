@@ -148,7 +148,7 @@ export const OnboardingWizard = () => {
         const anoAtual = hoje.getFullYear();
 
         // Criar registro do saldo inicial como uma entrada
-        const { error: saldoError } = await supabase
+        const { data: registroSaldo, error: saldoError } = await supabase
           .from('registros_financeiros')
           .insert([{
             user_id: user.id,
@@ -158,10 +158,17 @@ export const OnboardingWizard = () => {
             categoria: 'Saldo Inicial',
             nome: 'Saldo Inicial da Conta',
             observacao: 'Saldo inicial informado durante configuração da conta',
-            origem: 'manual'
-          }]);
+            origem: 'manual',
+            tipo_movimento: 'entrada'
+          }])
+          .select();
 
-        if (saldoError) console.warn('Erro ao criar registro de saldo inicial:', saldoError);
+        if (saldoError) {
+          console.error('Erro ao criar registro de saldo inicial:', saldoError);
+          throw saldoError;
+        } else {
+          console.log('✅ Registro de saldo inicial criado:', registroSaldo);
+        }
 
         // Também criar orçamento inicial
         const { error: orcamentoError } = await supabase

@@ -30,6 +30,7 @@ import { TabSection } from "@/components/orcamento/TabSection";
 import { CalendarioFinanceiro } from "@/components/calendario/CalendarioFinanceiro";
 import { ValoresReaisSection } from "@/components/orcamento/ValoresReaisSection";
 import { PerformanceSection } from "@/components/orcamento/PerformanceSection";
+import { SaldoInicialCard } from "@/components/orcamento/SaldoInicialCard";
 
 const FINANCING_TYPE_LABELS = {
   parcelamento: 'Parcelamento',
@@ -483,6 +484,10 @@ export const Orcamento = () => {
             <AlertaFluxo alertas={alertas} />
           )}
 
+          {/* Saldo Inicial */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <SaldoInicialCard mes={mesAtual} ano={anoAtual} />
+          </div>
 
           {/* Calendário Principal */}
           <CalendarioFinanceiro 

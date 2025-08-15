@@ -98,7 +98,8 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
           .from('registros_financeiros')
           .update({
             valor: Math.abs(valorSaldo),
-            tipo: valorSaldo >= 0 ? 'entrada' : 'saida',
+            tipo: 'entrada_manual', // Valor correto conforme constraint
+            tipo_movimento: valorSaldo >= 0 ? 'entrada' : 'saida',
             nome: `Saldo Inicial - ${new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
             observacao: 'Saldo inicial atualizado pelo usuário'
           })
@@ -118,12 +119,12 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
             user_id: user.id,
             valor: Math.abs(valorSaldo),
             data: primeiroDiaMes.toISOString().split('T')[0],
-            tipo: valorSaldo >= 0 ? 'entrada' : 'saida',
+            tipo: 'entrada_manual', // Valor correto conforme constraint
+            tipo_movimento: valorSaldo >= 0 ? 'entrada' : 'saida',
             categoria: 'Saldo Inicial',
             nome: `Saldo Inicial - ${new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
             observacao: 'Saldo inicial definido pelo usuário',
-            origem: 'manual',
-            tipo_movimento: valorSaldo >= 0 ? 'entrada' : 'saida'
+            origem: 'manual'
           }]);
           
         if (insertError) {

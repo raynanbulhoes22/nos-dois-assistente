@@ -154,12 +154,12 @@ export const OnboardingWizard = () => {
             user_id: user.id,
             valor: data.saldoInicial,
             data: hoje.toISOString().split('T')[0],
-            tipo: 'entrada',
+            tipo: 'entrada_manual', // Valor correto conforme constraint
+            tipo_movimento: 'entrada',
             categoria: 'Saldo Inicial',
             nome: 'Saldo Inicial da Conta',
             observacao: 'Saldo inicial informado durante configuração da conta',
-            origem: 'manual',
-            tipo_movimento: 'entrada'
+            origem: 'manual'
           }])
           .select();
 

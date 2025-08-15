@@ -47,10 +47,11 @@ serve(async (req) => {
     // Verify the webhook signature
     let event: Stripe.Event;
     try {
+      log("Attempting signature verification", { hasSignature: !!signature, bodyLength: body.length });
       event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
-      log("Webhook signature verified", { type: event.type, id: event.id });
+      log("Webhook signature verified successfully", { type: event.type, id: event.id });
     } catch (err) {
-      log("Webhook signature verification failed", { error: err.message });
+      log("Webhook signature verification failed", { error: err.message, signature: signature?.substring(0, 20) + "..." });
       return new Response(JSON.stringify({ error: "Invalid signature" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -153,6 +154,7 @@ async function handleSubscriptionChange(
     const subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
 
     // Update subscribers table
+    log("Attempting to upsert subscriber", { email: customerEmail, isActive, tier });
     const { error } = await supabaseClient.from("subscribers").upsert({
       email: customerEmail,
       stripe_customer_id: subscription.customer,

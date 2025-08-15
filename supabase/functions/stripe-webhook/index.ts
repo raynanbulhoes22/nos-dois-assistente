@@ -76,18 +76,21 @@ serve(async (req) => {
         console.log("[WEBHOOK] Customer email:", customer.email);
 
         // Determine subscription tier
-        let subscriptionTier = "Basic";
+        let subscriptionTier = "Solo";
         if (subscription.items.data.length > 0) {
           const price = subscription.items.data[0].price;
           const amount = price.unit_amount || 0;
-          if (amount <= 999) {
+          if (amount <= 1200) { // R$ 12,00 or less = Solo
             subscriptionTier = "Solo";
-          } else if (amount <= 1999) {
+          } else {
             subscriptionTier = "Casal";
           }
         }
 
         console.log("[WEBHOOK] Subscription tier:", subscriptionTier);
+        console.log("[WEBHOOK] Subscription status:", subscription.status);
+
+        const isActiveSubscription = subscription.status === "active" || subscription.status === "trialing";
 
         // Update subscribers table
         const { data, error } = await supabase
@@ -95,9 +98,9 @@ serve(async (req) => {
           .upsert({
             email: customer.email,
             stripe_customer_id: customerId,
-            subscribed: subscription.status === "active",
+            subscribed: isActiveSubscription,
             subscription_tier: subscriptionTier,
-            subscription_end: subscription.status === "active" 
+            subscription_end: isActiveSubscription 
               ? new Date(subscription.current_period_end * 1000).toISOString()
               : null,
             updated_at: new Date().toISOString(),
@@ -169,16 +172,18 @@ serve(async (req) => {
             console.log("[WEBHOOK] Payment succeeded for:", customer.email);
 
             // Determine subscription tier
-            let subscriptionTier = "Basic";
+            let subscriptionTier = "Solo";
             if (subscription.items.data.length > 0) {
               const price = subscription.items.data[0].price;
               const amount = price.unit_amount || 0;
-              if (amount <= 999) {
+              if (amount <= 1200) { // R$ 12,00 or less = Solo
                 subscriptionTier = "Solo";
-              } else if (amount <= 1999) {
+              } else {
                 subscriptionTier = "Casal";
               }
             }
+
+            const isActiveSubscription = subscription.status === "active" || subscription.status === "trialing";
 
             // Update subscribers table
             const { error } = await supabase
@@ -186,9 +191,11 @@ serve(async (req) => {
               .upsert({
                 email: customer.email,
                 stripe_customer_id: customerId,
-                subscribed: true,
+                subscribed: isActiveSubscription,
                 subscription_tier: subscriptionTier,
-                subscription_end: new Date(subscription.current_period_end * 1000).toISOString(),
+                subscription_end: isActiveSubscription 
+                  ? new Date(subscription.current_period_end * 1000).toISOString()
+                  : null,
                 updated_at: new Date().toISOString(),
               }, { 
                 onConflict: 'email',

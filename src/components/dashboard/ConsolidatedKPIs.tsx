@@ -133,15 +133,24 @@ export const ConsolidatedKPIs = ({
               )}
             </div>
             
-            {/* Saldo inicial e evolução */}
-            {computedBalance !== undefined && initialBalance !== 0 && (
+            {/* Saldo inicial e evolução - Mostrar sempre que houver saldo inicial */}
+            {initialBalance !== undefined && initialBalance !== 0 && (
               <div className="text-xs text-muted-foreground space-y-1">
-                <p>Inicial: {formatCurrency(initialBalance)}</p>
-                <p>Evolução: <span className={`font-medium ${
-                  (computedBalance - initialBalance) >= 0 ? 'text-success' : 'text-error'
-                }`}>
-                  {(computedBalance - initialBalance) >= 0 ? '+' : ''}{formatCurrency(computedBalance - initialBalance)}
-                </span></p>
+                <p>Saldo Inicial: {formatCurrency(initialBalance)}</p>
+                {computedBalance !== undefined && (
+                  <p>Evolução: <span className={`font-medium ${
+                    (computedBalance - initialBalance) >= 0 ? 'text-success' : 'text-error'
+                  }`}>
+                    {(computedBalance - initialBalance) >= 0 ? '+' : ''}{formatCurrency(computedBalance - initialBalance)}
+                  </span></p>
+                )}
+                {computedBalance === undefined && balance !== 0 && (
+                  <p>Variação este mês: <span className={`font-medium ${
+                    balance >= 0 ? 'text-success' : 'text-error'
+                  }`}>
+                    {balance >= 0 ? '+' : ''}{formatCurrency(balance)}
+                  </span></p>
+                )}
               </div>
             )}
           </div>

@@ -6,6 +6,7 @@ import { EyeOff, Eye, Filter } from "lucide-react";
 // Hooks for real data
 import { useComparativoFinanceiro } from "@/hooks/useComparativoFinanceiro";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
+import { useFinancialStats } from "@/hooks/useFinancialStats";
 
 // Dashboard components
 import { ConsolidatedKPIs } from "./dashboard/ConsolidatedKPIs";
@@ -70,6 +71,7 @@ export const Dashboard = ({
   
   const comparativo = useComparativoFinanceiro(currentMonth, currentYear);
   const { movimentacoes, isLoading: movimentacoesLoading } = useMovimentacoes();
+  const financialStats = useFinancialStats();
   const isLoading = movimentacoesLoading || comparativo.isLoading;
 
   // Helper functions for data generation
@@ -315,6 +317,8 @@ export const Dashboard = ({
               totalIncome={financialData.income}
               totalExpenses={financialData.expenses}
               balance={financialData.balance}
+              initialBalance={financialStats.saldoInicial}
+              computedBalance={financialStats.saldoComputado}
               savingsRate={financialData.savingsRate}
               budgetUsage={financialData.budgetUsage}
               monthlyTrend={financialData.monthlyTrend}

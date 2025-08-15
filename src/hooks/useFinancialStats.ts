@@ -73,44 +73,53 @@ export const useFinancialStats = () => {
 
   useEffect(() => {
     const calcularStats = async () => {
-      if (!movimentacoes.length && !fontes.length && !user) return;
+      if (!user) return;
 
       // Garantir que existe saldo inicial para o mês atual
-      if (user) {
-        await garantirSaldoInicialMesAtual(user.id);
-      }
+      await garantirSaldoInicialMesAtual(user.id);
 
-    const hoje = new Date();
-    const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      const hoje = new Date();
+      const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+      
+      // Buscar saldo inicial dos registros financeiros (fonte da verdade)
+      const { data: registroSaldo } = await supabase
+        .from('registros_financeiros')
+        .select('valor, tipo_movimento')
+        .eq('user_id', user.id)
+        .eq('categoria', 'Saldo Inicial')
+        .gte('data', inicioMes.toISOString().split('T')[0])
+        .lte('data', ultimoDiaMes.toISOString().split('T')[0])
+        .maybeSingle();
+      
+      const saldoInicial = registroSaldo 
+        ? (registroSaldo.tipo_movimento === 'entrada' ? registroSaldo.valor : -registroSaldo.valor)
+        : 0;
     
-    // Calcular entradas e saídas do mês atual
-    const entradasMes = entradas.filter(entrada => 
-      new Date(entrada.data) >= inicioMes
-    ).reduce((total, entrada) => total + entrada.valor, 0);
-    
-    const saidasMes = saidas.filter(saida => 
-      new Date(saida.data) >= inicioMes
-    ).reduce((total, saida) => total + saida.valor, 0);
+      // Calcular entradas e saídas do mês atual (excluindo saldo inicial)
+      const entradasMes = entradas.filter(entrada => 
+        new Date(entrada.data) >= inicioMes && entrada.categoria !== 'Saldo Inicial'
+      ).reduce((total, entrada) => total + entrada.valor, 0);
+      
+      const saidasMes = saidas.filter(saida => 
+        new Date(saida.data) >= inicioMes && saida.categoria !== 'Saldo Inicial'
+      ).reduce((total, saida) => total + saida.valor, 0);
 
-    // Separar transações por origem
-    const transacoesWpp = movimentacoes.filter(mov => mov.numero_wpp).length;
-    const transacoesManuais = movimentacoes.filter(mov => !mov.numero_wpp).length;
+      // Separar transações por origem
+      const transacoesWpp = movimentacoes.filter(mov => mov.numero_wpp).length;
+      const transacoesManuais = movimentacoes.filter(mov => !mov.numero_wpp).length;
 
-    // Calcular uso de cartão (aproximação baseada em transações)
-    const gastosCartao = saidas.filter(saida => 
-      saida.forma_pagamento?.toLowerCase().includes('cartão') ||
-      saida.forma_pagamento?.toLowerCase().includes('credito')
-    ).reduce((total, saida) => total + saida.valor, 0);
+      // Calcular uso de cartão (aproximação baseada em transações)
+      const gastosCartao = saidas.filter(saida => 
+        saida.forma_pagamento?.toLowerCase().includes('cartão') ||
+        saida.forma_pagamento?.toLowerCase().includes('credito')
+      ).reduce((total, saida) => total + saida.valor, 0);
 
-    const rendaRegistrada = getTotalRendaAtiva();
-    const saldoMovimentacoesMes = entradasMes - saidasMes;
-    
-    // Buscar saldo inicial do orçamento atual
-    const orcamentoAtual = getOrcamentoAtual();
-    const saldoInicial = orcamentoAtual?.saldo_inicial || 0;
-    
-    // Saldo computado = saldo inicial + movimentações do mês
-    const saldoComputado = saldoInicial + saldoMovimentacoesMes;
+      const rendaRegistrada = getTotalRendaAtiva();
+      const saldoMovimentacoesMes = entradasMes - saidasMes;
+      
+      // Saldo computado = saldo inicial + movimentações do mês
+      const saldoComputado = saldoInicial + saldoMovimentacoesMes;
     
     const metaEconomia = profile?.meta_economia_mensal || 0;
     const percentualMeta = metaEconomia > 0 ? (saldoComputado / metaEconomia) * 100 : 0;
@@ -183,7 +192,7 @@ export const useFinancialStats = () => {
     };
     
     calcularStats();
-  }, [movimentacoes, entradas, saidas, fontes, cartoes, profile, user, getTotalRendaAtiva, getTotalLimite, getOrcamentoAtual]);
+  }, [movimentacoes, entradas, saidas, fontes, cartoes, profile, user, getTotalRendaAtiva, getTotalLimite]);
 
   return stats;
 };

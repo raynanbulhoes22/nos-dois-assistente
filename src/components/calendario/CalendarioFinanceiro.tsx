@@ -199,38 +199,40 @@ export const CalendarioFinanceiro = ({
         </div>
       </div>
       
-      <div className="p-1 sm:p-2">
-        <Calendar
-          mode="single"
-          locale={ptBR}
-          month={new Date(anoAtual, mesAtual - 1)}
-          onDayClick={handleDayClick}
-          className="w-full pointer-events-auto"
-          classNames={{
-            months: "flex w-full",
-            month: "space-y-4 w-full",
-            caption: "hidden",
-            caption_label: "text-lg font-semibold",
-            nav: "hidden sm:flex space-x-1 items-center",
-            nav_button: "h-8 w-8 bg-transparent p-0 opacity-70 hover:opacity-100 hover:bg-muted rounded-md",
-            nav_button_previous: "absolute left-4",
-            nav_button_next: "absolute right-4",
-            table: "w-full border-collapse space-y-1",
-            head_row: "flex w-full",
-            head_cell: "text-muted-foreground rounded-md w-full font-semibold text-xs sm:text-sm py-1 sm:py-2",
-            row: "flex w-full",
-            cell: "relative w-full h-10 sm:h-20 text-center text-sm focus-within:relative focus-within:z-20 border border-border/50",
-            day: "h-full w-full p-0 font-normal relative flex flex-col",
-            day_today: "bg-primary/5",
-            day_selected: "bg-primary/10",
-            day_outside: "text-muted-foreground opacity-30",
-            day_disabled: "text-muted-foreground opacity-20",
-          }}
-          components={{
-            DayContent: ({ date }) => getDayContent(date),
-          }}
-          showOutsideDays={true}
-        />
+      <div className="p-1 sm:p-2 flex justify-center">
+        <div className="w-full max-w-4xl">
+          <Calendar
+            mode="single"
+            locale={ptBR}
+            month={new Date(anoAtual, mesAtual - 1)}
+            onDayClick={handleDayClick}
+            className="w-full pointer-events-auto"
+            classNames={{
+              months: "flex w-full justify-center",
+              month: "space-y-4 w-full",
+              caption: "hidden",
+              caption_label: "text-lg font-semibold",
+              nav: "hidden sm:flex space-x-1 items-center",
+              nav_button: "h-8 w-8 bg-transparent p-0 opacity-70 hover:opacity-100 hover:bg-muted rounded-md",
+              nav_button_previous: "absolute left-4",
+              nav_button_next: "absolute right-4",
+              table: "w-full border-collapse space-y-1",
+              head_row: "flex w-full",
+              head_cell: "text-muted-foreground rounded-md w-full font-semibold text-xs sm:text-sm py-1 sm:py-2 text-center",
+              row: "flex w-full",
+              cell: "relative w-full h-10 sm:h-20 text-center text-sm focus-within:relative focus-within:z-20 border border-border/50",
+              day: "h-full w-full p-0 font-normal relative flex flex-col",
+              day_today: "bg-primary/5",
+              day_selected: "bg-primary/10",
+              day_outside: "text-muted-foreground opacity-30",
+              day_disabled: "text-muted-foreground opacity-20",
+            }}
+            components={{
+              DayContent: ({ date }) => getDayContent(date),
+            }}
+            showOutsideDays={true}
+          />
+        </div>
       </div>
 
       {selectedDay && (

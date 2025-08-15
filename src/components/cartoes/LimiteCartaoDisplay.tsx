@@ -50,10 +50,14 @@ export const LimiteCartaoDisplay = ({ cartao, className, onClick }: LimiteCartao
     });
   };
 
-  console.log('[LimiteCartaoDisplay] Renderizando com dados:', {
-    cartao: cartao.apelido,
+  console.log('[LimiteCartaoDisplay] Renderizando cartão:', cartao.apelido);
+  console.log('[LimiteCartaoDisplay] Dados dinâmicos:', {
     limiteTotal,
     limiteAtualDisponivel,
+    limiteUtilizado,
+    percentualUtilizado,
+    comprasNoMes,
+    pagamentosNoMes,
     isLoading
   });
 
@@ -125,27 +129,41 @@ export const LimiteCartaoDisplay = ({ cartao, className, onClick }: LimiteCartao
             </div>
           </div>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Progress 
-                value={Math.min(100, Math.max(0, percentualUtilizado))} 
-                className="h-2 cursor-help"
-              />
-            </TooltipTrigger>
-            <TooltipContent>
-              <div className="text-sm space-y-1">
-                <p>Limite Total: {formatCurrency(limiteTotal)}</p>
-                <p>Utilizado: {formatCurrency(limiteUtilizado)} ({percentualUtilizado.toFixed(1)}%)</p>
-                <p>Disponível: {formatCurrency(limiteAtualDisponivel)}</p>
-                {comprasNoMes > 0 && <p>Compras do mês: {formatCurrency(comprasNoMes)}</p>}
-                {pagamentosNoMes > 0 && <p>Pagamentos do mês: {formatCurrency(pagamentosNoMes)}</p>}
-              </div>
-            </TooltipContent>
-          </Tooltip>
-
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>Utilizado: {formatCurrency(limiteUtilizado)}</span>
-            <span>Total: {formatCurrency(limiteTotal)}</span>
+          {/* Barra visual do limite */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Utilização do Limite</span>
+              <span className="font-medium">{percentualUtilizado.toFixed(1)}%</span>
+            </div>
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="relative">
+                  <Progress 
+                    value={Math.min(100, Math.max(0, percentualUtilizado))} 
+                    className="h-3 cursor-help"
+                  />
+                  {limiteAtualDisponivel < 0 && (
+                    <div className="absolute top-0 left-0 h-3 bg-destructive rounded-full opacity-20 animate-pulse" 
+                         style={{ width: '100%' }} />
+                  )}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="text-sm space-y-1">
+                  <p><strong>Limite Total:</strong> {formatCurrency(limiteTotal)}</p>
+                  <p><strong>Utilizado:</strong> {formatCurrency(limiteUtilizado)} ({percentualUtilizado.toFixed(1)}%)</p>
+                  <p><strong>Disponível:</strong> {formatCurrency(limiteAtualDisponivel)}</p>
+                  {comprasNoMes > 0 && <p><strong>Compras do mês:</strong> {formatCurrency(comprasNoMes)}</p>}
+                  {pagamentosNoMes > 0 && <p><strong>Pagamentos do mês:</strong> {formatCurrency(pagamentosNoMes)}</p>}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+            
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>R$ 0</span>
+              <span>{formatCurrency(limiteTotal)}</span>
+            </div>
           </div>
 
           {(comprasNoMes > 0 || pagamentosNoMes > 0) && (

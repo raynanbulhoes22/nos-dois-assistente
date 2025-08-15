@@ -143,8 +143,8 @@ export const TabSection = ({
               <LimiteCartaoDisplay
                 key={cartao.id}
                 cartao={cartao}
-                onClick={() => onEditCartao(cartao)}
-                className="cursor-pointer"
+                onEdit={() => onEditCartao(cartao)}
+                onDelete={() => onDeleteCartao(cartao.id)}
               />
             ))}
           </div>

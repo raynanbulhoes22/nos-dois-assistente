@@ -90,8 +90,9 @@ export const CartaoManagementSection = ({
                 <LimiteCartaoDisplay
                   key={cartao.id}
                   cartao={cartao}
-                  className="cursor-pointer transition-colors hover:bg-muted/50"
-                  onClick={() => onEditCartao(cartao)}
+                  className="transition-colors hover:bg-muted/50"
+                  onEdit={() => onEditCartao(cartao)}
+                  onDelete={() => onDeleteCartao(cartao.id)}
                 />
               ))}
             </div>

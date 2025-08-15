@@ -1,18 +1,23 @@
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { CreditCard, AlertTriangle, CheckCircle, TrendingUp, TrendingDown } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CreditCard, AlertTriangle, CheckCircle, TrendingUp, TrendingDown, Edit3, Trash2, Info } from "lucide-react";
 import { Cartao } from "@/hooks/useCartoes";
 import { useLimiteDinamicoCartao } from "@/hooks/useLimiteDinamicoCartao";
 
 interface LimiteCartaoDisplayProps {
   cartao: Cartao;
   className?: string;
-  onClick?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
-export const LimiteCartaoDisplay = ({ cartao, className, onClick }: LimiteCartaoDisplayProps) => {
+export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: LimiteCartaoDisplayProps) => {
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const { 
     limiteTotal, 
     limiteAtualDisponivel, 
@@ -86,37 +91,52 @@ export const LimiteCartaoDisplay = ({ cartao, className, onClick }: LimiteCartao
 
   return (
     <TooltipProvider>
-      <Card className={className} onClick={onClick}>
+      <Card 
+        className={`relative transition-all duration-200 hover:shadow-md cursor-pointer group ${className || ''}`} 
+        onClick={() => setShowInfoModal(true)}
+      >
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-sm">
-            <CreditCard className="h-4 w-4" />
-            {cartao.apelido}
-            <Badge variant="outline" className="text-xs">
-              ••••{cartao.ultimos_digitos}
-            </Badge>
-            {diferenca !== 0 && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <Badge variant="secondary" className="text-xs flex items-center gap-1">
-                    {diferenca > 0 ? (
-                      <TrendingUp className="h-3 w-3 text-green-500" />
-                    ) : (
-                      <TrendingDown className="h-3 w-3 text-red-500" />
-                    )}
-                    {formatCurrency(Math.abs(diferenca))}
-                  </Badge>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>
-                    {diferenca > 0 
-                      ? `Limite aumentou ${formatCurrency(diferenca)} este mês` 
-                      : `Limite diminuiu ${formatCurrency(Math.abs(diferenca))} este mês`
-                    }
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-          </CardTitle>
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <CardTitle className="text-lg font-semibold">{cartao.apelido}</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                •••• {cartao.ultimos_digitos}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Badge variant={getStatusColor()} className="shrink-0">
+                {getStatusText()}
+              </Badge>
+              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                {onEdit && (
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit();
+                    }} 
+                    className="h-8 w-8 p-0 hover:bg-primary/10"
+                  >
+                    <Edit3 className="h-3 w-3" />
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete();
+                    }} 
+                    className="h-8 w-8 p-0 hover:bg-destructive/10 text-destructive"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between">
@@ -189,11 +209,97 @@ export const LimiteCartaoDisplay = ({ cartao, className, onClick }: LimiteCartao
             </div>
           )}
 
-          <Badge variant={getStatusColor()} className="w-full justify-center">
-            {getStatusText()}
-          </Badge>
+          {diferenca !== 0 && (
+            <div className="flex items-center gap-1 text-xs">
+              {diferenca > 0 ? (
+                <TrendingUp className="h-3 w-3 text-green-500" />
+              ) : (
+                <TrendingDown className="h-3 w-3 text-red-500" />
+              )}
+              <span className="text-muted-foreground">
+                {diferenca > 0 
+                  ? `+${formatCurrency(diferenca)} este mês` 
+                  : `${formatCurrency(diferenca)} este mês`
+                }
+              </span>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Modal de Informações */}
+      <Dialog open={showInfoModal} onOpenChange={setShowInfoModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Informações do Cartão
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <h3 className="font-semibold text-lg">{cartao.apelido}</h3>
+              <p className="text-sm text-muted-foreground">
+                Final: •••• {cartao.ultimos_digitos}
+              </p>
+              {cartao.dia_vencimento && (
+                <p className="text-sm text-muted-foreground">
+                  Vencimento: Todo dia {cartao.dia_vencimento}
+                </p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Limite Total</p>
+                <p className="font-semibold">{formatCurrency(limiteTotal)}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Limite Disponível</p>
+                <p className={`font-semibold ${limiteAtualDisponivel < 0 ? 'text-destructive' : 'text-success'}`}>
+                  {formatCurrency(limiteAtualDisponivel)}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Utilização</span>
+                <span>{percentualUtilizado.toFixed(1)}%</span>
+              </div>
+              <Progress 
+                value={Math.min(100, Math.max(0, percentualUtilizado))} 
+                className="h-2"
+              />
+            </div>
+
+            {(comprasNoMes > 0 || pagamentosNoMes > 0) && (
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-2">Movimento do Mês</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  {comprasNoMes > 0 && (
+                    <div>
+                      <p className="text-muted-foreground">Compras</p>
+                      <p className="font-medium text-destructive">
+                        -{formatCurrency(comprasNoMes)}
+                      </p>
+                    </div>
+                  )}
+                  {pagamentosNoMes > 0 && (
+                    <div>
+                      <p className="text-muted-foreground">Pagamentos</p>
+                      <p className="font-medium text-success">
+                        +{formatCurrency(pagamentosNoMes)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 };

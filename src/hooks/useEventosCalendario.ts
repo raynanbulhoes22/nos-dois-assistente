@@ -3,14 +3,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { useContasParceladas } from '@/hooks/useContasParceladas';
 import { useCartoes } from '@/hooks/useCartoes';
 import { useFontesRenda } from '@/hooks/useFontesRenda';
+import { useMovimentacoes } from '@/hooks/useMovimentacoes';
 import { EventoFinanceiro, EventosDia, FiltrosCalendario } from '@/components/calendario/tipos';
-import { startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, format } from 'date-fns';
+import { startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, format, subMonths } from 'date-fns';
 
 export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
   const { user } = useAuth();
   const { contas, isLoading: loadingContas } = useContasParceladas();
   const { cartoes, isLoading: loadingCartoes } = useCartoes();
   const { fontes, isLoading: loadingFontes } = useFontesRenda();
+  const { movimentacoes, isLoading: loadingMovimentacoes } = useMovimentacoes();
 
   const [filtros, setFiltros] = useState<FiltrosCalendario>({
     mostrarParcelas: true,
@@ -18,7 +20,7 @@ export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
     mostrarRenda: true,
   });
 
-  const isLoading = loadingContas || loadingCartoes || loadingFontes;
+  const isLoading = loadingContas || loadingCartoes || loadingFontes || loadingMovimentacoes;
 
   // Criar range de datas do mês atual
   const mesRange = useMemo(() => {
@@ -26,6 +28,30 @@ export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
     const fim = endOfMonth(new Date(anoAtual, mesAtual - 1));
     return eachDayOfInterval({ start: inicio, end: fim });
   }, [mesAtual, anoAtual]);
+
+  // Função para calcular valor da fatura do cartão
+  const calcularValorFaturaCartao = (cartaoId: string, cartaoDigitos: string, mesVencimento: number, anoVencimento: number) => {
+    // Calcula período de faturamento (mês anterior ao vencimento)
+    const mesRef = mesVencimento === 1 ? 12 : mesVencimento - 1;
+    const anoRef = mesVencimento === 1 ? anoVencimento - 1 : anoVencimento;
+    
+    // Filtra movimentações do cartão no período de faturamento
+    const gastosCartao = movimentacoes.filter(mov => {
+      if (mov.isEntrada) return false;
+      
+      const dataMovimentacao = new Date(mov.data);
+      const mesMovimentacao = dataMovimentacao.getMonth() + 1;
+      const anoMovimentacao = dataMovimentacao.getFullYear();
+      
+      // Verifica se a movimentação é deste cartão no período correto
+      const isCartaoCorreto = mov.cartao_final && mov.cartao_final.includes(cartaoDigitos);
+      const isPeriodoCorreto = mesMovimentacao === mesRef && anoMovimentacao === anoRef;
+      
+      return isCartaoCorreto && isPeriodoCorreto;
+    });
+    
+    return gastosCartao.reduce((total, gasto) => total + gasto.valor, 0);
+  };
 
   // Processar eventos do calendário
   const eventosCalendario = useMemo(() => {
@@ -80,13 +106,14 @@ export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
         if (!cartao.ativo) return;
 
         const dataVencimento = new Date(anoAtual, mesAtual - 1, cartao.dia_vencimento);
+        const valorFatura = calcularValorFaturaCartao(cartao.id, cartao.ultimos_digitos, mesAtual, anoAtual);
         
         eventos.push({
           id: `cartao-${cartao.id}`,
           data: dataVencimento,
           tipo: 'vencimento-cartao',
-          titulo: `Vencimento ${cartao.apelido}`,
-          valor: 0, // Será calculado com base nas movimentações
+          titulo: valorFatura > 0 ? `Fatura ${cartao.apelido}` : `Vencimento ${cartao.apelido}`,
+          valor: valorFatura,
           isEntrada: false,
           detalhes: {
             numeroCartao: cartao.ultimos_digitos,
@@ -114,7 +141,7 @@ export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
     }
 
     return eventos;
-  }, [user, isLoading, contas, cartoes, fontes, filtros, mesAtual, anoAtual]);
+  }, [user, isLoading, contas, cartoes, fontes, movimentacoes, filtros, mesAtual, anoAtual, calcularValorFaturaCartao]);
 
   // Agrupar eventos por dia
   const eventosPorDia = useMemo(() => {

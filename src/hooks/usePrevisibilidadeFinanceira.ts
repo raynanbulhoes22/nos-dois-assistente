@@ -3,6 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useContasParceladas } from '@/hooks/useContasParceladas';
 import { useFontesRenda } from '@/hooks/useFontesRenda';
 import { useMovimentacoes } from '@/hooks/useMovimentacoes';
+import { useCartoes } from '@/hooks/useCartoes';
 
 export interface PrevisaoMensal {
   mes: number;
@@ -19,9 +20,9 @@ export interface CompromissoMensal {
   nome: string;
   valor: number;
   categoria: string;
-  tipo: 'parcelamento' | 'financiamento';
-  parcela: number;
-  totalParcelas: number;
+  tipo: 'parcelamento' | 'financiamento' | 'cartao';
+  parcela?: number;
+  totalParcelas?: number;
   venceFinal?: Date;
 }
 
@@ -41,6 +42,7 @@ export const usePrevisibilidadeFinanceira = () => {
   const { contas, getTotalParcelasAtivas } = useContasParceladas();
   const { fontes: fontesRenda, getTotalRendaAtiva } = useFontesRenda();
   const { movimentacoes } = useMovimentacoes();
+  const { cartoes } = useCartoes();
   
   const [previsoes, setPrevisoes] = useState<PrevisaoMensal[]>([]);
   const [alertas, setAlertas] = useState<AlertaFinanceiro[]>([]);
@@ -55,9 +57,43 @@ export const usePrevisibilidadeFinanceira = () => {
     return meses[mes - 1];
   };
 
+  // Função para calcular valor médio da fatura do cartão baseado no histórico
+  const calcularValorMedioCartao = (cartaoDigitos: string, mesesParaAnalise: number = 3) => {
+    const hoje = new Date();
+    let totalGastos = 0;
+    let mesesComGastos = 0;
+
+    for (let i = 1; i <= mesesParaAnalise; i++) {
+      const mesRef = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+      const mesAnalise = mesRef.getMonth() + 1;
+      const anoAnalise = mesRef.getFullYear();
+
+      const gastosDoMes = movimentacoes.filter(mov => {
+        if (mov.isEntrada) return false;
+        
+        const dataMovimentacao = new Date(mov.data);
+        const mesMovimentacao = dataMovimentacao.getMonth() + 1;
+        const anoMovimentacao = dataMovimentacao.getFullYear();
+        
+        const isCartaoCorreto = mov.cartao_final && mov.cartao_final.includes(cartaoDigitos);
+        const isPeriodoCorreto = mesMovimentacao === mesAnalise && anoMovimentacao === anoAnalise;
+        
+        return isCartaoCorreto && isPeriodoCorreto;
+      });
+
+      const valorMes = gastosDoMes.reduce((total, gasto) => total + gasto.valor, 0);
+      if (valorMes > 0) {
+        totalGastos += valorMes;
+        mesesComGastos++;
+      }
+    }
+
+    return mesesComGastos > 0 ? totalGastos / mesesComGastos : 0;
+  };
+
   // Calcular previsões para os próximos 12 meses
   const calcularPrevisoes12Meses = useMemo(() => {
-    if (!user || !contas.length) return [];
+    if (!user || (!contas.length && !cartoes.length)) return [];
 
     const hoje = new Date();
     const previsoesMensais: PrevisaoMensal[] = [];
@@ -68,8 +104,11 @@ export const usePrevisibilidadeFinanceira = () => {
       const mes = dataProjecao.getMonth() + 1;
       const ano = dataProjecao.getFullYear();
 
-      // Calcular compromissos do mês
-      const compromissosDoMes = contas
+      // Calcular compromissos do mês (parcelas + cartões)
+      const compromissosDoMes: CompromissoMensal[] = [];
+
+      // 1. Parcelas das contas parceladas
+      const parcelasDoMes = contas
         .filter(conta => {
           const dataInicio = new Date(conta.data_primeira_parcela);
           const mesesDecorridos = (dataProjecao.getFullYear() - dataInicio.getFullYear()) * 12 + 
@@ -102,6 +141,24 @@ export const usePrevisibilidadeFinanceira = () => {
             venceFinal
           };
         });
+
+      // 2. Faturas de cartão de crédito
+      const cartoesDoMes = cartoes
+        .filter(cartao => cartao.ativo)
+        .map(cartao => {
+          const valorMedio = calcularValorMedioCartao(cartao.ultimos_digitos);
+          
+          return {
+            id: `cartao-${cartao.id}`,
+            nome: `Fatura ${cartao.apelido}`,
+            valor: valorMedio,
+            categoria: 'Cartão de Crédito',
+            tipo: 'cartao' as const
+          };
+        })
+        .filter(cartao => cartao.valor > 0); // Só incluir se houver histórico de gastos
+
+      compromissosDoMes.push(...parcelasDoMes, ...cartoesDoMes);
 
       const gastosFixos = compromissosDoMes.reduce((total, c) => total + c.valor, 0);
       const saldoProjetado = rendaMensal - gastosFixos;
@@ -136,7 +193,7 @@ export const usePrevisibilidadeFinanceira = () => {
     }
 
     return previsoesMensais;
-  }, [contas, getTotalRendaAtiva, user]);
+  }, [contas, cartoes, movimentacoes, getTotalRendaAtiva, user, calcularValorMedioCartao]);
 
   // Gerar alertas baseados nas previsões
   const gerarAlertas = useMemo(() => {
@@ -157,9 +214,9 @@ export const usePrevisibilidadeFinanceira = () => {
         });
       }
 
-      // Alerta de compromissos terminando
+      // Alerta de compromissos terminando (apenas para parcelas, não cartões)
       previsao.compromissos.forEach(compromisso => {
-        if (compromisso.parcela === compromisso.totalParcelas) {
+        if (compromisso.tipo !== 'cartao' && compromisso.parcela === compromisso.totalParcelas) {
           alertasGerados.push({
             id: `termino-${compromisso.id}`,
             tipo: 'termino',
@@ -169,6 +226,22 @@ export const usePrevisibilidadeFinanceira = () => {
             ano: previsao.ano,
             valor: compromisso.valor,
             prioridade: 'media'
+          });
+        }
+      });
+
+      // Alerta para faturas de cartão altas
+      previsao.compromissos.forEach(compromisso => {
+        if (compromisso.tipo === 'cartao' && compromisso.valor > (previsao.receitas * 0.3)) {
+          alertasGerados.push({
+            id: `cartao-alto-${compromisso.id}`,
+            tipo: 'deficit',
+            titulo: 'Fatura de Cartão Alta',
+            descricao: `A ${compromisso.nome} está prevista para R$ ${compromisso.valor.toFixed(2)} em ${getMesNome(previsao.mes)}/${previsao.ano}`,
+            mes: previsao.mes,
+            ano: previsao.ano,
+            valor: compromisso.valor,
+            prioridade: 'alta'
           });
         }
       });
@@ -186,7 +259,7 @@ export const usePrevisibilidadeFinanceira = () => {
     
     previsoes.forEach(previsao => {
       previsao.compromissos.forEach(compromisso => {
-        if (compromisso.parcela === compromisso.totalParcelas) {
+        if (compromisso.tipo !== 'cartao' && compromisso.parcela === compromisso.totalParcelas) {
           terminos.push({
             nome: compromisso.nome,
             mes: previsao.mes,
@@ -217,7 +290,9 @@ export const usePrevisibilidadeFinanceira = () => {
     fontesRenda.length, 
     getTotalRendaAtiva(), 
     contas.length, 
-    getTotalParcelasAtivas()
+    getTotalParcelasAtivas(),
+    cartoes.length,
+    movimentacoes.length
   ]);
 
   useEffect(() => {

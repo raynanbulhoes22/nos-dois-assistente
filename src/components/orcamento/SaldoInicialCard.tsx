@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,9 +22,41 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const { toast } = useToast();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [novoSaldo, setNovoSaldo] = useState('');
+  const [saldoInicialFromDB, setSaldoInicialFromDB] = useState<number>(0);
 
   const orcamento = getOrcamentoByMesAno(mes, ano);
-  const saldoInicialAtual = orcamento?.saldo_inicial || 0;
+  // Usar o saldo dos registros financeiros em vez do orçamento
+  const saldoInicialAtual = saldoInicialFromDB;
+
+  // Buscar saldo inicial dos registros financeiros para este mês
+  useEffect(() => {
+    const buscarSaldoInicial = async () => {
+      if (!user) return;
+      
+      const primeiroDiaMes = new Date(ano, mes - 1, 1);
+      const ultimoDiaMes = new Date(ano, mes, 0);
+      
+      const { data: registroSaldo, error } = await supabase
+        .from('registros_financeiros')
+        .select('valor, tipo_movimento')
+        .eq('user_id', user.id)
+        .eq('categoria', 'Saldo Inicial')
+        .gte('data', primeiroDiaMes.toISOString().split('T')[0])
+        .lte('data', ultimoDiaMes.toISOString().split('T')[0])
+        .maybeSingle();
+      
+      if (!error && registroSaldo) {
+        const valor = registroSaldo.tipo_movimento === 'entrada' 
+          ? registroSaldo.valor 
+          : -registroSaldo.valor;
+        setSaldoInicialFromDB(valor);
+      } else {
+        setSaldoInicialFromDB(0);
+      }
+    };
+    
+    buscarSaldoInicial();
+  }, [user, mes, ano]);
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -134,7 +166,10 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
         console.log('✅ Registro de saldo inicial criado');
       }
       
-      // 4. Recarregar dados do orçamento
+      // 4. Atualizar estado local imediatamente
+      setSaldoInicialFromDB(valorSaldo);
+      
+      // 5. Recarregar dados do orçamento
       await refetch();
       
       toast({

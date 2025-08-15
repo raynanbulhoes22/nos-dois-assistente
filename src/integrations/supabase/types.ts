@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.12 (cd3cf9e)"
@@ -232,9 +232,6 @@ export type Database = {
       }
       historico_de_interacoes: {
         Row: {
-          acao: string
-          agente: string
-          dados: Json | null
           id: string
           instancia: string
           mensagem: string
@@ -245,9 +242,6 @@ export type Database = {
           telefone: string
         }
         Insert: {
-          acao: string
-          agente: string
-          dados?: Json | null
           id?: string
           instancia: string
           mensagem: string
@@ -258,9 +252,6 @@ export type Database = {
           telefone: string
         }
         Update: {
-          acao?: string
-          agente?: string
-          dados?: Json | null
           id?: string
           instancia?: string
           mensagem?: string
@@ -428,6 +419,7 @@ export type Database = {
           tipo: string | null
           tipo_movimento: string | null
           title: string | null
+          titulo: string | null
           user_id: string | null
           valor: number
         }
@@ -449,6 +441,7 @@ export type Database = {
           tipo?: string | null
           tipo_movimento?: string | null
           title?: string | null
+          titulo?: string | null
           user_id?: string | null
           valor: number
         }
@@ -470,6 +463,7 @@ export type Database = {
           tipo?: string | null
           tipo_movimento?: string | null
           title?: string | null
+          titulo?: string | null
           user_id?: string | null
           valor?: number
         }

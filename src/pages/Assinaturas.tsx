@@ -38,7 +38,9 @@ export const Assinaturas = () => {
   };
   const handleCheckout = async (plan: "solo" | "casal") => {
     try {
+      console.log('🚀 Iniciando checkout para plano:', plan);
       setBusy(true);
+      
       const {
         data,
         error
@@ -47,11 +49,30 @@ export const Assinaturas = () => {
           plan
         }
       });
+      
+      console.log('📦 Resposta do checkout:', { data, error });
+      
       if (error) throw error;
+      
       if (data?.url) {
-        window.open(data.url, "_blank");
+        console.log('🔗 URL recebida:', data.url);
+        
+        // Detectar se é mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        console.log('📱 É mobile?', isMobile);
+        
+        if (isMobile) {
+          // No mobile, usar window.location.href para garantir que funcione
+          console.log('📱 Redirecionando mobile para:', data.url);
+          window.location.href = data.url;
+        } else {
+          // No desktop, abrir em nova aba
+          console.log('💻 Abrindo em nova aba:', data.url);
+          window.open(data.url, "_blank");
+        }
       }
     } catch (e: any) {
+      console.error('❌ Erro no checkout:', e);
       toast({
         title: "Erro ao iniciar pagamento",
         description: e.message || "Tente novamente",

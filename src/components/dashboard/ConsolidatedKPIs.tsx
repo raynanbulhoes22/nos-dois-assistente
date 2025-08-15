@@ -12,6 +12,7 @@ import {
   EyeOff
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ConsolidatedKPIsProps {
   totalIncome: number;
@@ -40,6 +41,7 @@ export const ConsolidatedKPIs = ({
   onToggleBalance,
   isLoading
 }: ConsolidatedKPIsProps) => {
+  const isMobile = useIsMobile();
   const formatCurrency = (value: number) => {
     if (!showBalance) return "••••••";
     return new Intl.NumberFormat('pt-BR', {
@@ -91,29 +93,29 @@ export const ConsolidatedKPIs = ({
 
   return (
     <Card className="border-0 shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden">
-      <CardContent className="p-0">
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border/20">
+      <CardContent className={`p-0 ${isMobile ? 'text-sm' : ''}`}>
+        {/* Header - Mobile optimized */}
+        <div className={`flex items-center justify-between border-b border-border/20 ${isMobile ? 'px-3 py-2' : 'px-4 py-3'}`}>
           <div>
-            <h2 className="text-base font-semibold text-foreground">Resumo Financeiro</h2>
+            <h2 className={`font-semibold text-foreground ${isMobile ? 'text-sm' : 'text-base'}`}>Resumo Financeiro</h2>
             <p className="text-xs text-muted-foreground">Dados do mês atual</p>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={onToggleBalance}
-            className="gap-1.5 h-8 px-3 text-muted-foreground hover:text-foreground"
+            className={`gap-1.5 text-muted-foreground hover:text-foreground ${isMobile ? 'h-7 px-2' : 'h-8 px-3'}`}
           >
-            {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            <span className="text-xs">Ocultar</span>
+            {showBalance ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            <span className="text-xs hidden xs:inline">Ocultar</span>
           </Button>
         </div>
 
-        {/* Main Balance Section */}
-        <div className="px-4 py-4 text-center">
-          <div className="space-y-3">
+        {/* Main Balance Section - Mobile optimized */}
+        <div className={`text-center ${isMobile ? 'px-3 py-3' : 'px-4 py-4'}`}>
+          <div className={`space-y-2 ${isMobile ? 'space-y-2' : 'space-y-3'}`}>
             <div className="flex items-center justify-center gap-2">
-              <span className="text-sm text-muted-foreground">
+              <span className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>
                 {computedBalance !== undefined ? 'Saldo Total' : 'Saldo do Mês'}
               </span>
               <Badge variant={getBalanceVariant()} className="h-4 px-2 text-xs">
@@ -121,15 +123,15 @@ export const ConsolidatedKPIs = ({
               </Badge>
             </div>
             <div className="flex items-center justify-center gap-2">
-              <span className={`text-2xl font-bold ${
+              <span className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'} ${
                 (computedBalance !== undefined ? computedBalance : balance) >= 0 ? 'text-success' : 'text-error'
               }`}>
                 {formatCurrency(computedBalance !== undefined ? computedBalance : balance)}
               </span>
               {(computedBalance !== undefined ? computedBalance : balance) >= 0 ? (
-                <TrendingUp className="h-5 w-5 text-success" />
+                <TrendingUp className={`text-success ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
               ) : (
-                <TrendingDown className="h-5 w-5 text-error" />
+                <TrendingDown className={`text-error ${isMobile ? 'h-4 w-4' : 'h-5 w-5'}`} />
               )}
             </div>
             
@@ -156,45 +158,45 @@ export const ConsolidatedKPIs = ({
           </div>
         </div>
 
-        {/* Income and Expenses Grid */}
-        <div className="px-4 pb-4">
-          <div className="grid grid-cols-2 gap-4">
+        {/* Income and Expenses Grid - Mobile optimized */}
+        <div className={`${isMobile ? 'px-3 pb-3' : 'px-4 pb-4'}`}>
+          <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'gap-4'}`}>
             {/* Income */}
-            <div className="text-center p-3 rounded-lg bg-success/10 border border-success/20">
+            <div className={`text-center rounded-lg bg-success/10 border border-success/20 ${isMobile ? 'p-2' : 'p-3'}`}>
               <span className="text-xs text-muted-foreground block mb-1">RECEITAS</span>
-              <p className="text-base font-semibold text-success">
+              <p className={`font-semibold text-success ${isMobile ? 'text-sm' : 'text-base'}`}>
                 {formatCurrency(totalIncome)}
               </p>
             </div>
 
             {/* Expenses */}
-            <div className="text-center p-3 rounded-lg bg-error/10 border border-error/20">
+            <div className={`text-center rounded-lg bg-error/10 border border-error/20 ${isMobile ? 'p-2' : 'p-3'}`}>
               <span className="text-xs text-muted-foreground block mb-1">DESPESAS</span>
-              <p className="text-base font-semibold text-error">
+              <p className={`font-semibold text-error ${isMobile ? 'text-sm' : 'text-base'}`}>
                 {formatCurrency(totalExpenses)}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Metrics Section */}
-        <div className="px-4 py-3 bg-muted/10 border-t border-border/20">
-          <div className="space-y-3">
-            {/* Savings Rate */}
+        {/* Metrics Section - Mobile optimized */}
+        <div className={`bg-muted/10 border-t border-border/20 ${isMobile ? 'px-3 py-2' : 'px-4 py-3'}`}>
+          <div className={`space-y-2 ${isMobile ? 'space-y-2' : 'space-y-3'}`}>
+            {/* Headers */}
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Taxa</span>
-              <span className="text-sm text-muted-foreground">Uso</span>
+              <span className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>Taxa</span>
+              <span className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>Uso</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Poupança</span>
-              <span className="text-sm text-muted-foreground">Orçamento</span>
+              <span className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>Poupança</span>
+              <span className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'}`}>Orçamento</span>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'gap-4'}`}>
               {/* Savings Rate Card */}
-              <div className="text-center p-2 rounded-lg bg-background border">
+              <div className={`text-center rounded-lg bg-background border ${isMobile ? 'p-1.5' : 'p-2'}`}>
                 <div className="flex items-center justify-center gap-1 mb-1">
-                  <div className="w-12 h-1 bg-border rounded-full overflow-hidden">
+                  <div className={`bg-border rounded-full overflow-hidden ${isMobile ? 'w-8 h-1' : 'w-12 h-1'}`}>
                     <div 
                       className={`h-full rounded-full ${
                         savingsRate >= 20 ? 'bg-success' : savingsRate >= 10 ? 'bg-warning' : 'bg-error'
@@ -209,9 +211,9 @@ export const ConsolidatedKPIs = ({
               </div>
               
               {/* Budget Usage Card */}
-              <div className="text-center p-2 rounded-lg bg-background border">
+              <div className={`text-center rounded-lg bg-background border ${isMobile ? 'p-1.5' : 'p-2'}`}>
                 <div className="flex items-center justify-center gap-1 mb-1">
-                  <div className="w-12 h-1 bg-border rounded-full overflow-hidden">
+                  <div className={`bg-border rounded-full overflow-hidden ${isMobile ? 'w-8 h-1' : 'w-12 h-1'}`}>
                     <div 
                       className={`h-full rounded-full ${
                         budgetUsage > 90 ? 'bg-error' : budgetUsage > 70 ? 'bg-warning' : 'bg-success'

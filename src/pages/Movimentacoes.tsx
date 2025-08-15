@@ -179,15 +179,17 @@ export const Movimentacoes = () => {
   return (
     <div className="page-container">
       <div className="flex flex-col h-full">
-        {/* Page Header - Web Only */}
-        <div className="hidden md:block border-b bg-card/50 backdrop-blur-sm">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
+        {/* Mobile-first Header */}
+        <div className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="p-4">
+            <div className="flex items-center justify-between mb-3">
               <div>
-                <h1 className="text-2xl font-bold tracking-tight">Movimentações Financeiras</h1>
-                <p className="text-muted-foreground">Gerencie suas entradas e saídas</p>
+                <h1 className="text-xl font-bold tracking-tight">Movimentações</h1>
+                <p className="text-sm text-muted-foreground">Suas entradas e saídas</p>
               </div>
-              <div className="flex items-center gap-3">
+              
+              {/* Desktop buttons only */}
+              <div className="hidden md:flex items-center gap-3">
                 <Button 
                   onClick={() => openForm('entrada')} 
                   className="bg-income hover:bg-income/90"
@@ -209,22 +211,19 @@ export const Movimentacoes = () => {
           </div>
         </div>
 
-        {/* Mobile Header */}
-        <div className="md:hidden px-4 sm:px-6 pt-4 pb-2">
-          <h1 className="page-title">Movimentações</h1>
+        {/* Summary Cards - Mobile optimized */}
+        <div className="px-4 -mt-2">
+          <MovimentacaoMetrics
+            totalEntradas={totalEntradas}
+            totalSaidas={totalSaidas}
+            saldo={saldo}
+            entradasCount={baseEntradas.length}
+            saidasCount={baseSaidas.length}
+            totalEntradasCount={entradas.length}
+            totalSaidasCount={saidas.length}
+            formatCurrency={formatCurrency}
+          />
         </div>
-
-        {/* Summary Cards */}
-        <MovimentacaoMetrics
-          totalEntradas={totalEntradas}
-          totalSaidas={totalSaidas}
-          saldo={saldo}
-          entradasCount={baseEntradas.length}
-          saidasCount={baseSaidas.length}
-          totalEntradasCount={entradas.length}
-          totalSaidasCount={saidas.length}
-          formatCurrency={formatCurrency}
-        />
 
         {/* Floating Search and Filters */}
         <FloatingSearchFilters
@@ -279,50 +278,63 @@ export const Movimentacoes = () => {
               </div>
             </div>
 
-            {/* Mobile Navigation */}
-            <div className="md:hidden px-4 sm:px-6 pb-3">
-              <TabsList className="grid w-full max-w-md grid-cols-3 h-10">
-                <TabsTrigger value="todas" className="text-sm">Todas</TabsTrigger>
-                <TabsTrigger value="entradas" className="text-sm">Entradas</TabsTrigger>
-                <TabsTrigger value="saidas" className="text-sm">Saídas</TabsTrigger>
+            {/* Mobile Navigation - Improved */}
+            <div className="md:hidden px-4 pb-3">
+              <TabsList className="grid w-full grid-cols-3 h-12 p-1">
+                <TabsTrigger value="todas" className="text-xs font-medium">
+                  <div className="flex flex-col items-center gap-1">
+                    <span>Todas</span>
+                    <span className="text-xs opacity-75">{filteredMovimentacoes.length}</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger value="entradas" className="text-xs font-medium">
+                  <div className="flex flex-col items-center gap-1">
+                    <span>Entradas</span>
+                    <span className="text-xs opacity-75">{filteredEntradas.length}</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger value="saidas" className="text-xs font-medium">
+                  <div className="flex flex-col items-center gap-1">
+                    <span>Saídas</span>
+                    <span className="text-xs opacity-75">{filteredSaidas.length}</span>
+                  </div>
+                </TabsTrigger>
               </TabsList>
             </div>
 
-            <TabsContent value="todas" className="flex-1 px-4 sm:px-6 pb-4 overflow-hidden">
+            <TabsContent value="todas" className="flex-1 px-4 pb-4 overflow-hidden">
               {filteredMovimentacoes.length === 0 ? (
-                <div className="empty-state">
-                  <div className="empty-state-icon bg-muted">
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
                     <Plus className="h-8 w-8 text-muted-foreground" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold">
-                      {hasActiveFilters ? 'Nenhuma transação encontrada' : 'Nenhuma movimentação encontrada'}
-                    </h3>
-                    {!hasActiveFilters && (
-                      <p className="text-muted-foreground mt-1">Adicione uma nova transação</p>
-                    )}
-                    {hasActiveFilters && (
-                      <Button variant="outline" onClick={clearFilters} className="mt-4" size="sm">
-                        Limpar Filtros
-                      </Button>
-                    )}
-                  </div>
+                  <h3 className="font-semibold text-lg mb-2">
+                    {hasActiveFilters ? 'Nenhuma transação encontrada' : 'Nenhuma movimentação encontrada'}
+                  </h3>
+                  {!hasActiveFilters && (
+                    <p className="text-muted-foreground text-sm mb-4">Adicione uma nova transação pelo botão + no canto inferior</p>
+                  )}
+                  {hasActiveFilters && (
+                    <Button variant="outline" onClick={clearFilters} className="mt-2" size="sm">
+                      Limpar Filtros
+                    </Button>
+                  )}
                 </div>
-            ) : (
-              <div className="h-full overflow-hidden">
-                <MovimentacoesList
-                  items={filteredMovimentacoes}
-                  onItemClick={(m) => {
-                    setSelected(m);
-                    setDetailsOpen(true);
-                  }}
-                  onEdit={handleEdit}
-                  onDelete={handleDeleteClick}
-                  onDuplicate={handleDuplicate}
-                />
-              </div>
-            )}
-          </TabsContent>
+              ) : (
+                <div className="h-full overflow-hidden">
+                  <MovimentacoesList
+                    items={filteredMovimentacoes}
+                    onItemClick={(m) => {
+                      setSelected(m);
+                      setDetailsOpen(true);
+                    }}
+                    onEdit={handleEdit}
+                    onDelete={handleDeleteClick}
+                    onDuplicate={handleDuplicate}
+                  />
+                </div>
+              )}
+            </TabsContent>
 
           <TabsContent value="entradas" className="flex-1 px-3 sm:px-4 pb-4 overflow-hidden">
             {filteredEntradas.length === 0 ? (

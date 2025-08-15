@@ -206,95 +206,87 @@ export const Dashboard = ({
     );
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
-      {/* Minimal Professional Header */}
-      <div className="border-b bg-card/30 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            {/* Clean Title Section */}
-            <div>
-              <h1 className="text-xl font-medium text-foreground tracking-tight">Dashboard</h1>
-              <p className="text-sm text-muted-foreground">
-                Visão geral das suas finanças
-              </p>
+    <div className="min-h-screen bg-background">
+      {/* Mobile-first Header */}
+      <div className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="p-4 sm:px-6">
+          {/* Title Section */}
+          <div className="mb-3">
+            <h1 className="text-2xl sm:text-xl font-bold text-foreground">Dashboard</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Visão geral das suas finanças
+            </p>
+          </div>
+
+          {/* Mobile Period Toggle */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            <Button 
+              variant={selectedPeriod === "week" ? "default" : "outline"} 
+              size="sm" 
+              className="h-8 px-3 text-xs whitespace-nowrap"
+              onClick={() => setSelectedPeriod("week")}
+            >
+              7 dias
+            </Button>
+            <Button 
+              variant={selectedPeriod === "month" ? "default" : "outline"} 
+              size="sm" 
+              className="h-8 px-3 text-xs whitespace-nowrap"
+              onClick={() => setSelectedPeriod("month")}
+            >
+              Este mês
+            </Button>
+            <Button 
+              variant={selectedPeriod === "quarter" ? "default" : "outline"} 
+              size="sm" 
+              className="h-8 px-3 text-xs whitespace-nowrap"
+              onClick={() => setSelectedPeriod("quarter")}
+            >
+              Trimestre
+            </Button>
+            <Button 
+              variant={selectedPeriod === "year" ? "default" : "outline"} 
+              size="sm" 
+              className="h-8 px-3 text-xs whitespace-nowrap"
+              onClick={() => setSelectedPeriod("year")}
+            >
+              Ano
+            </Button>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="flex items-center justify-between mt-3">
+            <div className="text-xs text-muted-foreground">
+              {filteredMovimentacoes.length} transações
             </div>
-
-            {/* Minimal Action Bar */}
-            <div className="flex items-center gap-3">
-              {/* Period Selector - Functional */}
-              <div className="hidden md:flex items-center bg-muted/20 rounded-lg p-0.5 border border-border/30">
-                <Button 
-                  variant={selectedPeriod === "week" ? "default" : "ghost"} 
-                  size="sm" 
-                  className="h-7 px-3 text-xs font-medium"
-                  onClick={() => setSelectedPeriod("week")}
-                >
-                  7 dias
-                </Button>
-                <Button 
-                  variant={selectedPeriod === "month" ? "default" : "ghost"} 
-                  size="sm" 
-                  className="h-7 px-3 text-xs"
-                  onClick={() => setSelectedPeriod("month")}
-                >
-                  Este mês
-                </Button>
-                <Button 
-                  variant={selectedPeriod === "quarter" ? "default" : "ghost"} 
-                  size="sm" 
-                  className="h-7 px-3 text-xs"
-                  onClick={() => setSelectedPeriod("quarter")}
-                >
-                  Trimestre
-                </Button>
-                <Button 
-                  variant={selectedPeriod === "year" ? "default" : "ghost"} 
-                  size="sm" 
-                  className="h-7 px-3 text-xs"
-                  onClick={() => setSelectedPeriod("year")}
-                >
-                  Ano
-                </Button>
-              </div>
-
-              {/* Minimal Actions */}
+            <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowBalance(!showBalance)}
-                className="gap-1.5 h-7 px-3 border-border/30 text-xs"
+                className="h-8 px-3 text-xs"
               >
                 {showBalance ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                <span className="hidden sm:inline">
+                <span className="ml-1 hidden xs:inline">
                   {showBalance ? "Ocultar" : "Mostrar"}
                 </span>
               </Button>
-
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-1.5 h-7 px-3 border-border/30 text-xs"
+                className="h-8 px-3 text-xs"
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <Filter className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Filtros</span>
+                <span className="ml-1 hidden xs:inline">Filtros</span>
               </Button>
             </div>
-          </div>
-          
-          {/* Period Info Display */}
-          <div className="mt-2 text-xs text-muted-foreground">
-            Período: {selectedPeriod === "week" && "Últimos 7 dias"}
-            {selectedPeriod === "month" && "Este mês"}
-            {selectedPeriod === "quarter" && "Este trimestre"}
-            {selectedPeriod === "year" && "Este ano"}
-            • {filteredMovimentacoes.length} transações
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      {/* Main Content - Mobile optimized */}
+      <div className="p-4 sm:px-6 pb-6">
         <div className="space-y-8">
           {/* Filters Panel */}
           {showFilters && (

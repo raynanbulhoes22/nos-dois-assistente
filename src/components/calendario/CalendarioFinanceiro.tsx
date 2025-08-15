@@ -11,13 +11,27 @@ import { EventosDia } from "./tipos";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MonthNavigation } from "@/components/orcamento/MonthNavigation";
 
 interface CalendarioFinanceiroProps {
   mesAtual: number;
   anoAtual: number;
+  onNavigate: (direction: 'anterior' | 'proximo') => void;
+  getMesNome: (mes: number) => string;
+  statusMes?: 'excelente' | 'positivo' | 'critico' | 'deficit' | 'sem-dados';
+  timeline?: { mes: number; ano: number; status: string; saldoProjetado: number; receitas: number }[];
+  onMonthSelect?: (mes: number, ano: number) => void;
 }
 
-export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceiroProps) => {
+export const CalendarioFinanceiro = ({ 
+  mesAtual, 
+  anoAtual, 
+  onNavigate, 
+  getMesNome, 
+  statusMes, 
+  timeline, 
+  onMonthSelect 
+}: CalendarioFinanceiroProps) => {
   const { eventosPorDia, filtros, setFiltros, isLoading } = useEventosCalendario(mesAtual, anoAtual);
   const [selectedDay, setSelectedDay] = useState<EventosDia | null>(null);
   const isMobile = useIsMobile();
@@ -164,11 +178,24 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
 
   return (
     <Card className="overflow-hidden">
-      {/* Header compacto com filtros integrados */}
+      {/* Header com navegação de meses integrada */}
       <div className="px-3 sm:px-4 py-2 sm:py-3 border-b bg-muted/20">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <h3 className="text-sm sm:text-base font-semibold">Calendário Financeiro</h3>
-          <CalendarioFilters filtros={filtros} onChange={setFiltros} />
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h3 className="text-sm sm:text-base font-semibold">Calendário Financeiro</h3>
+            <CalendarioFilters filtros={filtros} onChange={setFiltros} />
+          </div>
+          
+          {/* Navegação de meses com timeline */}
+          <MonthNavigation
+            currentMonth={mesAtual}
+            currentYear={anoAtual}
+            onNavigate={onNavigate}
+            getMesNome={getMesNome}
+            statusMes={statusMes}
+            timeline={timeline}
+            onMonthSelect={onMonthSelect}
+          />
         </div>
       </div>
       
@@ -182,7 +209,7 @@ export const CalendarioFinanceiro = ({ mesAtual, anoAtual }: CalendarioFinanceir
           classNames={{
             months: "flex w-full",
             month: "space-y-4 w-full",
-            caption: "hidden sm:flex justify-center pt-2 pb-4 relative items-center",
+            caption: "hidden",
             caption_label: "text-lg font-semibold",
             nav: "hidden sm:flex space-x-1 items-center",
             nav_button: "h-8 w-8 bg-transparent p-0 opacity-70 hover:opacity-100 hover:bg-muted rounded-md",

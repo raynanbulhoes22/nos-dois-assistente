@@ -456,9 +456,9 @@ export const Orcamento = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       <div className="container mx-auto p-2 sm:p-4 lg:p-6 max-w-7xl">
-        {/* Header com navegação */}
+        {/* Header simplificado */}
         <div className="sticky top-0 z-30 mb-4 sm:mb-8 -mx-2 sm:-mx-4 lg:-mx-6 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 bg-gradient-to-b from-background/95 to-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+          <div className="flex flex-col gap-2">
             <div>
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 Calendário Financeiro
@@ -468,19 +468,9 @@ export const Orcamento = () => {
               </p>
             </div>
             
-            <MonthNavigation
-              currentMonth={mesAtual}
-              currentYear={anoAtual}
-              onNavigate={navegarMes}
-              getMesNome={getMesNome}
-              statusMes={alertas.length > 0 ? 'critico' : previsibilidadeStatus}
-              timeline={timelineMeses}
-              onMonthSelect={onMonthSelect}
-            />
+            {/* Saldo Inicial no Header */}
+            <SaldoInicialCard mes={mesAtual} ano={anoAtual} />
           </div>
-          
-          {/* Saldo Inicial no Header */}
-          <SaldoInicialCard mes={mesAtual} ano={anoAtual} />
         </div>
 
         <div className="space-y-3 sm:space-y-6">
@@ -494,6 +484,11 @@ export const Orcamento = () => {
           <CalendarioFinanceiro 
             mesAtual={mesAtual} 
             anoAtual={anoAtual}
+            onNavigate={navegarMes}
+            getMesNome={getMesNome}
+            statusMes={timelineMeses.find(t => t.mes === mesAtual && t.ano === anoAtual)?.status as any}
+            timeline={timelineMeses}
+            onMonthSelect={onMonthSelect}
           />
 
           {/* Seções Compactas em Tabs */}

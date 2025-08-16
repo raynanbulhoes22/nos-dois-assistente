@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { normalizePhoneNumber } from './phone-utils';
 
 export const authSchema = z.object({
   email: z
@@ -20,7 +21,10 @@ export const authSchema = z.object({
   whatsapp: z
     .string()
     .min(1, 'WhatsApp é obrigatório')
-    .regex(/^55\d{10,11}$/, 'WhatsApp deve estar no formato brasileiro (11 ou 12 dígitos com código do país)')
+    .refine((value) => {
+      const normalized = normalizePhoneNumber(value);
+      return normalized.length === 12 && normalized.startsWith('55') && /^55[1-9][0-9]\d{8}$/.test(normalized);
+    }, 'WhatsApp deve ser um número brasileiro válido (DDD + 8 dígitos)')
     .optional(),
 });
 

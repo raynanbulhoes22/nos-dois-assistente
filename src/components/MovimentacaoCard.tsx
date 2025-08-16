@@ -32,10 +32,15 @@ export const MovimentacaoCard = ({ movimentacao, onEdit, onDelete }: Movimentaca
     <Card className="group hover:shadow-md transition-all duration-200 border border-border/50 bg-card">
       <CardContent className="p-4">
         {/* Título */}
-        <div className="mb-3">
+        <div className="mb-2">
           <h3 className="font-medium text-foreground truncate">
-            {movimentacao.nome || "Sem descrição"}
+            {movimentacao.titulo || "Sem descrição"}
           </h3>
+          {movimentacao.nome && (
+            <p className="text-xs text-muted-foreground mt-1">
+              Registrado por: {movimentacao.nome}
+            </p>
+          )}
         </div>
 
         {/* Categoria, Data e Valor */}

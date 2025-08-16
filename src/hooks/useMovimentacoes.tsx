@@ -112,6 +112,7 @@ export const useMovimentacoes = () => {
         .from('registros_financeiros')
         .select('*')
         .eq('user_id', user.id)
+        .neq('categoria', 'Saldo Inicial') // Filtrar registros de Saldo Inicial
         .order('data', { ascending: false });
 
       if (registrosPorUserId && registrosPorUserId.length > 0) {
@@ -139,6 +140,7 @@ export const useMovimentacoes = () => {
           .from('registros_financeiros')
           .select('*')
           .or(searchFormats.map(num => `numero_wpp.ilike.%${num}%`).join(','))
+          .neq('categoria', 'Saldo Inicial') // Filtrar registros de Saldo Inicial
           .order('data', { ascending: false });
 
         if (registrosPorWhatsapp && registrosPorWhatsapp.length > 0) {

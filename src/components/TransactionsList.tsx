@@ -45,6 +45,7 @@ export const TransactionsList = ({ userId, refreshTrigger }: TransactionsListPro
         .from('registros_financeiros')
         .select('*')
         .eq('user_id', userId)
+        .neq('categoria', 'Saldo Inicial') // Filtrar registros de Saldo Inicial
         .order('data', { ascending: false })
         .limit(15);
 

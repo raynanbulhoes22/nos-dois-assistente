@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Edit3, Trash2, TrendingUp, CreditCard, Building2, Home, CheckCircle, Clock, RotateCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LimiteCartaoDisplay } from "@/components/cartoes/LimiteCartaoDisplay";
+import { cn } from "@/lib/utils";
 
 interface TabSectionProps {
   fontes: any[];
@@ -121,21 +122,33 @@ export const TabSection = ({
                             <TooltipTrigger asChild>
                                <Badge 
                                  variant={fonte.recebido ? "default" : "secondary"}
-                                 className={`h-5 text-xs flex items-center gap-1 transition-all duration-300 ease-in-out transform hover:scale-105 ${
+                                 className={cn(
+                                   "h-6 text-xs flex items-center gap-1 px-3 py-1 font-medium",
+                                   "transition-all duration-200 ease-in-out",
+                                   "border-2 rounded-lg shadow-sm",
                                    fonte.recebido 
-                                     ? "bg-success/10 text-success border-success/20 hover:bg-success/20" 
-                                     : "bg-warning/10 text-warning border-warning/20 hover:bg-warning/20"
-                                 } ${onToggleStatusRenda ? "cursor-pointer" : ""}`}
+                                     ? "bg-success/15 text-success border-success/30 hover:bg-success/25 hover:border-success/50" 
+                                     : "bg-warning/15 text-warning border-warning/30 hover:bg-warning/25 hover:border-warning/50",
+                                   onToggleStatusRenda && [
+                                     "cursor-pointer select-none",
+                                     "hover:scale-105 hover:shadow-md",
+                                     "active:scale-95 active:shadow-sm",
+                                     "hover:ring-2 hover:ring-offset-1",
+                                     fonte.recebido 
+                                       ? "hover:ring-success/20" 
+                                       : "hover:ring-warning/20"
+                                   ]
+                                 )}
                                  onClick={onToggleStatusRenda ? () => onToggleStatusRenda(fonte.id, fonte.recebido ? 'pendente' : 'recebido') : undefined}
                                >
                                  {fonte.recebido ? (
                                    <>
-                                     <CheckCircle className="h-3 w-3 transition-transform duration-300" />
+                                     <CheckCircle className="h-3.5 w-3.5 transition-transform duration-200" />
                                      {isMobile ? "Ok" : "Recebido"}
                                    </>
                                  ) : (
                                    <>
-                                     <Clock className="h-3 w-3 transition-transform duration-300" />
+                                     <Clock className="h-3.5 w-3.5 transition-transform duration-200" />
                                      {isMobile ? "Pend" : "Pendente"}
                                    </>
                                  )}

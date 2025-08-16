@@ -29,8 +29,8 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const [saldoInicialFromDB, setSaldoInicialFromDB] = useState<number>(0);
   const [saldoAtualComputado, setSaldoAtualComputado] = useState<number>(0);
   
-  // Hook para calcular saldo esperado
-  const saldoEsperado = useSaldoEsperado(saldoAtualComputado, 6);
+  // Hook para calcular saldo esperado (usando saldo inicial como base)
+  const saldoEsperado = useSaldoEsperado(saldoInicialFromDB);
 
   const orcamento = getOrcamentoByMesAno(mes, ano);
   // Usar o saldo dos registros financeiros em vez do orçamento
@@ -104,9 +104,9 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   };
 
   const getStatusBadge = (valor: number) => {
-    if (valor >= saldoAtualComputado * 1.3) return { variant: "default" as const, text: "Excelente", class: "bg-success text-white" };
-    if (valor >= saldoAtualComputado * 1.1) return { variant: "secondary" as const, text: "Bom", class: "bg-accent text-white" };
-    if (valor >= saldoAtualComputado * 0.9) return { variant: "outline" as const, text: "Estável", class: "bg-info text-white" };
+    if (valor >= saldoInicialFromDB * 1.3) return { variant: "default" as const, text: "Excelente", class: "bg-success text-white" };
+    if (valor >= saldoInicialFromDB * 1.1) return { variant: "secondary" as const, text: "Bom", class: "bg-accent text-white" };
+    if (valor >= saldoInicialFromDB * 0.9) return { variant: "outline" as const, text: "Estável", class: "bg-info text-white" };
     if (valor >= 0) return { variant: "destructive" as const, text: "Atenção", class: "bg-warning text-white" };
     return { variant: "destructive" as const, text: "Crítico", class: "bg-error text-white" };
   };
@@ -337,11 +337,11 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
         </Card>
 
         {/* Card 4: Saldo Esperado */}
-        <Card className={`metric-card ${saldoEsperado.saldoProjetado >= saldoAtualComputado ? 'metric-card-success' : 'metric-card-warning'}`}>
+        <Card className={`metric-card ${saldoEsperado.saldoProjetado >= saldoInicialFromDB ? 'metric-card-success' : 'metric-card-warning'}`}>
           <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col space-y-1 sm:space-y-2">
               <div className="flex items-center gap-1 sm:gap-2">
-                <div className={`icon-container ${saldoEsperado.saldoProjetado >= saldoAtualComputado ? 'icon-success' : 'icon-warning'}`}>
+                <div className={`icon-container ${saldoEsperado.saldoProjetado >= saldoInicialFromDB ? 'icon-success' : 'icon-warning'}`}>
                   <Target className="h-3 w-3 sm:h-4 sm:w-4" />
                 </div>
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground">
@@ -357,7 +357,7 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3 text-muted-foreground" />
                   <p className="text-xs text-muted-foreground">
-                    em 6 meses
+                    final do mês
                   </p>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -371,11 +371,13 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
                     <TooltipContent className="max-w-xs">
                       <div className="space-y-1 text-xs">
                         <p><strong>Cálculo:</strong></p>
-                        <p>• Renda mensal: {formatCurrency(saldoEsperado.rendaMensal)}</p>
-                        <p>• Gastos fixos: {formatCurrency(saldoEsperado.gastoFixoMensal)}</p>
-                        <p>• Parcelas: {formatCurrency(saldoEsperado.parcelasMensal)}</p>
-                        <p>• Fluxo líquido: <span className={saldoEsperado.fluxoLiquidoMensal >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {formatCurrency(saldoEsperado.fluxoLiquidoMensal)}
+                        <p>• Saldo inicial: {formatCurrency(saldoInicialFromDB)}</p>
+                        <p>• + Receitas: {formatCurrency(saldoEsperado.rendaMensal)}</p>
+                        <p>• - Gastos fixos: {formatCurrency(saldoEsperado.gastoFixoMensal)}</p>
+                        <p>• - Parcelas: {formatCurrency(saldoEsperado.parcelasMensal)}</p>
+                        <p>• - Faturas: {formatCurrency(saldoEsperado.faturasMensal)}</p>
+                        <p className="border-t pt-1 font-semibold">• = Saldo esperado: <span className={saldoEsperado.saldoProjetado >= 0 ? 'text-green-600' : 'text-red-600'}>
+                          {formatCurrency(saldoEsperado.saldoProjetado)}
                         </span></p>
                       </div>
                     </TooltipContent>

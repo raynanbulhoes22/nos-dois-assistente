@@ -2,50 +2,44 @@ import { useMemo } from "react";
 import { useFontesRenda } from "./useFontesRenda";
 import { useGastosFixos } from "./useGastosFixos";
 import { useContasParceladas } from "./useContasParceladas";
+import { useCartoes } from "./useCartoes";
 
-export const useSaldoEsperado = (saldoAtual: number, mesesProjetados: number = 6) => {
+export const useSaldoEsperado = (saldoInicial: number) => {
   const { getTotalRendaAtiva } = useFontesRenda();
   const { getTotalGastosFixosAtivos } = useGastosFixos();
-  const { calcularParcelasProjetadas } = useContasParceladas();
+  const { getTotalParcelasAtivas } = useContasParceladas();
+  const { cartoes } = useCartoes();
 
   const saldoEsperado = useMemo(() => {
     const rendaMensal = getTotalRendaAtiva();
     const gastoFixoMensal = getTotalGastosFixosAtivos();
-    const parcelasProjetadas = calcularParcelasProjetadas(mesesProjetados);
+    const parcelasMensal = getTotalParcelasAtivas();
     
-    // Calcular saldo projetado mês a mês
-    let saldoAtualIteracao = saldoAtual;
-    
-    for (let i = 0; i < mesesProjetados; i++) {
-      // Encontrar parcelas para este mês específico
-      const parcelasMes = parcelasProjetadas[i]?.valor || 0;
+    // Calcular gastos estimados com cartões (usando limite usado como estimativa)
+    const faturasMensal = cartoes.reduce((total, cartao) => {
+      if (!cartao.ativo || !cartao.limite) return total;
       
-      // Fluxo líquido do mês = Renda - Gastos Fixos - Parcelas do mês
-      const fluxoLiquidoMes = rendaMensal - gastoFixoMensal - parcelasMes;
+      // Usar uma estimativa baseada no limite (pode ser ajustado posteriormente)
+      const limiteNum = typeof cartao.limite === 'string' ? parseFloat(cartao.limite) : cartao.limite;
+      const estimativaUso = limiteNum * 0.3; // Estimativa de 30% do limite usado
       
-      // Saldo no final do mês = Saldo início do mês + Fluxo líquido
-      saldoAtualIteracao += fluxoLiquidoMes;
-    }
+      return total + estimativaUso;
+    }, 0);
     
-    const saldoProjetado = saldoAtualIteracao;
-    
-    // Calcular média mensal das parcelas para exibição
-    const totalParcelas = parcelasProjetadas.reduce((total, mes) => total + mes.valor, 0);
-    const parcelasMensal = mesesProjetados > 0 ? totalParcelas / mesesProjetados : 0;
-    
-    // Fluxo líquido médio mensal
-    const fluxoLiquidoMensal = rendaMensal - gastoFixoMensal - parcelasMensal;
+    // Saldo Esperado = Saldo Inicial + Receitas - (Gastos fixos + Parcelas + Faturas)
+    const saldoProjetado = saldoInicial + rendaMensal - (gastoFixoMensal + parcelasMensal + faturasMensal);
     
     return {
       saldoProjetado,
-      fluxoLiquidoMensal,
       rendaMensal,
       gastoFixoMensal,
       parcelasMensal,
-      variacao: saldoProjetado - saldoAtual,
-      percentualVariacao: saldoAtual !== 0 ? ((saldoProjetado - saldoAtual) / Math.abs(saldoAtual)) * 100 : 0
+      faturasMensal,
+      totalSaidas: gastoFixoMensal + parcelasMensal + faturasMensal,
+      variacao: saldoProjetado - saldoInicial,
+      percentualVariacao: saldoInicial !== 0 ? ((saldoProjetado - saldoInicial) / Math.abs(saldoInicial)) * 100 : 0
     };
-  }, [saldoAtual, mesesProjetados, getTotalRendaAtiva, getTotalGastosFixosAtivos, calcularParcelasProjetadas]);
+  }, [saldoInicial, getTotalRendaAtiva, getTotalGastosFixosAtivos, getTotalParcelasAtivas, cartoes]);
 
   return saldoEsperado;
 };

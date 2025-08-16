@@ -9,7 +9,7 @@ export interface Cartao {
   apelido: string;
   ultimos_digitos: string;
   limite?: number;
-  limite_disponivel?: number;
+  limite_disponivel?: string; // Corrigido: DB armazena como string
   dia_vencimento?: number;
   ativo: boolean;
   created_at: string;
@@ -57,8 +57,13 @@ export const useCartoes = () => {
       const { error } = await supabase
         .from('cartoes_credito')
         .insert({
-          ...cartao,
-          user_id: user.id
+          user_id: user.id,
+          apelido: cartao.apelido,
+          ultimos_digitos: cartao.ultimos_digitos,
+          limite: cartao.limite,
+          limite_disponivel: cartao.limite_disponivel, // Já é string na interface
+          dia_vencimento: cartao.dia_vencimento,
+          ativo: cartao.ativo
         });
 
       if (error) throw error;

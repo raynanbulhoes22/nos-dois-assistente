@@ -324,7 +324,7 @@ export const Orcamento = () => {
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
         limite: cartaoForm.limite,
-        limite_disponivel: cartaoForm.limite_disponivel || cartaoForm.limite,
+        limite_disponivel: (cartaoForm.limite_disponivel || cartaoForm.limite).toString(), // Converter para string
         dia_vencimento: parseInt(cartaoForm.dia_vencimento),
         ativo: cartaoForm.ativo
       });
@@ -356,7 +356,7 @@ export const Orcamento = () => {
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
         limite: cartaoForm.limite,
-        limite_disponivel: cartaoForm.limite_disponivel,
+        limite_disponivel: cartaoForm.limite_disponivel.toString(), // Converter para string
         dia_vencimento: parseInt(cartaoForm.dia_vencimento),
         ativo: cartaoForm.ativo
       });

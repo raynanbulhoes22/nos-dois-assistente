@@ -60,7 +60,7 @@ export const processarCompraCartao = async (
   userId: string
 ): Promise<boolean> => {
   try {
-    const limiteAtual = cartao.limite_disponivel || cartao.limite || 0;
+    const limiteAtual = parseFloat(cartao.limite_disponivel || '0') || cartao.limite || 0;
     const novoLimite = limiteAtual - transacao.valor;
 
     const { error } = await supabase

@@ -67,7 +67,7 @@ export const WelcomeModal = ({
   if (!isOpen) return null;
   
   return <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-sm w-[90vw] max-h-[85vh] p-0 gap-0 border-0 bg-transparent overflow-hidden">
+      <DialogContent className="max-w-sm w-[90vw] max-h-[90vh] p-0 gap-0 border-0 bg-transparent overflow-auto">
         {/* Background Image with Overlay */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-lg"
@@ -80,62 +80,62 @@ export const WelcomeModal = ({
         <Button 
           variant="ghost" 
           size="sm" 
-          className="absolute right-4 top-4 z-20 h-10 w-10 p-0 bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/20 text-white" 
+          className="absolute right-3 top-3 z-20 h-8 w-8 p-0 bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/20 text-white" 
           onClick={handleClose}
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4" />
           <span className="sr-only">Fechar</span>
         </Button>
 
         {/* Main Content */}
-        <div className="relative z-10 flex flex-col p-6 space-y-6">
+        <div className="relative z-10 flex flex-col p-4 space-y-3">
           {/* Hero Section */}
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-2">
             
             {/* Hero Text */}
-            <div className="space-y-3 animate-fade-in">
-              <h1 className="text-xl font-bold text-white leading-tight">
+            <div className="space-y-2 animate-fade-in">
+              <h1 className="text-lg font-bold text-white leading-tight">
                 Transforme seus Dados
                 <span className="block bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                   em Inteligência
                 </span>
               </h1>
-              <p className="text-sm text-white/90">
+              <p className="text-xs text-white/90">
                 IA que analisa seus gastos via WhatsApp
               </p>
             </div>
 
             {/* WhatsApp Card */}
             <Card className="bg-white/20 backdrop-blur-xl border border-white/30 shadow-xl animate-scale-in">
-              <CardContent className="p-4">
-                <div className="space-y-4">
+              <CardContent className="p-3">
+                <div className="space-y-3">
                   <div className="flex items-center justify-center">
-                    <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-full p-3">
-                      <WhatsAppIcon className="h-5 w-5 text-white" />
+                    <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-full p-2.5">
+                      <WhatsAppIcon className="h-4 w-4 text-white" />
                     </div>
                   </div>
                   
-                  <div className="space-y-2 text-center">
-                    <h2 className="text-lg font-bold text-white">
+                  <div className="space-y-1 text-center">
+                    <h2 className="text-base font-bold text-white">
                       Consultor Financeiro
                     </h2>
-                    <p className="text-sm text-white/90">
+                    <p className="text-xs text-white/90">
                       Comece enviando seus registros
                     </p>
                   </div>
                   
-                  <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 border border-white/30">
-                    <p className="text-xs text-white/90 font-medium mb-1">WhatsApp Oficial</p>
-                    <p className="text-sm font-bold text-white">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-lg p-2.5 border border-white/30">
+                    <p className="text-[10px] text-white/90 font-medium mb-0.5">WhatsApp Oficial</p>
+                    <p className="text-xs font-bold text-white">
                       +55 (69) 9.9314-0550
                     </p>
                   </div>
 
                   <Button 
                     onClick={() => window.open(whatsappLink, '_blank')} 
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 h-auto text-sm" 
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-2.5 h-auto text-xs" 
                   >
-                    <WhatsAppIcon className="h-4 w-4 mr-2" />
+                    <WhatsAppIcon className="h-3.5 w-3.5 mr-1.5" />
                     Iniciar Análise
                   </Button>
                 </div>
@@ -143,19 +143,19 @@ export const WelcomeModal = ({
             </Card>
 
             {/* Features Grid */}
-            <div className="grid grid-cols-2 gap-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <div className="grid grid-cols-2 gap-1.5 animate-fade-in" style={{ animationDelay: '0.3s' }}>
               {features.map((feature, index) => (
                 <Card key={index} className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all duration-200 group">
-                  <CardContent className="p-3">
-                    <div className="text-center space-y-1">
+                  <CardContent className="p-2">
+                    <div className="text-center space-y-0.5">
                       <div className="flex justify-center">
-                        <feature.icon className="h-4 w-4 text-cyan-400 group-hover:text-cyan-300" />
+                        <feature.icon className="h-3.5 w-3.5 text-cyan-400 group-hover:text-cyan-300" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-white text-xs">
+                        <h4 className="font-semibold text-white text-[10px]">
                           {feature.title}
                         </h4>
-                        <p className="text-[10px] text-white/70">
+                        <p className="text-[9px] text-white/70">
                           {feature.description}
                         </p>
                       </div>
@@ -166,7 +166,7 @@ export const WelcomeModal = ({
             </div>
 
             {/* Don't Show Again Checkbox */}
-            <div className="flex items-center justify-center space-x-2 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+            <div className="flex items-center justify-center space-x-2 animate-fade-in" style={{ animationDelay: '0.4s' }}>
               <Checkbox 
                 id="dont-show-again"
                 checked={dontShowAgain}
@@ -175,25 +175,22 @@ export const WelcomeModal = ({
               />
               <Label 
                 htmlFor="dont-show-again" 
-                className="text-xs text-white/80 cursor-pointer"
+                className="text-[10px] text-white/80 cursor-pointer"
               >
                 Não mostrar novamente
               </Label>
             </div>
 
             {/* Secondary CTA */}
-            <div className="text-center animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <div className="text-center animate-fade-in" style={{ animationDelay: '0.5s' }}>
               <Button 
                 onClick={handleClose} 
                 variant="ghost" 
                 size="sm" 
-                className="text-white/80 hover:text-white hover:bg-white/10 border border-white/20 text-xs py-2"
+                className="text-white/80 hover:text-white hover:bg-white/10 border border-white/20 text-[10px] py-1.5 px-3 h-auto"
               >
                 Explorar Depois
               </Button>
-              <p className="text-[10px] text-white/60 mt-2">
-                Acesse o WhatsApp pelo menu
-              </p>
             </div>
           </div>
         </div>

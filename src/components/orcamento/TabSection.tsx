@@ -263,7 +263,7 @@ export const TabSection = ({
                                   <p className="font-semibold text-success">✅ Pagamento detectado</p>
                                   {gasto.registroDetectado && (
                                     <>
-                                      <p>Valor: {formatCurrency(gasto.registroDetectado.valor)}</p>
+                                      <p>Valor: {formatCurrency(Math.abs(gasto.registroDetectado.valor))}</p>
                                       <p>Data: {new Date(gasto.registroDetectado.data).toLocaleDateString('pt-BR')}</p>
                                       <p>Categoria: {gasto.registroDetectado.categoria}</p>
                                     </>

@@ -4,10 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Wallet, Edit2, TrendingUp, TrendingDown, Plus, AlertCircle, Minus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Wallet, Edit2, TrendingUp, TrendingDown, Plus, AlertCircle, Minus, Target, Clock, DollarSign } from 'lucide-react';
 import { useOrcamentos } from '@/hooks/useOrcamentos';
 import { useFinancialStats } from '@/hooks/useFinancialStats';
 import { useAuth } from '@/hooks/useAuth';
+import { useSaldoEsperado } from '@/hooks/useSaldoEsperado';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -25,6 +28,9 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const [novoSaldo, setNovoSaldo] = useState('');
   const [saldoInicialFromDB, setSaldoInicialFromDB] = useState<number>(0);
   const [saldoAtualComputado, setSaldoAtualComputado] = useState<number>(0);
+  
+  // Hook para calcular saldo esperado
+  const saldoEsperado = useSaldoEsperado(saldoAtualComputado, 6);
 
   const orcamento = getOrcamentoByMesAno(mes, ano);
   // Usar o saldo dos registros financeiros em vez do orçamento
@@ -95,6 +101,14 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
       style: 'currency',
       currency: 'BRL'
     }).format(value);
+  };
+
+  const getStatusBadge = (valor: number) => {
+    if (valor >= saldoAtualComputado * 1.3) return { variant: "default" as const, text: "Excelente", class: "bg-success text-white" };
+    if (valor >= saldoAtualComputado * 1.1) return { variant: "secondary" as const, text: "Bom", class: "bg-accent text-white" };
+    if (valor >= saldoAtualComputado * 0.9) return { variant: "outline" as const, text: "Estável", class: "bg-info text-white" };
+    if (valor >= 0) return { variant: "destructive" as const, text: "Atenção", class: "bg-warning text-white" };
+    return { variant: "destructive" as const, text: "Crítico", class: "bg-error text-white" };
   };
 
   const handleEditSaldo = () => {
@@ -230,109 +244,147 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
 
   return (
     <TooltipProvider>
-      <div className="bg-gradient-to-r from-muted/30 to-muted/50 rounded-lg p-3 sm:p-4 border border-border/40">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center">
-            <Wallet className="h-3 w-3 text-primary" />
-          </div>
-          <span className="text-sm font-semibold text-foreground">Saldo do Mês</span>
-        </div>
-        
-        {/* Layout Mobile First - Stack em mobile, grid em desktop */}
-        <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-3">
-          {/* Saldo Inicial - Mobile First */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div 
-                onClick={handleEditSaldo}
-                className={`
-                  p-3 sm:p-2 rounded-lg cursor-pointer transition-all duration-300 group
-                  ${saldoInicialAtual === 0 
-                    ? 'border-2 border-dashed border-primary/50 bg-primary/5 hover:border-primary hover:bg-primary/10' 
-                    : 'bg-card/60 hover:bg-card border border-border/40 hover:border-primary/40 shadow-sm hover:shadow-md'
-                  }
-                `}
-              >
-                {saldoInicialAtual === 0 ? (
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 mb-2">
-                      <Plus className="h-4 w-4 text-primary" />
-                      <span className="text-sm text-primary font-semibold">Definir</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Toque para definir saldo inicial
-                    </p>
+      {/* New Grid Layout with 4 Cards */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 md:grid-cols-4">
+        {/* Card 1: Saldo Inicial */}
+        <Card className="metric-card metric-card-primary group cursor-pointer" onClick={handleEditSaldo}>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col space-y-1 sm:space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <div className="icon-container icon-primary">
+                    <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />
                   </div>
-                ) : (
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1 mb-1">
-                      <span className="text-xs text-muted-foreground font-medium">INICIAL</span>
-                      <Edit2 className="h-3 w-3 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                    <p className="text-sm sm:text-base font-bold text-foreground">
-                      {formatCurrency(saldoInicialAtual)}
-                    </p>
-                  </div>
-                )}
+                  <span className="text-xs sm:text-sm font-medium text-muted-foreground">
+                    Saldo Inicial
+                  </span>
+                </div>
+                <Edit2 className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="text-sm">
-                {saldoInicialAtual === 0 
-                  ? 'Toque para definir saldo inicial'
-                  : 'Toque para editar saldo inicial'
-                }
-              </p>
-            </TooltipContent>
-          </Tooltip>
-
-          {/* Saldo Atual - Mobile First */}
-          <div className={`p-3 sm:p-2 rounded-lg border transition-all duration-300 text-center ${
-            saldoAtualComputado >= 0 
-              ? 'bg-success/5 border-success/30' 
-              : 'bg-destructive/5 border-destructive/30'
-          }`}>
-            <span className="text-xs text-muted-foreground font-medium block mb-1">ATUAL</span>
-            <div className="flex items-center justify-center gap-1">
-              <p className={`text-sm sm:text-base font-bold ${
-                saldoAtualComputado >= 0 ? 'text-success' : 'text-destructive'
-              }`}>
-                {formatCurrency(saldoAtualComputado)}
-              </p>
-              {saldoAtualComputado >= 0 ? (
-                <TrendingUp className="h-3 w-3 text-success" />
-              ) : (
-                <TrendingDown className="h-3 w-3 text-destructive" />
-              )}
-            </div>
-          </div>
-
-          {/* Evolução - Mobile First */}
-          <div className="p-3 sm:p-2 rounded-lg bg-muted/40 border border-border/30 text-center">
-            <span className="text-xs text-muted-foreground font-medium block mb-1">VARIAÇÃO</span>
-            <div className="flex items-center justify-center gap-1">
-              {isPositiveEvolution ? (
-                <Plus className="h-3 w-3 text-success" />
-              ) : (
-                <Minus className="h-3 w-3 text-destructive" />
-              )}
-              <div>
-                <p className={`text-sm sm:text-base font-bold ${
-                  isPositiveEvolution ? 'text-success' : 'text-destructive'
-                }`}>
-                  {formatCurrency(Math.abs(evolucaoSaldo))}
+              <div className="space-y-1">
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
+                  {formatCurrency(saldoInicialFromDB || 0)}
                 </p>
-                {saldoInicialAtual !== 0 && (
-                  <p className={`text-xs ${
-                    isPositiveEvolution ? 'text-success/70' : 'text-destructive/70'
-                  }`}>
-                    {evolucaoPercentual > 0 ? '+' : ''}{evolucaoPercentual.toFixed(1)}%
-                  </p>
-                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <p className="text-xs text-muted-foreground cursor-help">
+                      Clique para editar
+                    </p>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Defina o valor inicial do mês</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 2: Saldo Atual */}
+        <Card className="metric-card metric-card-success">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col space-y-1 sm:space-y-2">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className="icon-container icon-success">
+                  <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />
+                </div>
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground">
+                  Saldo Atual
+                </span>
+              </div>
+              <div className="space-y-1">
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
+                  {formatCurrency(saldoAtualComputado || 0)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Inicial + movimentações
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 3: Evolução */}
+        <Card className={`metric-card ${evolucaoSaldo >= 0 ? 'metric-card-success' : 'metric-card-error'}`}>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col space-y-1 sm:space-y-2">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className={`icon-container ${evolucaoSaldo >= 0 ? 'icon-success' : 'icon-error'}`}>
+                  {evolucaoSaldo >= 0 ? (
+                    <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                  )}
+                </div>
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground">
+                  Evolução
+                </span>
+              </div>
+              <div className="space-y-1">
+                <p className={`text-lg sm:text-xl lg:text-2xl font-bold ${
+                  evolucaoSaldo >= 0 ? 'text-success' : 'text-error'
+                }`}>
+                  {evolucaoSaldo >= 0 ? '+' : ''}{formatCurrency(evolucaoSaldo)}
+                </p>
+                <p className={`text-xs ${
+                  evolucaoPercentual >= 0 ? 'text-success' : 'text-error'
+                }`}>
+                  {evolucaoPercentual >= 0 ? '+' : ''}{evolucaoPercentual.toFixed(1)}%
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 4: Saldo Esperado */}
+        <Card className={`metric-card ${saldoEsperado.saldoProjetado >= saldoAtualComputado ? 'metric-card-success' : 'metric-card-warning'}`}>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col space-y-1 sm:space-y-2">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className={`icon-container ${saldoEsperado.saldoProjetado >= saldoAtualComputado ? 'icon-success' : 'icon-warning'}`}>
+                  <Target className="h-3 w-3 sm:h-4 sm:w-4" />
+                </div>
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground">
+                  Saldo Esperado
+                </span>
+              </div>
+              <div className="space-y-1">
+                <p className={`text-lg sm:text-xl lg:text-2xl font-bold ${
+                  saldoEsperado.saldoProjetado >= 0 ? 'text-success' : 'text-error'
+                }`}>
+                  {formatCurrency(saldoEsperado.saldoProjetado)}
+                </p>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground">
+                    em 6 meses
+                  </p>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge 
+                        variant="outline" 
+                        className={`text-xs px-1 py-0 h-4 ${getStatusBadge(saldoEsperado.saldoProjetado).class}`}
+                      >
+                        {getStatusBadge(saldoEsperado.saldoProjetado).text}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <div className="space-y-1 text-xs">
+                        <p><strong>Cálculo:</strong></p>
+                        <p>• Renda mensal: {formatCurrency(saldoEsperado.rendaMensal)}</p>
+                        <p>• Gastos fixos: {formatCurrency(saldoEsperado.gastoFixoMensal)}</p>
+                        <p>• Parcelas: {formatCurrency(saldoEsperado.parcelasMensal)}</p>
+                        <p>• Fluxo líquido: <span className={saldoEsperado.fluxoLiquidoMensal >= 0 ? 'text-green-600' : 'text-red-600'}>
+                          {formatCurrency(saldoEsperado.fluxoLiquidoMensal)}
+                        </span></p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Modal de Edição - Mobile Optimized */}

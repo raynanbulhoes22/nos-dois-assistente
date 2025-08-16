@@ -155,7 +155,8 @@ export const Orcamento = () => {
     deleteGastoFixo, 
     getTotalGastosFixosAtivos,
     getGastosFixosComStatus,
-    getTotalGastosFixosNaoPagos
+    getTotalGastosFixosNaoPagos,
+    updateStatusManualGastoFixo
   } = useGastosFixos();
   
   // Hook para garantir saldo inicial no mês atual
@@ -632,6 +633,7 @@ export const Orcamento = () => {
                 onAddParcelamento={() => setShowContaParceladaModal(true)}
                 onAddGastoFixo={() => setShowGastoFixoModal(true)}
                 onToggleStatusRenda={handleToggleStatusRenda}
+                onToggleStatusGastoFixo={handleToggleStatusGastoFixo}
               />
             </CardContent>
           </Card>

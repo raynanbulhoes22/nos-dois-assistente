@@ -212,6 +212,9 @@ export type Database = {
           id: string
           nome: string
           observacoes: string | null
+          status_manual: string | null
+          status_manual_ano: number | null
+          status_manual_mes: number | null
           updated_at: string
           user_id: string
           valor_mensal: number
@@ -224,6 +227,9 @@ export type Database = {
           id?: string
           nome: string
           observacoes?: string | null
+          status_manual?: string | null
+          status_manual_ano?: number | null
+          status_manual_mes?: number | null
           updated_at?: string
           user_id: string
           valor_mensal: number
@@ -236,6 +242,9 @@ export type Database = {
           id?: string
           nome?: string
           observacoes?: string | null
+          status_manual?: string | null
+          status_manual_ano?: number | null
+          status_manual_mes?: number | null
           updated_at?: string
           user_id?: string
           valor_mensal?: number

@@ -114,26 +114,50 @@ export const useGastosFixos = () => {
     if (!user) return null;
 
     try {
+      // Estratégias de busca: 1) Por categoria exata, 2) Por nome similar, 3) Por categoria relacionada
+      const categoriasRelacionadas: { [key: string]: string[] } = {
+        'Moradia': ['Aluguel', 'Moradia', 'Casa', 'Apartamento'],
+        'Serviços': ['Internet', 'Água', 'Luz', 'Energia', 'Telefone', 'Gas'],
+        'Transporte': ['Combustível', 'Gasolina', 'Uber', 'Transporte'],
+        'Alimentação': ['Mercado', 'Supermercado', 'Restaurante', 'Comida']
+      };
+
+      const categoriasParaBuscar = categoriasRelacionadas[gastoFixo.categoria] || [gastoFixo.categoria];
+      
       const { data, error } = await supabase
         .from('registros_financeiros')
         .select('*')
         .eq('user_id', user.id)
-        .eq('categoria', gastoFixo.categoria)
+        .in('categoria', categoriasParaBuscar)
         .gte('data', `${ano}-${mes.toString().padStart(2, '0')}-01`)
         .lt('data', `${ano}-${(mes + 1).toString().padStart(2, '0')}-01`);
 
       if (error) throw error;
 
+      // Se não encontrou por categoria, tenta buscar por nome similar
+      let registrosEncontrados = data || [];
+      if (registrosEncontrados.length === 0) {
+        const { data: dataByName, error: errorByName } = await supabase
+          .from('registros_financeiros')
+          .select('*')
+          .eq('user_id', user.id)
+          .ilike('categoria', `%${gastoFixo.nome.toLowerCase()}%`)
+          .gte('data', `${ano}-${mes.toString().padStart(2, '0')}-01`)
+          .lt('data', `${ano}-${(mes + 1).toString().padStart(2, '0')}-01`);
+        
+        if (!errorByName) {
+          registrosEncontrados = dataByName || [];
+        }
+      }
+
       // Verificar se algum registro tem valor dentro da tolerância de ±15%
       const valorGasto = Number(gastoFixo.valor_mensal);
       const tolerancia = valorGasto * 0.15;
       
-      const registroMatch = data?.find(registro => {
+      const registroMatch = registrosEncontrados.find(registro => {
         const valorRegistro = Math.abs(Number(registro.valor));
         const diferenca = Math.abs(valorRegistro - valorGasto);
-        const dentroTolerancia = diferenca <= tolerancia;
-        
-        return dentroTolerancia;
+        return diferenca <= tolerancia;
       });
 
       return registroMatch || null;

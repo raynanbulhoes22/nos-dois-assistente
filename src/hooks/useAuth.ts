@@ -1,28 +1,39 @@
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useSubscription, SubscriptionStatus } from './useSubscription';
-
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<any | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
-  const { checkSubscription } = useSubscription();
 
-  const verifySubscription = async (userEmail: string, userId: string) => {
-    setSubscriptionLoading(true);
+  const checkSubscription = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
       if (!error && data) {
-        setSubscriptionStatus(data);
+        return data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Erro ao verificar assinatura:', error);
+      return null;
+    }
+  };
+
+  const verifySubscription = async (userEmail: string, userId: string) => {
+    setSubscriptionLoading(true);
+    try {
+      const subscriptionData = await checkSubscription();
+      
+      if (subscriptionData) {
+        setSubscriptionStatus(subscriptionData);
         
         // Check if this is first time user (no subscription record)
         const isFirstTime = !localStorage.getItem(`user_accessed_${userEmail}`);
-        if (isFirstTime && !data.subscribed) {
+        if (isFirstTime && !subscriptionData.subscribed) {
           localStorage.setItem('redirect_to_subscription', 'true');
         }
         localStorage.setItem(`user_accessed_${userEmail}`, 'true');

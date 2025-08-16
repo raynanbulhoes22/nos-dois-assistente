@@ -15,6 +15,7 @@ import { SmartInsights } from "./dashboard/SmartInsights";
 import { MobileOptimizedTabs } from "./dashboard/MobileOptimizedTabs";
 import { AdvancedStatsCards } from "./dashboard/AdvancedStatsCards";
 import { DashboardFilters } from "./dashboard/DashboardFilters";
+import { WelcomeModal } from "./WelcomeModal";
 interface User {
   id: string;
   email?: string;
@@ -336,6 +337,9 @@ export const Dashboard = ({
           </section>
         </div>
       </div>
+
+      {/* Welcome Modal */}
+      <WelcomeModal user={user} />
     </div>
   );
 };

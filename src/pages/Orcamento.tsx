@@ -98,6 +98,7 @@ export const Orcamento = () => {
     updateFonte, 
     deleteFonte, 
     getTotalRendaAtiva, 
+    getFontesRendaComStatus,
     isLoading: fontesLoading,
     refetch: refetchFontes 
   } = useFontesRenda();
@@ -173,6 +174,11 @@ export const Orcamento = () => {
   const [totalGastosPagos, setTotalGastosPagos] = useState(0);
   const [totalGastosPendentes, setTotalGastosPendentes] = useState(0);
   
+  // Fontes de renda com status de recebimento
+  const [fontesRendaComStatus, setFontesRendaComStatus] = useState<any[]>([]);
+  const [totalRendaRecebida, setTotalRendaRecebida] = useState(0);
+  const [totalRendaPendente, setTotalRendaPendente] = useState(0);
+  
   useEffect(() => {
     const fetchGastosComStatus = async () => {
       try {
@@ -194,6 +200,28 @@ export const Orcamento = () => {
       fetchGastosComStatus();
     }
   }, [mesAtual, anoAtual, gastosFixos]);
+
+  useEffect(() => {
+    const fetchFontesComStatus = async () => {
+      try {
+        const fontesComStatus = await getFontesRendaComStatus();
+        setFontesRendaComStatus(fontesComStatus);
+        const recebidas = fontesComStatus.filter(f => f.recebido).reduce((sum, f) => sum + f.valor, 0);
+        const pendentes = fontesComStatus.filter(f => !f.recebido && f.ativa).reduce((sum, f) => sum + f.valor, 0);
+        setTotalRendaRecebida(recebidas);
+        setTotalRendaPendente(pendentes);
+      } catch (error) {
+        console.error('Erro ao buscar fontes com status:', error);
+        setFontesRendaComStatus([]);
+        setTotalRendaRecebida(0);
+        setTotalRendaPendente(0);
+      }
+    };
+    
+    if (fontes.length > 0) {
+      fetchFontesComStatus();
+    }
+  }, [fontes, getFontesRendaComStatus]);
 
   // Função para formatar moeda
   const formatCurrency = (valor: number) => {
@@ -549,6 +577,7 @@ export const Orcamento = () => {
                 contas={contas}
                 gastosFixos={gastosFixos}
                 gastosFixosComStatus={gastosFixosComStatus.length > 0 ? gastosFixosComStatus : undefined}
+                fontesRendaComStatus={fontesRendaComStatus.length > 0 ? fontesRendaComStatus : undefined}
                 formatCurrency={formatCurrency}
                 totalRendaAtiva={totalRendaAtiva}
                 totalLimiteCartoes={totalLimiteCartoes}
@@ -556,6 +585,8 @@ export const Orcamento = () => {
                 totalGastosFixosAtivos={getTotalGastosFixosAtivos()}
                 totalGastosPagos={totalGastosPagos}
                 totalGastosPendentes={totalGastosPendentes}
+                totalRendaRecebida={totalRendaRecebida}
+                totalRendaPendente={totalRendaPendente}
                 onEditFonte={handleEditFonte}
                 onDeleteFonte={deleteFonte}
                 onEditCartao={handleEditCartao}

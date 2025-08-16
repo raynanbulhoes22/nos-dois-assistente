@@ -15,27 +15,15 @@ export const useSaldoEsperado = (saldoInicial: number) => {
     const gastoFixoMensal = getTotalGastosFixosAtivos();
     const parcelasMensal = getTotalParcelasAtivas();
     
-    // Calcular gastos estimados com cartões (usando limite usado como estimativa)
-    const faturasMensal = cartoes.reduce((total, cartao) => {
-      if (!cartao.ativo || !cartao.limite) return total;
-      
-      // Usar uma estimativa baseada no limite (pode ser ajustado posteriormente)
-      const limiteNum = typeof cartao.limite === 'string' ? parseFloat(cartao.limite) : cartao.limite;
-      const estimativaUso = limiteNum * 0.3; // Estimativa de 30% do limite usado
-      
-      return total + estimativaUso;
-    }, 0);
-    
-    // Saldo Esperado = Saldo Inicial + Receitas - (Gastos fixos + Parcelas + Faturas)
-    const saldoProjetado = saldoInicial + rendaMensal - (gastoFixoMensal + parcelasMensal + faturasMensal);
+    // Saldo Esperado = Saldo Inicial + Receitas - (Gastos fixos + Parcelas)
+    const saldoProjetado = saldoInicial + rendaMensal - (gastoFixoMensal + parcelasMensal);
     
     return {
       saldoProjetado,
       rendaMensal,
       gastoFixoMensal,
       parcelasMensal,
-      faturasMensal,
-      totalSaidas: gastoFixoMensal + parcelasMensal + faturasMensal,
+      totalSaidas: gastoFixoMensal + parcelasMensal,
       variacao: saldoProjetado - saldoInicial,
       percentualVariacao: saldoInicial !== 0 ? ((saldoProjetado - saldoInicial) / Math.abs(saldoInicial)) * 100 : 0
     };

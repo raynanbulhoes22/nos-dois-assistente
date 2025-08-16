@@ -371,11 +371,10 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
                     <TooltipContent className="max-w-xs">
                       <div className="space-y-1 text-xs">
                         <p><strong>Cálculo:</strong></p>
-                        <p>• Saldo inicial: {formatCurrency(saldoInicialFromDB)}</p>
-                        <p>• + Receitas: {formatCurrency(saldoEsperado.rendaMensal)}</p>
-                        <p>• - Gastos fixos: {formatCurrency(saldoEsperado.gastoFixoMensal)}</p>
-                        <p>• - Parcelas: {formatCurrency(saldoEsperado.parcelasMensal)}</p>
-                        <p>• - Faturas: {formatCurrency(saldoEsperado.faturasMensal)}</p>
+                         <p>• Saldo inicial: {formatCurrency(saldoInicialFromDB)}</p>
+                         <p>• + Receitas: {formatCurrency(saldoEsperado.rendaMensal)}</p>
+                         <p>• - Gastos fixos: {formatCurrency(saldoEsperado.gastoFixoMensal)}</p>
+                         <p>• - Parcelas: {formatCurrency(saldoEsperado.parcelasMensal)}</p>
                         <p className="border-t pt-1 font-semibold">• = Saldo esperado: <span className={saldoEsperado.saldoProjetado >= 0 ? 'text-green-600' : 'text-red-600'}>
                           {formatCurrency(saldoEsperado.saldoProjetado)}
                         </span></p>

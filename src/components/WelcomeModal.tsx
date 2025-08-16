@@ -2,53 +2,37 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  BarChart3, 
-  Wallet, 
-  Target, 
-  Calendar,
-  MessageCircle,
-  X
-} from "lucide-react";
-
+import { BarChart3, Wallet, Target, Calendar, MessageCircle, X } from "lucide-react";
 interface User {
   id: string;
   email?: string;
 }
-
 interface WelcomeModalProps {
   user: User;
 }
-
-export const WelcomeModal = ({ user }: WelcomeModalProps) => {
+export const WelcomeModal = ({
+  user
+}: WelcomeModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
-
   const whatsappNumber = "5569993140550";
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=Olá! Acabei de me cadastrar no LucraAI e quero começar a enviar meus registros financeiros para análise.`;
-
-  const features = [
-    {
-      icon: BarChart3,
-      title: "Dashboard Completo",
-      description: "Visualize suas finanças analisadas"
-    },
-    {
-      icon: Wallet,
-      title: "Controle de Gastos",
-      description: "Organize por categorias"
-    },
-    {
-      icon: Target,
-      title: "Metas Financeiras",
-      description: "Acompanhe seu progresso"
-    },
-    {
-      icon: Calendar,
-      title: "Planejamento",
-      description: "Antecipe compromissos"
-    }
-  ];
-
+  const features = [{
+    icon: BarChart3,
+    title: "Dashboard Completo",
+    description: "Visualize suas finanças analisadas"
+  }, {
+    icon: Wallet,
+    title: "Controle de Gastos",
+    description: "Organize por categorias"
+  }, {
+    icon: Target,
+    title: "Metas Financeiras",
+    description: "Acompanhe seu progresso"
+  }, {
+    icon: Calendar,
+    title: "Planejamento",
+    description: "Antecipe compromissos"
+  }];
   useEffect(() => {
     if (user?.email) {
       const hasSeenWelcome = localStorage.getItem(`dashboard_welcome_shown_${user.email}`);
@@ -57,26 +41,17 @@ export const WelcomeModal = ({ user }: WelcomeModalProps) => {
       }
     }
   }, [user?.email]);
-
   const handleClose = () => {
     if (user?.email) {
       localStorage.setItem(`dashboard_welcome_shown_${user.email}`, 'true');
     }
     setIsOpen(false);
   };
-
   if (!isOpen) return null;
-
-  return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+  return <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 gap-0 bg-white">
         {/* Custom Close Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute right-4 top-4 z-10 h-8 w-8 p-0 bg-white/80 backdrop-blur-sm hover:bg-gray-100"
-          onClick={handleClose}
-        >
+        <Button variant="ghost" size="sm" className="absolute right-4 top-4 z-10 h-8 w-8 p-0 bg-white/80 backdrop-blur-sm hover:bg-gray-100" onClick={handleClose}>
           <X className="h-4 w-4 text-gray-600" />
           <span className="sr-only">Fechar</span>
         </Button>
@@ -88,9 +63,7 @@ export const WelcomeModal = ({ user }: WelcomeModalProps) => {
               <DialogTitle className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
                 Seu Consultor Financeiro Pessoal
               </DialogTitle>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                Envie seus gastos via WhatsApp e receba análises personalizadas da nossa equipe de especialistas
-              </p>
+              
             </DialogHeader>
 
             {/* WhatsApp Contact Card */}
@@ -106,9 +79,7 @@ export const WelcomeModal = ({ user }: WelcomeModalProps) => {
                   <h3 className="text-xl font-semibold text-gray-900">
                     Comece enviando seus primeiros registros
                   </h3>
-                  <p className="text-gray-600">
-                    Nossa equipe vai analisar e retornar insights personalizados para você
-                  </p>
+                  
                 </div>
                 
                 <div className="bg-white rounded-lg p-4 border border-gray-200">
@@ -118,11 +89,7 @@ export const WelcomeModal = ({ user }: WelcomeModalProps) => {
                   </p>
                 </div>
 
-                <Button
-                  onClick={() => window.open(whatsappLink, '_blank')}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 h-auto text-base"
-                  size="lg"
-                >
+                <Button onClick={() => window.open(whatsappLink, '_blank')} className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 h-auto text-base" size="lg">
                   <MessageCircle className="h-5 w-5 mr-2" />
                   Enviar Primeiro Registro
                 </Button>
@@ -144,11 +111,7 @@ export const WelcomeModal = ({ user }: WelcomeModalProps) => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {features.map((feature, index) => (
-                <Card 
-                  key={index} 
-                  className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
-                >
+              {features.map((feature, index) => <Card key={index} className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
                   <CardContent className="p-4">
                     <div className="flex items-start space-x-3">
                       <div className="bg-blue-50 rounded-lg p-2 flex-shrink-0">
@@ -164,18 +127,12 @@ export const WelcomeModal = ({ user }: WelcomeModalProps) => {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-              ))}
+                </Card>)}
             </div>
 
             {/* Secondary CTA */}
             <div className="text-center mt-6 pt-4 border-t border-gray-200">
-              <Button
-                onClick={handleClose}
-                variant="outline"
-                size="sm"
-                className="text-gray-600 border-gray-300 hover:bg-gray-50"
-              >
+              <Button onClick={handleClose} variant="outline" size="sm" className="text-gray-600 border-gray-300 hover:bg-gray-50">
                 Explorar Plataforma Depois
               </Button>
               <p className="text-xs text-gray-500 mt-2">
@@ -185,6 +142,5 @@ export const WelcomeModal = ({ user }: WelcomeModalProps) => {
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };

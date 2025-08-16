@@ -111,33 +111,8 @@ export const calcularSaldoInicialNovoMes = async (userId: string, mes: number, a
         });
     }
     
-    // Criar registro financeiro com o saldo inicial para o novo mês
-    const primeiroDiaMes = new Date(ano, mes - 1, 1);
-    
-    // Verificar se já existe registro de saldo inicial para este mês
-    const { data: registroExistente } = await supabase
-      .from('registros_financeiros')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('categoria', 'Saldo Inicial')
-      .eq('data', primeiroDiaMes.toISOString().split('T')[0])
-      .maybeSingle();
-    
-    if (!registroExistente && novoSaldoInicial !== 0) {
-      await supabase
-        .from('registros_financeiros')
-        .insert({
-          user_id: userId,
-          valor: Math.abs(novoSaldoInicial),
-          data: primeiroDiaMes.toISOString().split('T')[0],
-          tipo: 'entrada_manual', // Usar valor válido do constraint
-          tipo_movimento: novoSaldoInicial >= 0 ? 'entrada' : 'saida',
-          categoria: 'Saldo Inicial',
-          nome: `Saldo Inicial - ${new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
-          observacao: 'Saldo inicial calculado automaticamente baseado no mês anterior',
-          origem: 'sistema'
-        });
-    }
+    // Não criar mais registros financeiros para saldo inicial
+    // O saldo inicial é mantido apenas em orcamentos_mensais.saldo_inicial
     
     return novoSaldoInicial;
     
@@ -270,47 +245,8 @@ export const garantirContinuidadeSaldos = async (userId: string, mes: number, an
           });
       }
       
-      // Atualizar ou criar registro financeiro correspondente
-      const primeiroDiaMes = new Date(ano, mes - 1, 1);
-      const dataFormatada = primeiroDiaMes.toISOString().split('T')[0];
-      
-      // Buscar registro existente
-      const { data: registroExistente } = await supabase
-        .from('registros_financeiros')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('categoria', 'Saldo Inicial')
-        .eq('data', dataFormatada)
-        .maybeSingle();
-      
-      if (registroExistente) {
-        // Atualizar registro existente
-        await supabase
-          .from('registros_financeiros')
-          .update({
-            valor: Math.abs(saldoAtualMesAnterior),
-            tipo: 'entrada_manual',
-            tipo_movimento: saldoAtualMesAnterior >= 0 ? 'entrada' : 'saida',
-            nome: `Saldo Inicial - ${new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
-            observacao: 'Saldo inicial corrigido automaticamente para manter continuidade'
-          })
-          .eq('id', registroExistente.id);
-      } else if (saldoAtualMesAnterior !== 0) {
-        // Criar novo registro se não existir e saldo não for zero
-        await supabase
-          .from('registros_financeiros')
-          .insert({
-            user_id: userId,
-            valor: Math.abs(saldoAtualMesAnterior),
-            data: dataFormatada,
-            tipo: 'entrada_manual',
-            tipo_movimento: saldoAtualMesAnterior >= 0 ? 'entrada' : 'saida',
-            categoria: 'Saldo Inicial',
-            nome: `Saldo Inicial - ${new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
-            observacao: 'Saldo inicial criado automaticamente para manter continuidade',
-            origem: 'sistema'
-          });
-      }
+      // Não criar mais registros financeiros para saldo inicial
+      // O saldo inicial é mantido apenas em orcamentos_mensais.saldo_inicial
       
       console.log(`✅ Continuidade corrigida para ${mes}/${ano}`);
       

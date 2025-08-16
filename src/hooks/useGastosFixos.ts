@@ -222,22 +222,6 @@ export const useGastosFixos = () => {
     }
   };
 
-  const getGastosFixosComStatus = useCallback(async (mes: number, ano: number) => {
-    const gastosAtivos = gastosFixos.filter(gasto => gasto.ativo);
-    
-    const gastosComStatus = await Promise.all(
-      gastosAtivos.map(async (gasto) => {
-        const registroPagamento = await checkPagamentoMesAtual(gasto, mes, ano);
-        return {
-          ...gasto,
-          pago: !!registroPagamento,
-          registroDetectado: registroPagamento
-        };
-      })
-    );
-
-    return gastosComStatus;
-  }, [gastosFixos, user]);
 
   const getTotalGastosFixosNaoPagos = async (mes: number, ano: number) => {
     const gastosComStatus = await getGastosFixosComStatus(mes, ano);
@@ -260,6 +244,62 @@ export const useGastosFixos = () => {
     return await checkPagamentoMesAtual(gastoFixo, mes, ano);
   };
 
+  const updateStatusManualGastoFixo = async (id: string, status: 'pago' | 'pendente', mes: number, ano: number) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('gastos_fixos')
+        .update({
+          status_manual: status,
+          status_manual_mes: mes,
+          status_manual_ano: ano
+        })
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+    } catch (err) {
+      console.error('Erro ao atualizar status manual do gasto fixo:', err);
+      throw err;
+    }
+  };
+
+  const getGastosFixosComStatus = useCallback(async (mes: number, ano: number) => {
+    const gastosAtivos = gastosFixos.filter(gasto => gasto.ativo);
+    
+    const gastosComStatus = await Promise.all(
+      gastosAtivos.map(async (gasto: any) => {
+        // Verificar se tem status manual para este mês/ano
+        const temStatusManual = gasto.status_manual && 
+                               gasto.status_manual_mes === mes && 
+                               gasto.status_manual_ano === ano;
+
+        let pago = false;
+        let registroDetectado = null;
+        let statusTipo = 'automatico';
+
+        if (temStatusManual) {
+          pago = gasto.status_manual === 'pago';
+          statusTipo = 'manual';
+        } else {
+          registroDetectado = await checkPagamentoMesAtual(gasto, mes, ano);
+          pago = !!registroDetectado;
+        }
+
+        return {
+          ...gasto,
+          pago,
+          registroDetectado,
+          statusTipo
+        };
+      })
+    );
+
+    return gastosComStatus;
+  }, [gastosFixos, user]);
+
   useEffect(() => {
     if (user) {
       fetchGastosFixos();
@@ -279,6 +319,7 @@ export const useGastosFixos = () => {
     getGastosFixosComStatus,
     getTotalGastosFixosNaoPagos,
     getMatchingRegistro,
+    updateStatusManualGastoFixo,
     refetch: fetchGastosFixos,
   };
 };

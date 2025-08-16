@@ -420,6 +420,22 @@ export const Orcamento = () => {
     }
   };
 
+  const handleToggleStatusGastoFixo = async (id: string, novoStatus: 'pago' | 'pendente') => {
+    try {
+      await updateStatusManualGastoFixo(id, novoStatus, mesAtual, anoAtual);
+      // Atualizar os gastos com status
+      const gastosComStatus = await getGastosFixosComStatus(mesAtual, anoAtual);
+      setGastosFixosComStatus(gastosComStatus);
+      const pagos = gastosComStatus.filter(g => g.pago).reduce((sum, g) => sum + g.valor_mensal, 0);
+      const pendentes = gastosComStatus.filter(g => !g.pago && g.ativo).reduce((sum, g) => sum + g.valor_mensal, 0);
+      setTotalGastosPagos(pagos);
+      setTotalGastosPendentes(pendentes);
+      toast.success(`Status do gasto alterado para ${novoStatus}`);
+    } catch (error) {
+      toast.error('Erro ao alterar status do gasto fixo');
+    }
+  };
+
   const resetFonteForm = () => {
     setFonteForm({
       tipo: '',

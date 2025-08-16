@@ -37,6 +37,7 @@ interface TabSectionProps {
   onAddParcelamento: () => void;
   onAddGastoFixo: () => void;
   onToggleStatusRenda?: (id: string, novoStatus: 'recebido' | 'pendente') => void;
+  onToggleStatusGastoFixo?: (id: string, novoStatus: 'pago' | 'pendente') => void;
 }
 
 export const TabSection = ({
@@ -67,7 +68,8 @@ export const TabSection = ({
   onAddCartao,
   onAddParcelamento,
   onAddGastoFixo,
-  onToggleStatusRenda
+  onToggleStatusRenda,
+  onToggleStatusGastoFixo
 }: TabSectionProps) => {
   const isMobile = useIsMobile();
   
@@ -321,42 +323,61 @@ export const TabSection = ({
                         {gastosFixosComStatus && (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Badge 
-                                variant={gasto.pago ? "default" : "secondary"}
-                                className={`h-5 text-xs flex items-center gap-1 ${
-                                  gasto.pago 
-                                    ? "bg-success/10 text-success border-success/20 hover:bg-success/20" 
-                                    : "bg-warning/10 text-warning border-warning/20 hover:bg-warning/20"
-                                }`}
-                              >
-                                {gasto.pago ? (
-                                  <>
-                                    <CheckCircle className="h-3 w-3" />
-                                    {isMobile ? "Ok" : "Pago"}
-                                  </>
-                                ) : (
-                                  <>
-                                    <Clock className="h-3 w-3" />
-                                    {isMobile ? "Pend" : "Pendente"}
-                                  </>
-                                )}
-                              </Badge>
+                               <Badge 
+                                 variant={gasto.pago ? "default" : "secondary"}
+                                 className={cn(
+                                   "h-6 text-xs flex items-center gap-1 px-3 py-1 font-medium",
+                                   "transition-all duration-200 ease-in-out",
+                                   "border-2 rounded-lg shadow-sm",
+                                   gasto.pago 
+                                     ? "bg-success/15 text-success border-success/30 hover:bg-success/25 hover:border-success/50" 
+                                     : "bg-warning/15 text-warning border-warning/30 hover:bg-warning/25 hover:border-warning/50",
+                                   onToggleStatusGastoFixo && [
+                                     "cursor-pointer select-none",
+                                     "hover:scale-105 hover:shadow-md",
+                                     "active:scale-95 active:shadow-sm",
+                                     "hover:ring-2 hover:ring-offset-1",
+                                     gasto.pago 
+                                       ? "hover:ring-success/20" 
+                                       : "hover:ring-warning/20"
+                                   ]
+                                 )}
+                                 onClick={onToggleStatusGastoFixo ? () => onToggleStatusGastoFixo(gasto.id, gasto.pago ? 'pendente' : 'pago') : undefined}
+                               >
+                                 {gasto.pago ? (
+                                   <>
+                                     <CheckCircle className="h-3.5 w-3.5 transition-transform duration-200" />
+                                     {isMobile ? "Ok" : "Pago"}
+                                   </>
+                                 ) : (
+                                   <>
+                                     <Clock className="h-3.5 w-3.5 transition-transform duration-200" />
+                                     {isMobile ? "Pend" : "Pendente"}
+                                   </>
+                                 )}
+                                 {gasto.statusTipo === 'manual' && (
+                                   <div className="ml-1 w-1.5 h-1.5 bg-current rounded-full animate-pulse" title="Status manual" />
+                                 )}
+                               </Badge>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {gasto.pago ? (
-                                <div className="text-xs">
-                                  <p className="font-semibold text-success">✅ Pagamento detectado</p>
-                                  {gasto.registroDetectado && (
-                                    <>
-                                      <p>Valor: {formatCurrency(Math.abs(gasto.registroDetectado.valor))}</p>
-                                      <p>Data: {new Date(gasto.registroDetectado.data).toLocaleDateString('pt-BR')}</p>
-                                      <p>Categoria: {gasto.registroDetectado.categoria}</p>
-                                    </>
-                                  )}
-                                </div>
-                              ) : (
-                                <p className="text-xs text-warning">⏰ Aguardando pagamento no mês</p>
-                              )}
+                               {gasto.pago ? (
+                                 <div className="text-xs">
+                                   <p className="font-semibold text-success">✅ {gasto.statusTipo === 'manual' ? 'Marcado manualmente como pago' : 'Pagamento detectado automaticamente'}</p>
+                                   {gasto.registroDetectado && (
+                                     <>
+                                       <p>Valor: {formatCurrency(Math.abs(gasto.registroDetectado.valor))}</p>
+                                       <p>Data: {new Date(gasto.registroDetectado.data).toLocaleDateString('pt-BR')}</p>
+                                       <p>Categoria: {gasto.registroDetectado.categoria}</p>
+                                     </>
+                                   )}
+                                 </div>
+                               ) : (
+                                 <div className="text-xs">
+                                   <p className="text-warning">⏰ {gasto.statusTipo === 'manual' ? 'Marcado manualmente como pendente' : 'Aguardando pagamento no mês'}</p>
+                                   <p className="text-muted-foreground mt-1">Clique no status para alterar manualmente</p>
+                                 </div>
+                               )}
                             </TooltipContent>
                           </Tooltip>
                         )}

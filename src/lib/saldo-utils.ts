@@ -214,6 +214,12 @@ export const garantirContinuidadeSaldos = async (userId: string, mes: number, an
     
     console.log(`📊 Orçamento atual (${mes}/${ano}):`, orcamentoAtual);
     
+    // Se o saldo foi editado manualmente, não sobrescrever
+    if (orcamentoAtual?.saldo_editado_manualmente) {
+      console.log(`🔒 Saldo inicial foi editado manualmente (${mes}/${ano}): Mantendo valor ${orcamentoAtual.saldo_inicial}`);
+      return;
+    }
+    
     // Se o saldo inicial do mês atual não bate com o saldo final do anterior
     // ou se não existe orçamento, forçar recálculo
     const diferenca = orcamentoAtual ? Math.abs((orcamentoAtual.saldo_inicial || 0) - saldoAtualMesAnterior) : Infinity;
@@ -223,13 +229,13 @@ export const garantirContinuidadeSaldos = async (userId: string, mes: number, an
       console.log(`   Saldo anterior: ${saldoAtualMesAnterior}`);
       console.log(`   Saldo atual: ${orcamentoAtual?.saldo_inicial || 0}`);
       
-      // Atualizar ou criar orçamento com o saldo correto
+      // Atualizar ou criar orçamento com o saldo correto (mas não como editado manualmente)
       if (orcamentoAtual) {
         await supabase
           .from('orcamentos_mensais')
           .update({ 
-            saldo_inicial: saldoAtualMesAnterior,
-            saldo_editado_manualmente: false 
+            saldo_inicial: saldoAtualMesAnterior
+            // Não alterar saldo_editado_manualmente se já for true
           })
           .eq('id', orcamentoAtual.id);
       } else {

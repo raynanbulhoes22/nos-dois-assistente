@@ -52,28 +52,21 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   // Usar o saldo dos registros financeiros em vez do orçamento
   const saldoInicialAtual = saldoInicialFromDB;
 
-  // Buscar saldo inicial dos registros financeiros para este mês
+  // Buscar saldo inicial do orçamento mensal
   useEffect(() => {
     const buscarSaldoInicial = async () => {
       if (!user) return;
-      
-      const primeiroDiaMes = new Date(ano, mes - 1, 1);
-      const ultimoDiaMes = new Date(ano, mes, 0);
-      
-      const { data: registroSaldo, error } = await supabase
-        .from('registros_financeiros')
-        .select('valor, tipo_movimento')
+
+      const { data: orcamento, error } = await supabase
+        .from('orcamentos_mensais')
+        .select('saldo_inicial')
         .eq('user_id', user.id)
-        .eq('categoria', 'Saldo Inicial')
-        .gte('data', primeiroDiaMes.toISOString().split('T')[0])
-        .lte('data', ultimoDiaMes.toISOString().split('T')[0])
+        .eq('mes', mes)
+        .eq('ano', ano)
         .maybeSingle();
       
-      if (!error && registroSaldo) {
-        const valor = registroSaldo.tipo_movimento === 'entrada' 
-          ? registroSaldo.valor 
-          : -registroSaldo.valor;
-        setSaldoInicialFromDB(valor);
+      if (!error && orcamento) {
+        setSaldoInicialFromDB(orcamento.saldo_inicial || 0);
       } else {
         setSaldoInicialFromDB(0);
       }
@@ -167,70 +160,8 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
         console.log('✅ Orçamento criado:', result);
       }
       
-      // 2. Verificar se já existe registro de saldo inicial para este mês
-      const primeiroDiaMes = new Date(ano, mes - 1, 1);
-      console.log('🔍 Verificando registro existente...', { 
-        data: primeiroDiaMes.toISOString().split('T')[0],
-        user_id: user.id 
-      });
-      
-      const { data: registroExistente, error: selectError } = await supabase
-        .from('registros_financeiros')
-        .select('id, valor')
-        .eq('user_id', user.id)
-        .eq('categoria', 'Saldo Inicial')
-        .eq('data', primeiroDiaMes.toISOString().split('T')[0])
-        .maybeSingle();
-      
-      if (selectError) {
-        console.error('❌ Erro ao buscar registro existente:', selectError);
-        throw selectError;
-      }
-      
-      console.log('📋 Registro existente encontrado:', registroExistente);
-      
-      if (registroExistente) {
-        // 3a. Atualizar registro existente
-        console.log('🔄 Atualizando registro existente...');
-        const { error: updateError } = await supabase
-          .from('registros_financeiros')
-          .update({
-            valor: Math.abs(valorSaldo),
-            tipo: 'entrada_manual', // Valor correto conforme constraint
-            tipo_movimento: valorSaldo >= 0 ? 'entrada' : 'saida',
-            nome: `Saldo Inicial - ${new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
-            observacao: 'Saldo inicial atualizado pelo usuário'
-          })
-          .eq('id', registroExistente.id);
-          
-        if (updateError) {
-          console.error('❌ Erro ao atualizar registro:', updateError);
-          throw updateError;
-        }
-        console.log('✅ Registro de saldo inicial atualizado');
-      } else {
-        // 3b. Criar novo registro
-        console.log('➕ Criando novo registro...');
-        const { error: insertError } = await supabase
-          .from('registros_financeiros')
-          .insert([{
-            user_id: user.id,
-            valor: Math.abs(valorSaldo),
-            data: primeiroDiaMes.toISOString().split('T')[0],
-            tipo: 'entrada_manual', // Valor correto conforme constraint
-            tipo_movimento: valorSaldo >= 0 ? 'entrada' : 'saida',
-            categoria: 'Saldo Inicial',
-            nome: `Saldo Inicial - ${new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
-            observacao: 'Saldo inicial definido pelo usuário',
-            origem: 'manual'
-          }]);
-          
-        if (insertError) {
-          console.error('❌ Erro ao inserir registro:', insertError);
-          throw insertError;
-        }
-        console.log('✅ Registro de saldo inicial criado');
-      }
+      // Não mais necessário gerenciar registros de "Saldo Inicial"
+      // O saldo inicial é mantido apenas em orcamentos_mensais.saldo_inicial
       
       // 4. Atualizar estado local imediatamente
       setSaldoInicialFromDB(valorSaldo);

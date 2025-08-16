@@ -64,13 +64,13 @@ export const WelcomeModal = ({
   if (!isOpen) return null;
   
   return <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-none max-h-none w-full h-full p-0 gap-0 border-0 bg-transparent overflow-hidden">
+      <DialogContent className="max-w-sm w-[90vw] max-h-[85vh] p-0 gap-0 border-0 bg-transparent overflow-hidden">
         {/* Background Image with Overlay */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-lg"
           style={{ backgroundImage: `url(${modalBg})` }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-slate-900/70 to-blue-800/80 backdrop-blur-[1px]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/85 via-slate-900/75 to-blue-800/85 backdrop-blur-[1px] rounded-lg" />
         </div>
 
         {/* Close Button */}
@@ -85,75 +85,74 @@ export const WelcomeModal = ({
         </Button>
 
         {/* Main Content */}
-        <div className="relative z-10 flex flex-col min-h-screen px-4 py-8 md:px-8 md:py-12">
+        <div className="relative z-10 flex flex-col p-6 space-y-6">
           {/* Hero Section */}
-          <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full space-y-8 text-center">
+          <div className="text-center space-y-4">
             
             {/* Hero Text */}
-            <div className="space-y-4 animate-fade-in">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+            <div className="space-y-3 animate-fade-in">
+              <h1 className="text-xl font-bold text-white leading-tight">
                 Transforme seus Dados
                 <span className="block bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
                   em Inteligência
                 </span>
               </h1>
-              <p className="text-lg md:text-xl text-white/90 leading-relaxed">
-                Nossa IA analisa seus gastos e entrega insights personalizados direto no WhatsApp
+              <p className="text-sm text-white/90">
+                IA que analisa seus gastos via WhatsApp
               </p>
             </div>
 
             {/* WhatsApp Card */}
-            <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-2xl shadow-blue-500/20 animate-scale-in">
-              <CardContent className="p-6 md:p-8">
-                <div className="space-y-6">
+            <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl animate-scale-in">
+              <CardContent className="p-4">
+                <div className="space-y-4">
                   <div className="flex items-center justify-center">
-                    <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-full p-4 shadow-lg">
-                      <WhatsAppIcon className="h-8 w-8 text-white" />
+                    <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-full p-3">
+                      <WhatsAppIcon className="h-5 w-5 text-white" />
                     </div>
                   </div>
                   
-                  <div className="space-y-3">
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-900">
-                      Consultor Financeiro Pessoal
+                  <div className="space-y-2 text-center">
+                    <h2 className="text-lg font-bold text-gray-900">
+                      Consultor Financeiro
                     </h2>
-                    <p className="text-gray-600">
-                      Comece enviando seus registros e receba análises instantâneas
+                    <p className="text-sm text-gray-600">
+                      Comece enviando seus registros
                     </p>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-                    <p className="text-sm text-green-700 font-medium mb-1">WhatsApp Oficial</p>
-                    <p className="text-lg font-bold text-green-800">
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border border-green-100">
+                    <p className="text-xs text-green-700 font-medium mb-1">WhatsApp Oficial</p>
+                    <p className="text-sm font-bold text-green-800">
                       +55 (69) 9.9314-0550
                     </p>
                   </div>
 
                   <Button 
                     onClick={() => window.open(whatsappLink, '_blank')} 
-                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-4 h-auto text-base shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]" 
-                    size="lg"
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 h-auto text-sm" 
                   >
-                    <WhatsAppIcon className="h-5 w-5 mr-3" />
-                    Iniciar Análise Financeira
+                    <WhatsAppIcon className="h-4 w-4 mr-2" />
+                    Iniciar Análise
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
             {/* Features Grid */}
-            <div className="grid grid-cols-2 gap-3 md:gap-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+            <div className="grid grid-cols-2 gap-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
               {features.map((feature, index) => (
                 <Card key={index} className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all duration-200 group">
-                  <CardContent className="p-4">
-                    <div className="text-center space-y-2">
+                  <CardContent className="p-3">
+                    <div className="text-center space-y-1">
                       <div className="flex justify-center">
-                        <feature.icon className="h-5 w-5 text-cyan-400 group-hover:text-cyan-300 transition-colors" />
+                        <feature.icon className="h-4 w-4 text-cyan-400 group-hover:text-cyan-300" />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-white text-sm">
+                        <h4 className="font-semibold text-white text-xs">
                           {feature.title}
                         </h4>
-                        <p className="text-xs text-white/70 leading-relaxed">
+                        <p className="text-[10px] text-white/70">
                           {feature.description}
                         </p>
                       </div>
@@ -164,17 +163,17 @@ export const WelcomeModal = ({
             </div>
 
             {/* Secondary CTA */}
-            <div className="pt-6 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <div className="text-center animate-fade-in" style={{ animationDelay: '0.6s' }}>
               <Button 
                 onClick={handleClose} 
                 variant="ghost" 
                 size="sm" 
-                className="text-white/80 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-md"
+                className="text-white/80 hover:text-white hover:bg-white/10 border border-white/20 text-xs py-2"
               >
-                Explorar Plataforma Depois
+                Explorar Depois
               </Button>
-              <p className="text-xs text-white/60 mt-3">
-                Você sempre pode acessar o WhatsApp através do menu
+              <p className="text-[10px] text-white/60 mt-2">
+                Acesse o WhatsApp pelo menu
               </p>
             </div>
           </div>

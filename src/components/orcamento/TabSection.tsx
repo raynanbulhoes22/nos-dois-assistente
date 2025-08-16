@@ -13,6 +13,7 @@ interface TabSectionProps {
   contas: any[];
   gastosFixos: any[];
   gastosFixosComStatus?: any[];
+  fontesRendaComStatus?: any[];
   formatCurrency: (value: number) => string;
   totalRendaAtiva: number;
   totalLimiteCartoes: number;
@@ -20,6 +21,8 @@ interface TabSectionProps {
   totalGastosFixosAtivos: number;
   totalGastosPagos?: number;
   totalGastosPendentes?: number;
+  totalRendaRecebida?: number;
+  totalRendaPendente?: number;
   onEditFonte: (fonte: any) => void;
   onDeleteFonte: (id: string) => void;
   onEditCartao: (cartao: any) => void;
@@ -40,6 +43,7 @@ export const TabSection = ({
   contas,
   gastosFixos,
   gastosFixosComStatus,
+  fontesRendaComStatus,
   formatCurrency,
   totalRendaAtiva,
   totalLimiteCartoes,
@@ -47,6 +51,8 @@ export const TabSection = ({
   totalGastosFixosAtivos,
   totalGastosPagos = 0,
   totalGastosPendentes = 0,
+  totalRendaRecebida = 0,
+  totalRendaPendente = 0,
   onEditFonte,
   onDeleteFonte,
   onEditCartao,
@@ -62,7 +68,7 @@ export const TabSection = ({
 }: TabSectionProps) => {
   const isMobile = useIsMobile();
   
-  const activeFontes = fontes.filter(fonte => fonte.ativa);
+  const activeFontes = fontesRendaComStatus || fontes.filter(fonte => fonte.ativa);
   const activeCartoes = cartoes.filter(cartao => cartao.ativo);
   const activeContas = contas.filter(conta => conta.ativa);
   const activeGastosFixos = gastosFixosComStatus || gastosFixos.filter(gasto => gasto.ativo);
@@ -87,7 +93,11 @@ export const TabSection = ({
       <TabsContent value="renda" className="mt-0">
         <MobileSection
           title="Fontes de Renda"
-          subtitle={`Total: ${formatCurrency(totalRendaAtiva)}`}
+          subtitle={
+            fontesRendaComStatus 
+              ? `Total: ${formatCurrency(totalRendaAtiva)}${totalRendaRecebida > 0 ? ` (${formatCurrency(totalRendaRecebida)} recebido` : ''}${totalRendaPendente > 0 ? `${totalRendaRecebida > 0 ? ', ' : ' ('}${formatCurrency(totalRendaPendente)} pendente)` : totalRendaRecebida > 0 ? ')' : ''}`
+              : `Total: ${formatCurrency(totalRendaAtiva)}`
+          }
           icon={TrendingUp}
           iconVariant="success"
           onAdd={onAddFonte}
@@ -95,18 +105,67 @@ export const TabSection = ({
           isEmpty={activeFontes.length === 0}
           emptyMessage="Nenhuma fonte de renda cadastrada"
         >
-          <div className="space-y-3">
+          <TooltipProvider>
+            <div className="space-y-3">
             {activeFontes.map((fonte) => (
               <div key={fonte.id} className="list-item group">
                 <div className="flex justify-between items-start">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm truncate">{fonte.tipo}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold text-sm truncate">{fonte.tipo}</h3>
+                      {fontesRendaComStatus && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Badge 
+                              variant={fonte.recebido ? "default" : "secondary"}
+                              className={`h-5 text-xs flex items-center gap-1 ${
+                                fonte.recebido 
+                                  ? "bg-success/10 text-success border-success/20 hover:bg-success/20" 
+                                  : "bg-warning/10 text-warning border-warning/20 hover:bg-warning/20"
+                              }`}
+                            >
+                              {fonte.recebido ? (
+                                <>
+                                  <CheckCircle className="h-3 w-3" />
+                                  {isMobile ? "Ok" : "Recebido"}
+                                </>
+                              ) : (
+                                <>
+                                  <Clock className="h-3 w-3" />
+                                  {isMobile ? "Pend" : "Pendente"}
+                                </>
+                              )}
+                            </Badge>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {fonte.recebido ? (
+                              <div className="text-xs">
+                                <p className="font-semibold text-success">✅ Recebimento detectado</p>
+                                {fonte.registroDetectado && (
+                                  <>
+                                    <p>Valor: {formatCurrency(Math.abs(fonte.registroDetectado.valor))}</p>
+                                    <p>Data: {new Date(fonte.registroDetectado.data).toLocaleDateString('pt-BR')}</p>
+                                    <p>Categoria: {fonte.registroDetectado.categoria}</p>
+                                  </>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="text-xs text-warning">⏰ Aguardando recebimento no mês</p>
+                            )}
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
                     {fonte.descricao && (
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                         {fonte.descricao}
                       </p>
                     )}
-                    <p className="text-lg font-bold text-success mt-2">
+                    <p className={`text-lg font-bold mt-2 ${
+                      fontesRendaComStatus && fonte.recebido 
+                        ? "text-muted-foreground" 
+                        : "text-success"
+                    }`}>
                       {formatCurrency(fonte.valor)}
                     </p>
                   </div>
@@ -131,7 +190,8 @@ export const TabSection = ({
                 </div>
               </div>
             ))}
-          </div>
+            </div>
+          </TooltipProvider>
         </MobileSection>
       </TabsContent>
 

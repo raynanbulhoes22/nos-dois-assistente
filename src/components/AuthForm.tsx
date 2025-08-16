@@ -536,6 +536,27 @@ export const AuthForm = () => {
                     />
                     <FormField
                       control={signUpForm.control}
+                      name="whatsapp"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-1">
+                            WhatsApp
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <PhoneInput
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="(11) 9999-9999"
+                              disabled={isLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={signUpForm.control}
                       name="password"
                       render={({ field }) => (
                         <FormItem>
@@ -582,27 +603,6 @@ export const AuthForm = () => {
                               placeholder="••••••••"
                               disabled={isLoading}
                               {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signUpForm.control}
-                      name="whatsapp"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-1">
-                            WhatsApp
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <PhoneInput
-                              value={field.value}
-                              onChange={field.onChange}
-                              placeholder="(11) 9999-9999"
-                              disabled={isLoading}
                             />
                           </FormControl>
                           <FormMessage />

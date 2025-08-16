@@ -11,6 +11,7 @@ import { useOrcamentos } from '@/hooks/useOrcamentos';
 import { useFinancialStats } from '@/hooks/useFinancialStats';
 import { useAuth } from '@/hooks/useAuth';
 import { useSaldoEsperado } from "@/hooks/useSaldoEsperado";
+import { useSaldoInicial } from "@/hooks/useSaldoInicial";
 import { supabase } from '@/integrations/supabase/client';
 import { recalcularSaldosEmCascata } from "@/lib/saldo-utils";
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +26,10 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const { getOrcamentoByMesAno, updateOrcamento, createOrcamento, refetch } = useOrcamentos();
   const { saldoInicial, saldoComputado, saldoAtual } = useFinancialStats();
   const { toast } = useToast();
+  
+  // Hook para garantir que o saldo inicial seja calculado automaticamente
+  useSaldoInicial(mes, ano);
+  
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [novoSaldo, setNovoSaldo] = useState('');
   const [saldoInicialFromDB, setSaldoInicialFromDB] = useState<number>(0);

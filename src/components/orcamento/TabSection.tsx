@@ -1,7 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobileSection } from "./MobileSection";
 import { Button } from "@/components/ui/button";
-import { Edit3, Trash2, TrendingUp, CreditCard, Building2, Home } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Edit3, Trash2, TrendingUp, CreditCard, Building2, Home, CheckCircle, Clock } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LimiteCartaoDisplay } from "@/components/cartoes/LimiteCartaoDisplay";
 
@@ -10,11 +12,14 @@ interface TabSectionProps {
   cartoes: any[];
   contas: any[];
   gastosFixos: any[];
+  gastosFixosComStatus?: any[];
   formatCurrency: (value: number) => string;
   totalRendaAtiva: number;
   totalLimiteCartoes: number;
   totalParcelasAtivas: number;
   totalGastosFixosAtivos: number;
+  totalGastosPagos?: number;
+  totalGastosPendentes?: number;
   onEditFonte: (fonte: any) => void;
   onDeleteFonte: (id: string) => void;
   onEditCartao: (cartao: any) => void;
@@ -34,11 +39,14 @@ export const TabSection = ({
   cartoes,
   contas,
   gastosFixos,
+  gastosFixosComStatus,
   formatCurrency,
   totalRendaAtiva,
   totalLimiteCartoes,
   totalParcelasAtivas,
   totalGastosFixosAtivos,
+  totalGastosPagos = 0,
+  totalGastosPendentes = 0,
   onEditFonte,
   onDeleteFonte,
   onEditCartao,
@@ -57,7 +65,7 @@ export const TabSection = ({
   const activeFontes = fontes.filter(fonte => fonte.ativa);
   const activeCartoes = cartoes.filter(cartao => cartao.ativo);
   const activeContas = contas.filter(conta => conta.ativa);
-  const activeGastosFixos = gastosFixos.filter(gasto => gasto.ativo);
+  const activeGastosFixos = gastosFixosComStatus || gastosFixos.filter(gasto => gasto.ativo);
 
   return (
     <Tabs defaultValue="renda" className="w-full">
@@ -205,7 +213,11 @@ export const TabSection = ({
       <TabsContent value="gastos-fixos" className="mt-0">
         <MobileSection
           title="Gastos Fixos"
-          subtitle={`Total Mensal: ${formatCurrency(totalGastosFixosAtivos)}`}
+          subtitle={
+            gastosFixosComStatus 
+              ? `Total: ${formatCurrency(totalGastosFixosAtivos)}${totalGastosPagos > 0 ? ` (${formatCurrency(totalGastosPagos)} pagos` : ''}${totalGastosPendentes > 0 ? `${totalGastosPagos > 0 ? ', ' : ' ('}${formatCurrency(totalGastosPendentes)} pendentes)` : totalGastosPagos > 0 ? ')' : ''}`
+              : `Total Mensal: ${formatCurrency(totalGastosFixosAtivos)}`
+          }
           icon={Home}
           iconVariant="error"
           onAdd={onAddGastoFixo}
@@ -213,50 +225,100 @@ export const TabSection = ({
           isEmpty={activeGastosFixos.length === 0}
           emptyMessage="Nenhum gasto fixo cadastrado"
         >
-          <div className="space-y-3">
-            {activeGastosFixos.map((gasto) => (
-              <div key={gasto.id} className="list-item group">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm truncate">{gasto.nome}</h3>
-                    {gasto.categoria && (
-                      <p className="text-xs text-muted-foreground">
-                        {gasto.categoria}
-                      </p>
-                    )}
-                    <div className="flex flex-col gap-1 mt-1">
-                      <p className="text-lg font-bold text-destructive">
-                        -{formatCurrency(gasto.valor_mensal)}
-                      </p>
-                      {gasto.observacoes && (
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {gasto.observacoes}
+          <TooltipProvider>
+            <div className="space-y-3">
+              {activeGastosFixos.map((gasto) => (
+                <div key={gasto.id} className="list-item group">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-sm truncate">{gasto.nome}</h3>
+                        {gastosFixosComStatus && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge 
+                                variant={gasto.pago ? "default" : "secondary"}
+                                className={`h-5 text-xs flex items-center gap-1 ${
+                                  gasto.pago 
+                                    ? "bg-success/10 text-success border-success/20 hover:bg-success/20" 
+                                    : "bg-warning/10 text-warning border-warning/20 hover:bg-warning/20"
+                                }`}
+                              >
+                                {gasto.pago ? (
+                                  <>
+                                    <CheckCircle className="h-3 w-3" />
+                                    {isMobile ? "Ok" : "Pago"}
+                                  </>
+                                ) : (
+                                  <>
+                                    <Clock className="h-3 w-3" />
+                                    {isMobile ? "Pend" : "Pendente"}
+                                  </>
+                                )}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {gasto.pago ? (
+                                <div className="text-xs">
+                                  <p className="font-semibold text-success">✅ Pagamento detectado</p>
+                                  {gasto.registroDetectado && (
+                                    <>
+                                      <p>Valor: {formatCurrency(gasto.registroDetectado.valor)}</p>
+                                      <p>Data: {new Date(gasto.registroDetectado.data).toLocaleDateString('pt-BR')}</p>
+                                      <p>Categoria: {gasto.registroDetectado.categoria}</p>
+                                    </>
+                                  )}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-warning">⏰ Aguardando pagamento no mês</p>
+                              )}
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
+                      {gasto.categoria && (
+                        <p className="text-xs text-muted-foreground">
+                          {gasto.categoria}
                         </p>
                       )}
+                      <div className="flex flex-col gap-1 mt-1">
+                        <p className={`text-lg font-bold ${
+                          gastosFixosComStatus && gasto.pago 
+                            ? "text-muted-foreground" 
+                            : "text-destructive"
+                        }`}>
+                          -{formatCurrency(gasto.valor_mensal)}
+                        </p>
+                        {gasto.observacoes && (
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {gasto.observacoes}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-1 group-hover-actions">
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => onEditGastoFixo(gasto)} 
+                        className="h-8 w-8 p-0 focus-ring"
+                      >
+                        <Edit3 className="h-3 w-3" />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => onDeleteGastoFixo(gasto.id)} 
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive focus-ring"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex gap-1 group-hover-actions">
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      onClick={() => onEditGastoFixo(gasto)} 
-                      className="h-8 w-8 p-0 focus-ring"
-                    >
-                      <Edit3 className="h-3 w-3" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      onClick={() => onDeleteGastoFixo(gasto.id)} 
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive focus-ring"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </TooltipProvider>
         </MobileSection>
       </TabsContent>
     </Tabs>

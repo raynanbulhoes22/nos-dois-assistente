@@ -151,7 +151,9 @@ export const Orcamento = () => {
     createGastoFixo, 
     updateGastoFixo, 
     deleteGastoFixo, 
-    getTotalGastosFixosAtivos 
+    getTotalGastosFixosAtivos,
+    getGastosFixosComStatus,
+    getTotalGastosFixosNaoPagos
   } = useGastosFixos();
   
   // Hook para garantir saldo inicial no mês atual
@@ -165,6 +167,33 @@ export const Orcamento = () => {
   const totalGastosFixos = getTotalGastosFixosAtivos();
   const orcamentoAtual = orcamentos.find(o => o.mes === mesAtual && o.ano === anoAtual);
   const previsibilidadeStatus = 'sem-dados';
+  
+  // Gastos fixos com status de pagamento
+  const [gastosFixosComStatus, setGastosFixosComStatus] = useState<any[]>([]);
+  const [totalGastosPagos, setTotalGastosPagos] = useState(0);
+  const [totalGastosPendentes, setTotalGastosPendentes] = useState(0);
+  
+  useEffect(() => {
+    const fetchGastosComStatus = async () => {
+      try {
+        const gastosComStatus = await getGastosFixosComStatus(mesAtual, anoAtual);
+        setGastosFixosComStatus(gastosComStatus);
+        const pagos = gastosComStatus.filter(g => g.pago).reduce((sum, g) => sum + g.valor_mensal, 0);
+        const pendentes = gastosComStatus.filter(g => !g.pago).reduce((sum, g) => sum + g.valor_mensal, 0);
+        setTotalGastosPagos(pagos);
+        setTotalGastosPendentes(pendentes);
+      } catch (error) {
+        console.error('Erro ao buscar gastos com status:', error);
+        setGastosFixosComStatus([]);
+        setTotalGastosPagos(0);
+        setTotalGastosPendentes(0);
+      }
+    };
+    
+    if (mesAtual && anoAtual) {
+      fetchGastosComStatus();
+    }
+  }, [mesAtual, anoAtual, getGastosFixosComStatus]);
 
   // Função para formatar moeda
   const formatCurrency = (valor: number) => {
@@ -519,11 +548,14 @@ export const Orcamento = () => {
                 cartoes={cartoes}
                 contas={contas}
                 gastosFixos={gastosFixos}
+                gastosFixosComStatus={gastosFixosComStatus.length > 0 ? gastosFixosComStatus : undefined}
                 formatCurrency={formatCurrency}
                 totalRendaAtiva={totalRendaAtiva}
                 totalLimiteCartoes={totalLimiteCartoes}
                 totalParcelasAtivas={totalParcelasAtivas}
                 totalGastosFixosAtivos={getTotalGastosFixosAtivos()}
+                totalGastosPagos={totalGastosPagos}
+                totalGastosPendentes={totalGastosPendentes}
                 onEditFonte={handleEditFonte}
                 onDeleteFonte={deleteFonte}
                 onEditCartao={handleEditCartao}

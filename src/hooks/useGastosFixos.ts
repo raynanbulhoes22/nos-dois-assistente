@@ -114,15 +114,70 @@ export const useGastosFixos = () => {
     if (!user) return null;
 
     try {
-      // Estratégias de busca: 1) Por categoria exata, 2) Por nome similar, 3) Por categoria relacionada
-      const categoriasRelacionadas: { [key: string]: string[] } = {
-        'Moradia': ['Aluguel', 'Moradia', 'Casa', 'Apartamento'],
-        'Serviços': ['Internet', 'Água', 'Luz', 'Energia', 'Telefone', 'Gas'],
-        'Transporte': ['Combustível', 'Gasolina', 'Uber', 'Transporte'],
-        'Alimentação': ['Mercado', 'Supermercado', 'Restaurante', 'Comida']
+      // Mapeamento inteligente para gastos fixos essenciais (EXCLUINDO financiamentos)
+      const categoriasEssenciaisRelacionadas: { [key: string]: string[] } = {
+        // Moradia
+        'Aluguel': ['Aluguel', 'Moradia', 'Casa', 'Apartamento', 'Condomínio'],
+        'Moradia': ['Aluguel', 'Moradia', 'Casa', 'Apartamento', 'Condomínio'],
+        
+        // Utilidades
+        'Água': ['Água', 'Saneamento', 'SABESP', 'COPASA'],
+        'Energia': ['Energia', 'Luz', 'Elétrica', 'CEMIG', 'CPFL', 'Light'],
+        'Internet': ['Internet', 'Banda Larga', 'Fibra', 'Wi-Fi', 'Vivo', 'Claro', 'Tim', 'Oi'],
+        
+        // Transporte essencial (SEM financiamentos)
+        'Transporte': ['Transporte', 'Ônibus', 'Metrô', 'Bilhete Único', 'Vale Transporte'],
+        'Combustível': ['Combustível', 'Gasolina', 'Álcool', 'Diesel', 'Posto'],
+        
+        // Alimentação
+        'Alimentação': ['Alimentação', 'Mercado', 'Supermercado', 'Restaurante', 'Comida', 'Lanche'],
+        'Supermercado': ['Supermercado', 'Mercado', 'Alimentação', 'Compras'],
+        
+        // Saúde
+        'Saúde': ['Saúde', 'Plano de Saúde', 'Médico', 'Hospital', 'Clínica'],
+        'Farmácia': ['Farmácia', 'Medicamento', 'Remédio', 'Drogaria'],
+        
+        // Educação
+        'Escola / Faculdade': ['Escola', 'Faculdade', 'Universidade', 'Mensalidade', 'Educação', 'Curso']
       };
 
-      const categoriasParaBuscar = categoriasRelacionadas[gastoFixo.categoria] || [gastoFixo.categoria];
+      // Palavras-chave para busca por nome do gasto fixo
+      const palavrasChaveEssenciais: { [key: string]: string[] } = {
+        'aluguel': ['Aluguel', 'Moradia'],
+        'luz': ['Energia'],
+        'energia': ['Energia'],
+        'internet': ['Internet'],
+        'água': ['Água'],
+        'gas': ['Energia'],
+        'gasolina': ['Combustível'],
+        'combustível': ['Combustível'],
+        'mercado': ['Supermercado', 'Alimentação'],
+        'supermercado': ['Supermercado', 'Alimentação'],
+        'plano de saúde': ['Saúde'],
+        'farmácia': ['Farmácia'],
+        'escola': ['Escola / Faculdade'],
+        'faculdade': ['Escola / Faculdade'],
+        'mensalidade': ['Escola / Faculdade']
+      };
+
+      // Determinar categorias para buscar
+      let categoriasParaBuscar = categoriasEssenciaisRelacionadas[gastoFixo.categoria] || [];
+      
+      // Se não encontrou por categoria, tentar por palavras-chave no nome
+      if (categoriasParaBuscar.length === 0) {
+        const nomeGasto = gastoFixo.nome.toLowerCase();
+        for (const [palavra, categorias] of Object.entries(palavrasChaveEssenciais)) {
+          if (nomeGasto.includes(palavra)) {
+            categoriasParaBuscar = categorias;
+            break;
+          }
+        }
+      }
+      
+      // Fallback: usar a categoria original se não encontrou nada
+      if (categoriasParaBuscar.length === 0) {
+        categoriasParaBuscar = [gastoFixo.categoria].filter(Boolean);
+      }
       
       const { data, error } = await supabase
         .from('registros_financeiros')

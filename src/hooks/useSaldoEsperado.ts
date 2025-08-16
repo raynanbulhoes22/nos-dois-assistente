@@ -4,7 +4,7 @@ import { useGastosFixos } from "./useGastosFixos";
 import { useContasParceladas } from "./useContasParceladas";
 import { useCartoes } from "./useCartoes";
 
-export const useSaldoEsperado = (saldoInicial: number) => {
+export const useSaldoEsperado = (saldoInicial: number, mes?: number, ano?: number) => {
   const { getTotalRendaAtiva } = useFontesRenda();
   const { getTotalGastosFixosAtivos } = useGastosFixos();
   const { getTotalParcelasAtivas } = useContasParceladas();

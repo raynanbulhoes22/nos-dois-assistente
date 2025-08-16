@@ -10,7 +10,7 @@ import { Wallet, Edit2, TrendingUp, TrendingDown, Plus, AlertCircle, Minus, Targ
 import { useOrcamentos } from '@/hooks/useOrcamentos';
 import { useFinancialStats } from '@/hooks/useFinancialStats';
 import { useAuth } from '@/hooks/useAuth';
-import { useSaldoEsperadoComDeteccao } from '@/hooks/useSaldoEsperadoComDeteccao';
+import { useSaldoEsperado } from "@/hooks/useSaldoEsperado";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -30,7 +30,7 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const [saldoAtualComputado, setSaldoAtualComputado] = useState<number>(0);
   
   // Hook para calcular saldo esperado (usando saldo inicial como base)
-  const saldoEsperado = useSaldoEsperadoComDeteccao(saldoInicialFromDB, mes, ano);
+  const saldoEsperado = useSaldoEsperado(saldoInicialFromDB);
 
   const orcamento = getOrcamentoByMesAno(mes, ano);
   // Usar o saldo dos registros financeiros em vez do orçamento
@@ -373,10 +373,7 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
                         <p><strong>Cálculo:</strong></p>
                         <p>• Saldo inicial: {formatCurrency(saldoInicialFromDB)}</p>
                          <p>• + Receitas: {formatCurrency(saldoEsperado.rendaMensal)}</p>
-                         <p>• - Gastos fixos pendentes: {formatCurrency(saldoEsperado.gastoFixoMensal)}</p>
-                         {saldoEsperado.gastosJaPagos > 0 && (
-                           <p className="text-green-600">• ✅ Gastos pagos: {formatCurrency(saldoEsperado.gastosJaPagos)}</p>
-                         )}
+                         <p>• - Gastos fixos: {formatCurrency(saldoEsperado.gastoFixoMensal)}</p>
                          <p>• - Parcelas: {formatCurrency(saldoEsperado.parcelasMensal)}</p>
                         <p className="border-t pt-1 font-semibold">• = Saldo esperado: <span className={saldoEsperado.saldoProjetado >= 0 ? 'text-green-600' : 'text-red-600'}>
                           {formatCurrency(saldoEsperado.saldoProjetado)}

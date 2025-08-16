@@ -1,8 +1,53 @@
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Calcula e cria o saldo inicial para um novo mês baseado no saldo do mês anterior
- * mais todas as movimentações que aconteceram
+ * Calcula o saldo atual de um mês específico
+ */
+export const calcularSaldoAtualMes = async (userId: string, mes: number, ano: number): Promise<number> => {
+  try {
+    // Buscar saldo inicial do mês
+    const { data: orcamento } = await supabase
+      .from('orcamentos_mensais')
+      .select('saldo_inicial')
+      .eq('user_id', userId)
+      .eq('mes', mes)
+      .eq('ano', ano)
+      .maybeSingle();
+    
+    const saldoInicial = orcamento?.saldo_inicial || 0;
+    
+    // Buscar todas as movimentações do mês (exceto Saldo Inicial)
+    const inicioMes = new Date(ano, mes - 1, 1);
+    const fimMes = new Date(ano, mes, 0);
+    
+    const { data: movimentacoes } = await supabase
+      .from('registros_financeiros')
+      .select('valor, tipo')
+      .eq('user_id', userId)
+      .gte('data', inicioMes.toISOString().split('T')[0])
+      .lte('data', fimMes.toISOString().split('T')[0])
+      .neq('categoria', 'Saldo Inicial'); // Excluir registros de saldo inicial para evitar duplicação
+    
+    // Calcular saldo atual
+    let saldoAtual = saldoInicial;
+    
+    movimentacoes?.forEach(mov => {
+      if (mov.tipo === 'entrada') {
+        saldoAtual += Number(mov.valor);
+      } else {
+        saldoAtual -= Number(mov.valor);
+      }
+    });
+    
+    return saldoAtual;
+  } catch (error) {
+    console.error('Erro ao calcular saldo atual do mês:', error);
+    return 0;
+  }
+};
+
+/**
+ * Calcula e cria o saldo inicial para um novo mês baseado no saldo atual do mês anterior
  */
 export const calcularSaldoInicialNovoMes = async (userId: string, mes: number, ano: number, forcarRecalculo: boolean = false) => {
   try {
@@ -29,42 +74,11 @@ export const calcularSaldoInicialNovoMes = async (userId: string, mes: number, a
       anoAnterior = ano - 1;
     }
     
-    // Buscar o saldo inicial do mês anterior
-    const { data: orcamentoAnterior } = await supabase
-      .from('orcamentos_mensais')
-      .select('saldo_inicial')
-      .eq('user_id', userId)
-      .eq('mes', mesAnterior)
-      .eq('ano', anoAnterior)
-      .maybeSingle();
+    // Calcular o saldo atual do mês anterior (saldo final)
+    const saldoAtualMesAnterior = await calcularSaldoAtualMes(userId, mesAnterior, anoAnterior);
     
-    const saldoInicialAnterior = orcamentoAnterior?.saldo_inicial || 0;
-    
-    // Buscar todas as movimentações do mês anterior
-    const inicioMesAnterior = new Date(anoAnterior, mesAnterior - 1, 1);
-    const fimMesAnterior = new Date(anoAnterior, mesAnterior, 0);
-    
-    const { data: movimentacoes } = await supabase
-      .from('registros_financeiros')
-      .select('valor, tipo')
-      .eq('user_id', userId)
-      .gte('data', inicioMesAnterior.toISOString().split('T')[0])
-      .lte('data', fimMesAnterior.toISOString().split('T')[0]);
-    
-    // Calcular o total de entradas e saídas do mês anterior
-    let totalEntradas = 0;
-    let totalSaidas = 0;
-    
-    movimentacoes?.forEach(mov => {
-      if (mov.tipo === 'entrada') {
-        totalEntradas += Number(mov.valor);
-      } else {
-        totalSaidas += Number(mov.valor);
-      }
-    });
-    
-    // Saldo inicial do novo mês = saldo inicial anterior + entradas - saídas
-    const novoSaldoInicial = saldoInicialAnterior + totalEntradas - totalSaidas;
+    // O saldo inicial do novo mês é igual ao saldo atual do mês anterior
+    const novoSaldoInicial = saldoAtualMesAnterior;
     
     if (orcamentoExistente) {
       // Atualizar orçamento existente

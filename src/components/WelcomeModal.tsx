@@ -103,7 +103,7 @@ export const WelcomeModal = ({
             </div>
 
             {/* WhatsApp Card */}
-            <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl animate-scale-in">
+            <Card className="bg-white/20 backdrop-blur-xl border border-white/30 shadow-xl animate-scale-in">
               <CardContent className="p-4">
                 <div className="space-y-4">
                   <div className="flex items-center justify-center">
@@ -113,17 +113,17 @@ export const WelcomeModal = ({
                   </div>
                   
                   <div className="space-y-2 text-center">
-                    <h2 className="text-lg font-bold text-gray-900">
+                    <h2 className="text-lg font-bold text-white">
                       Consultor Financeiro
                     </h2>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-white/90">
                       Comece enviando seus registros
                     </p>
                   </div>
                   
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-3 border border-green-100">
-                    <p className="text-xs text-green-700 font-medium mb-1">WhatsApp Oficial</p>
-                    <p className="text-sm font-bold text-green-800">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-lg p-3 border border-white/30">
+                    <p className="text-xs text-white/90 font-medium mb-1">WhatsApp Oficial</p>
+                    <p className="text-sm font-bold text-white">
                       +55 (69) 9.9314-0550
                     </p>
                   </div>

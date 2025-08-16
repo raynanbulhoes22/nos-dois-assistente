@@ -152,9 +152,17 @@ export const useMovimentacoes = () => {
         
         // Lógica inteligente para definir o título da transação
         const getTransactionTitle = (item: any): string => {
-          // 1. Prioridade: usar o campo titulo da tabela se existir
+          // 1. Se tem título mas é uma descrição genérica de pagamento/parcela, usa outros campos
           if (item.titulo && item.titulo.trim()) {
-            return item.titulo.trim();
+            const titulo = item.titulo.trim();
+            // Verifica se é uma descrição automática de parcela/pagamento
+            const isAutomaticDescription = titulo.toLowerCase().includes('pagamento da parcela') || 
+                                         titulo.toLowerCase().includes('parcela do') ||
+                                         titulo.toLowerCase().includes('financiamento');
+            
+            if (!isAutomaticDescription) {
+              return titulo;
+            }
           }
           
           // 2. Se tem observação específica, usa ela
@@ -162,14 +170,14 @@ export const useMovimentacoes = () => {
             return item.observacao.trim();
           }
           
-          // 3. Se tem categoria definida e é diferente de "Sem categoria", usa ela
-          if (item.categoria && item.categoria !== 'Sem categoria' && item.categoria.trim()) {
-            return item.categoria.trim();
-          }
-          
-          // 4. Se tem estabelecimento, usa ele
+          // 3. Se tem estabelecimento, usa ele
           if (item.estabelecimento && item.estabelecimento.trim()) {
             return item.estabelecimento.trim();
+          }
+          
+          // 4. Se tem categoria definida e é diferente de "Sem categoria", usa ela
+          if (item.categoria && item.categoria !== 'Sem categoria' && item.categoria.trim()) {
+            return item.categoria.trim();
           }
           
           // 5. Se tem nome mas não é um nome de pessoa (contém espaço + sobrenome), usa ele
@@ -182,7 +190,12 @@ export const useMovimentacoes = () => {
             }
           }
           
-          // 6. Fallback baseado no tipo de movimento
+          // 6. Se é uma descrição automática de parcela, volta para o título original
+          if (item.titulo && item.titulo.trim()) {
+            return item.titulo.trim();
+          }
+          
+          // 7. Fallback baseado no tipo de movimento
           if (isEntrada) {
             return 'Entrada de valor';
           } else {

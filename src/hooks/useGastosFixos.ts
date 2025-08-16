@@ -110,6 +110,60 @@ export const useGastosFixos = () => {
     }
   };
 
+  const checkPagamentoMesAtual = async (gastoFixo: GastoFixo, mes: number, ano: number) => {
+    if (!user) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('registros_financeiros')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('categoria', gastoFixo.categoria)
+        .gte('data', `${ano}-${mes.toString().padStart(2, '0')}-01`)
+        .lt('data', `${ano}-${(mes + 1).toString().padStart(2, '0')}-01`);
+
+      if (error) throw error;
+
+      // Verificar se algum registro tem valor dentro da tolerância de ±15%
+      const valorGasto = Number(gastoFixo.valor_mensal);
+      const tolerancia = valorGasto * 0.15;
+      
+      const registroMatch = data?.find(registro => {
+        const valorRegistro = Math.abs(Number(registro.valor));
+        return Math.abs(valorRegistro - valorGasto) <= tolerancia;
+      });
+
+      return registroMatch || null;
+    } catch (err) {
+      console.error('Erro ao verificar pagamento:', err);
+      return null;
+    }
+  };
+
+  const getGastosFixosComStatus = async (mes: number, ano: number) => {
+    const gastosAtivos = gastosFixos.filter(gasto => gasto.ativo);
+    
+    const gastosComStatus = await Promise.all(
+      gastosAtivos.map(async (gasto) => {
+        const registroPagamento = await checkPagamentoMesAtual(gasto, mes, ano);
+        return {
+          ...gasto,
+          pago: !!registroPagamento,
+          registroPagamento
+        };
+      })
+    );
+
+    return gastosComStatus;
+  };
+
+  const getTotalGastosFixosNaoPagos = async (mes: number, ano: number) => {
+    const gastosComStatus = await getGastosFixosComStatus(mes, ano);
+    return gastosComStatus
+      .filter(gasto => !gasto.pago)
+      .reduce((total, gasto) => total + Number(gasto.valor_mensal), 0);
+  };
+
   const getTotalGastosFixosAtivos = () => {
     return gastosFixos
       .filter(gasto => gasto.ativo)
@@ -118,6 +172,10 @@ export const useGastosFixos = () => {
 
   const getGastosFixosAtivos = () => {
     return gastosFixos.filter(gasto => gasto.ativo);
+  };
+
+  const getMatchingRegistro = async (gastoFixo: GastoFixo, mes: number, ano: number) => {
+    return await checkPagamentoMesAtual(gastoFixo, mes, ano);
   };
 
   useEffect(() => {
@@ -135,6 +193,10 @@ export const useGastosFixos = () => {
     deleteGastoFixo,
     getTotalGastosFixosAtivos,
     getGastosFixosAtivos,
+    checkPagamentoMesAtual,
+    getGastosFixosComStatus,
+    getTotalGastosFixosNaoPagos,
+    getMatchingRegistro,
     refetch: fetchGastosFixos,
   };
 };

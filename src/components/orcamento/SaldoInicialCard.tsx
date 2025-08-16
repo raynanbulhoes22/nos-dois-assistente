@@ -304,33 +304,30 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
           </CardContent>
         </Card>
 
-        {/* Card 3: Evolução */}
-        <Card className={`metric-card ${evolucaoSaldo >= 0 ? 'metric-card-success' : 'metric-card-error'}`}>
+        {/* Card 3: Saídas Esperadas */}
+        <Card className="metric-card metric-card-warning">
           <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col space-y-1 sm:space-y-2">
               <div className="flex items-center gap-1 sm:gap-2">
-                <div className={`icon-container ${evolucaoSaldo >= 0 ? 'icon-success' : 'icon-error'}`}>
-                  {evolucaoSaldo >= 0 ? (
-                    <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
-                  ) : (
-                    <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4" />
-                  )}
+                <div className="icon-container icon-warning">
+                  <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
                 </div>
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Evolução
+                  Saídas Esperadas
                 </span>
               </div>
               <div className="space-y-1">
-                <p className={`text-lg sm:text-xl lg:text-2xl font-bold ${
-                  evolucaoSaldo >= 0 ? 'text-success' : 'text-error'
-                }`}>
-                  {evolucaoSaldo >= 0 ? '+' : ''}{formatCurrency(evolucaoSaldo)}
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-warning">
+                  {formatCurrency(saldoEsperado.totalSaidas)}
                 </p>
-                <p className={`text-xs ${
-                  evolucaoPercentual >= 0 ? 'text-success' : 'text-error'
-                }`}>
-                  {evolucaoPercentual >= 0 ? '+' : ''}{evolucaoPercentual.toFixed(1)}%
-                </p>
+                <div className="space-y-0.5">
+                  <p className="text-xs text-muted-foreground">
+                    Fixos: {formatCurrency(saldoEsperado.gastoFixoMensal)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Parcelas: {formatCurrency(saldoEsperado.parcelasMensal)}
+                  </p>
+                </div>
               </div>
             </div>
           </CardContent>

@@ -6,15 +6,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet, Edit2, TrendingUp, TrendingDown, Plus, AlertCircle, Minus, Target, Clock, DollarSign } from 'lucide-react';
+import { Wallet, Edit2, TrendingUp, TrendingDown, Plus, AlertCircle, Minus, Target, Clock, DollarSign, Info } from 'lucide-react';
 import { useOrcamentos } from '@/hooks/useOrcamentos';
 import { useFinancialStats } from '@/hooks/useFinancialStats';
 import { useAuth } from '@/hooks/useAuth';
 import { useSaldoEsperado } from "@/hooks/useSaldoEsperado";
 import { useSaldoInicial } from "@/hooks/useSaldoInicial";
+import { useMovimentacoes } from "@/hooks/useMovimentacoes";
+import { useGastosFixos } from "@/hooks/useGastosFixos";
+import { useContasParceladas } from "@/hooks/useContasParceladas";
 import { supabase } from '@/integrations/supabase/client';
 import { recalcularSaldosEmCascata } from "@/lib/saldo-utils";
 import { useToast } from '@/hooks/use-toast';
+import { CardDetailModal } from "./CardDetailModal";
 
 interface SaldoInicialCardProps {
   mes: number;
@@ -34,9 +38,15 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const [novoSaldo, setNovoSaldo] = useState('');
   const [saldoInicialFromDB, setSaldoInicialFromDB] = useState<number>(0);
   const [saldoAtualComputado, setSaldoAtualComputado] = useState<number>(0);
+  const [activeDetailModal, setActiveDetailModal] = useState<string | null>(null);
   
   // Hook para calcular saldo esperado (usando saldo inicial como base)
   const saldoEsperado = useSaldoEsperado(saldoInicialFromDB);
+  
+  // Hooks para dados dos modais
+  const { movimentacoes } = useMovimentacoes();
+  const { gastosFixos } = useGastosFixos();
+  const { contas } = useContasParceladas();
 
   const orcamento = getOrcamentoByMesAno(mes, ano);
   // Usar o saldo dos registros financeiros em vez do orçamento
@@ -257,6 +267,57 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
     ? ((evolucaoSaldo / Math.abs(saldoInicialAtual)) * 100)
     : 0;
 
+  // Preparar dados para os modais
+  const getSaldoAtualItems = () => {
+    const currentMonthMovimentacoes = movimentacoes?.filter(mov => {
+      const movDate = new Date(mov.data);
+      return movDate.getMonth() === mes - 1 && movDate.getFullYear() === ano;
+    }) || [];
+
+    const entradas = currentMonthMovimentacoes
+      .filter(mov => mov.tipo_movimento === 'entrada')
+      .reduce((total, mov) => total + Number(mov.valor), 0);
+    
+    const saidas = currentMonthMovimentacoes
+      .filter(mov => mov.tipo_movimento === 'saida')
+      .reduce((total, mov) => total + Number(mov.valor), 0);
+
+    return [
+      { label: "Saldo Inicial", value: saldoInicialFromDB || 0, type: "neutral" as const },
+      { label: "Total de Entradas", value: entradas, type: "positive" as const },
+      { label: "Total de Saídas", value: saidas, type: "negative" as const },
+    ];
+  };
+
+  const getSaldoEsperadoItems = () => [
+    { label: "Saldo Inicial", value: saldoInicialFromDB || 0, type: "neutral" as const },
+    { label: "Receitas Fixas", value: saldoEsperado.rendaMensal, type: "positive" as const },
+    { label: "Gastos Fixos", value: saldoEsperado.gastoFixoMensal, type: "negative" as const },
+    { label: "Parcelas", value: saldoEsperado.parcelasMensal, type: "negative" as const },
+  ];
+
+  const getSaidasEsperadasItems = () => {
+    const gastosAtivos = gastosFixos?.filter(g => g.ativo) || [];
+    const parcelasAtivas = contas?.filter(p => p.ativa) || [];
+    
+    const topGastos = gastosAtivos
+      .sort((a, b) => Number(b.valor_mensal) - Number(a.valor_mensal))
+      .slice(0, 3);
+    
+    const topParcelas = parcelasAtivas
+      .sort((a, b) => Number(b.valor_parcela) - Number(a.valor_parcela))
+      .slice(0, 2);
+
+    return [
+      ...topGastos.map(g => ({ label: g.nome, value: Number(g.valor_mensal), type: "negative" as const })),
+      ...topParcelas.map(p => ({ 
+        label: p.descricao, 
+        value: Number(p.valor_parcela), 
+        type: "negative" as const 
+      })),
+    ];
+  };
+
   return (
     <TooltipProvider>
       {/* New Grid Layout with 4 Cards */}
@@ -296,7 +357,10 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
         </Card>
 
         {/* Card 2: Saldo Atual */}
-        <Card className="metric-card metric-card-success">
+        <Card 
+          className="metric-card metric-card-success cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => setActiveDetailModal('saldo-atual')}
+        >
           <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col space-y-1 sm:space-y-2">
               <div className="flex items-center gap-1 sm:gap-2">
@@ -306,6 +370,7 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground">
                   Saldo Atual
                 </span>
+                <Info className="h-3 w-3 text-muted-foreground ml-auto" />
               </div>
               <div className="space-y-1">
                 <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
@@ -320,7 +385,10 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
         </Card>
 
         {/* Card 3: Saldo Esperado */}
-        <Card className={`metric-card ${saldoEsperado.saldoProjetado >= saldoInicialFromDB ? 'metric-card-success' : 'metric-card-warning'}`}>
+        <Card 
+          className={`metric-card ${saldoEsperado.saldoProjetado >= saldoInicialFromDB ? 'metric-card-success' : 'metric-card-warning'} cursor-pointer hover:bg-muted/50 transition-colors`}
+          onClick={() => setActiveDetailModal('saldo-esperado')}
+        >
           <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col space-y-1 sm:space-y-2">
               <div className="flex items-center gap-1 sm:gap-2">
@@ -330,6 +398,7 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground">
                   Saldo Esperado
                 </span>
+                <Info className="h-3 w-3 text-muted-foreground ml-auto" />
               </div>
               <div className="space-y-1">
                 <p className={`text-lg sm:text-xl lg:text-2xl font-bold ${
@@ -342,28 +411,12 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
                   <p className="text-xs text-muted-foreground">
                     final do mês
                   </p>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs px-1 py-0 h-4 ${getStatusBadge(saldoEsperado.saldoProjetado).class}`}
-                      >
-                        {getStatusBadge(saldoEsperado.saldoProjetado).text}
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs">
-                      <div className="space-y-1 text-xs">
-                        <p><strong>Cálculo:</strong></p>
-                        <p>• Saldo inicial: {formatCurrency(saldoInicialFromDB)}</p>
-                         <p>• + Receitas: {formatCurrency(saldoEsperado.rendaMensal)}</p>
-                         <p>• - Gastos fixos: {formatCurrency(saldoEsperado.gastoFixoMensal)}</p>
-                         <p>• - Parcelas: {formatCurrency(saldoEsperado.parcelasMensal)}</p>
-                        <p className="border-t pt-1 font-semibold">• = Saldo esperado: <span className={saldoEsperado.saldoProjetado >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {formatCurrency(saldoEsperado.saldoProjetado)}
-                        </span></p>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
+                  <Badge 
+                    variant="outline" 
+                    className={`text-xs px-1 py-0 h-4 ${getStatusBadge(saldoEsperado.saldoProjetado).class}`}
+                  >
+                    {getStatusBadge(saldoEsperado.saldoProjetado).text}
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -371,7 +424,10 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
         </Card>
 
         {/* Card 4: Saídas Esperadas */}
-        <Card className="metric-card metric-card-warning">
+        <Card 
+          className="metric-card metric-card-warning cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => setActiveDetailModal('saidas-esperadas')}
+        >
           <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col space-y-1 sm:space-y-2">
               <div className="flex items-center gap-1 sm:gap-2">
@@ -381,6 +437,7 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground">
                   Saídas Esperadas
                 </span>
+                <Info className="h-3 w-3 text-muted-foreground ml-auto" />
               </div>
               <div className="space-y-1">
                 <p className="text-lg sm:text-xl lg:text-2xl font-bold text-warning">
@@ -458,6 +515,34 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Modals de Detalhes */}
+      <CardDetailModal
+        isOpen={activeDetailModal === 'saldo-atual'}
+        onClose={() => setActiveDetailModal(null)}
+        title="Saldo Atual"
+        value={saldoAtualComputado}
+        explanation="Saldo Inicial + Total de Entradas - Total de Saídas"
+        items={getSaldoAtualItems()}
+      />
+
+      <CardDetailModal
+        isOpen={activeDetailModal === 'saldo-esperado'}
+        onClose={() => setActiveDetailModal(null)}
+        title="Saldo Esperado"
+        value={saldoEsperado.saldoProjetado}
+        explanation="Projeção baseada em receitas e gastos fixos do mês"
+        items={getSaldoEsperadoItems()}
+      />
+
+      <CardDetailModal
+        isOpen={activeDetailModal === 'saidas-esperadas'}
+        onClose={() => setActiveDetailModal(null)}
+        title="Saídas Esperadas"
+        value={saldoEsperado.totalSaidas}
+        explanation="Compromissos fixos e parcelas do mês"
+        items={getSaidasEsperadasItems()}
+      />
     </TooltipProvider>
   );
 };

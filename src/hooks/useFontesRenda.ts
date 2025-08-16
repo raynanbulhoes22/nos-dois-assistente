@@ -144,6 +144,8 @@ export const useFontesRenda = () => {
   const checkRecebimentoMesAtual = async (fonte: FonteRenda) => {
     if (!user) return null;
 
+    console.log(`🔍 Verificando recebimento da fonte: ${fonte.tipo} - ${fonte.descricao} - R$ ${fonte.valor}`);
+
     try {
       // Mapeamento inteligente para fontes de renda
       const categoriasRendaRelacionadas: { [key: string]: string[] } = {
@@ -175,6 +177,7 @@ export const useFontesRenda = () => {
       // Determinar categorias para buscar
       let categoriasParaBuscar = categoriasRendaRelacionadas[fonte.tipo] || [];
       
+      console.log(`📋 Categorias para buscar:`, categoriasParaBuscar);
       // Se não encontrou por tipo, tentar por palavras-chave no tipo ou descrição
       if (categoriasParaBuscar.length === 0) {
         const textoFonte = `${fonte.tipo} ${fonte.descricao || ''}`.toLowerCase();
@@ -206,11 +209,13 @@ export const useFontesRenda = () => {
         .order('data', { ascending: false });
 
       if (error) throw error;
+      console.log(`📊 Registros encontrados:`, data?.length || 0, data);
 
       // Estratégias de matching em ordem de prioridade:
       
       // 1. Match exato por valor (prioridade máxima)
       let registroEncontrado = data?.find(registro => Math.abs(registro.valor) === fonte.valor);
+      console.log(`🎯 Match exato (${fonte.valor}):`, registroEncontrado ? `Encontrado: R$ ${registroEncontrado.valor}` : 'Não encontrado');
       
       if (!registroEncontrado) {
         // 2. Match por valor com tolerância de ±5% (para valores próximos)
@@ -222,6 +227,7 @@ export const useFontesRenda = () => {
           const valorRegistro = Math.abs(registro.valor);
           return valorRegistro >= valorMinimo && valorRegistro <= valorMaximo;
         });
+        console.log(`📊 Match ±5% (${valorMinimo.toFixed(2)}-${valorMaximo.toFixed(2)}):`, registroEncontrado ? `Encontrado: R$ ${registroEncontrado.valor}` : 'Não encontrado');
       }
       
       if (!registroEncontrado) {
@@ -232,6 +238,7 @@ export const useFontesRenda = () => {
             const textoRegistro = `${registro.titulo || ''} ${registro.estabelecimento || ''} ${registro.categoria || ''}`.toLowerCase();
             return palavrasDescricao.some(palavra => textoRegistro.includes(palavra));
           });
+          console.log(`🔍 Match por descrição (${palavrasDescricao.join(', ')}):`, registroEncontrado ? `Encontrado: ${registroEncontrado.titulo || registroEncontrado.categoria}` : 'Não encontrado');
         }
       }
       
@@ -245,8 +252,10 @@ export const useFontesRenda = () => {
           const valorRegistro = Math.abs(registro.valor);
           return valorRegistro >= valorMinimoFlexivel && valorRegistro <= valorMaximoFlexivel;
         });
+        console.log(`🎲 Match flexível ±15% (${valorMinimoFlexivel.toFixed(2)}-${valorMaximoFlexivel.toFixed(2)}):`, registroEncontrado ? `Encontrado: R$ ${registroEncontrado.valor}` : 'Não encontrado');
       }
 
+      console.log(`✅ Resultado final:`, registroEncontrado ? `Encontrado: ${registroEncontrado.categoria} - R$ ${registroEncontrado.valor}` : 'Não encontrado');
       return registroEncontrado || null;
     } catch (error) {
       console.error('Erro ao verificar recebimento da renda:', error);

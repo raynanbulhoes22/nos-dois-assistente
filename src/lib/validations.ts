@@ -17,6 +17,11 @@ export const authSchema = z.object({
     .max(100, 'Nome muito longo')
     .regex(/^[a-zA-ZÀ-ÿ\s]+$/, 'Nome deve conter apenas letras e espaços')
     .optional(),
+  whatsapp: z
+    .string()
+    .min(1, 'WhatsApp é obrigatório')
+    .regex(/^55\d{10,11}$/, 'WhatsApp deve estar no formato brasileiro (11 ou 12 dígitos com código do país)')
+    .optional(),
 });
 
 export const financialRecordSchema = z.object({

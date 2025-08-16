@@ -14,10 +14,15 @@ import { Heart, Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { authSchema, type AuthFormData } from '@/lib/validations';
 import { sanitizeInput, authRateLimiter, checkPasswordStrength } from '@/lib/security';
+import { PhoneInput } from '@/components/ui/phone-input';
 
 const signInSchema = authSchema.omit({ name: true });
 const signUpSchemaWithConfirm = authSchema.extend({
-  confirmPassword: z.string().min(1, 'Confirmação de senha é obrigatória')
+  confirmPassword: z.string().min(1, 'Confirmação de senha é obrigatória'),
+  whatsapp: z
+    .string()
+    .min(1, 'WhatsApp é obrigatório')
+    .regex(/^55\d{10,11}$/, 'WhatsApp deve estar no formato brasileiro (11 ou 12 dígitos com código do país)')
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Senhas não coincidem",
   path: ["confirmPassword"],
@@ -46,6 +51,7 @@ export const AuthForm = () => {
       password: '',
       confirmPassword: '',
       name: '',
+      whatsapp: '',
     },
   });
 
@@ -64,6 +70,7 @@ export const AuthForm = () => {
 
     const sanitizedEmail = sanitizeInput(data.email);
     const sanitizedName = sanitizeInput(data.name || '');
+    const sanitizedWhatsapp = sanitizeInput(data.whatsapp || '');
 
     setIsLoading(true);
     console.log('🔄 Iniciando cadastro para:', sanitizedEmail);
@@ -77,7 +84,8 @@ export const AuthForm = () => {
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            nome: sanitizedName
+            nome: sanitizedName,
+            numero_wpp: sanitizedWhatsapp
           }
         }
       });
@@ -574,6 +582,27 @@ export const AuthForm = () => {
                               placeholder="••••••••"
                               disabled={isLoading}
                               {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={signUpForm.control}
+                      name="whatsapp"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-1">
+                            WhatsApp
+                            <span className="text-destructive">*</span>
+                          </FormLabel>
+                          <FormControl>
+                            <PhoneInput
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="(11) 9999-9999"
+                              disabled={isLoading}
                             />
                           </FormControl>
                           <FormMessage />

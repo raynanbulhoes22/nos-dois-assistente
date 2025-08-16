@@ -254,7 +254,7 @@ export const useGastosFixos = () => {
           status_manual: status,
           status_manual_mes: mes,
           status_manual_ano: ano
-        })
+        } as any)
         .eq('id', id)
         .eq('user_id', user.id);
 

@@ -15,8 +15,9 @@ export const calcularSaldoAtualMes = async (userId: string, mes: number, ano: nu
       .maybeSingle();
     
     const saldoInicial = orcamento?.saldo_inicial || 0;
+    console.log(`📊 Saldo inicial ${mes}/${ano}: ${saldoInicial}`);
     
-    // Buscar todas as movimentações do mês (exceto Saldo Inicial)
+    // Buscar todas as movimentações do mês (exceto Saldo Inicial para evitar duplicação)
     const inicioMes = new Date(ano, mes - 1, 1);
     const fimMes = new Date(ano, mes, 0);
     
@@ -28,16 +29,23 @@ export const calcularSaldoAtualMes = async (userId: string, mes: number, ano: nu
       .lte('data', fimMes.toISOString().split('T')[0])
       .neq('categoria', 'Saldo Inicial'); // Excluir registros de saldo inicial para evitar duplicação
     
-    // Calcular saldo atual
+    // Calcular saldo atual = saldo inicial + movimentações
     let saldoAtual = saldoInicial;
+    let totalMovimentacoes = 0;
     
     movimentacoes?.forEach(mov => {
       if (mov.tipo_movimento === 'entrada') {
-        saldoAtual += Number(mov.valor);
+        const valor = Number(mov.valor);
+        saldoAtual += valor;
+        totalMovimentacoes += valor;
       } else if (mov.tipo_movimento === 'saida') {
-        saldoAtual -= Number(mov.valor);
+        const valor = Number(mov.valor);
+        saldoAtual -= valor;
+        totalMovimentacoes -= valor;
       }
     });
+    
+    console.log(`💰 Cálculo ${mes}/${ano}: Inicial ${saldoInicial} + Movimentações ${totalMovimentacoes} = ${saldoAtual}`);
     
     return saldoAtual;
   } catch (error) {

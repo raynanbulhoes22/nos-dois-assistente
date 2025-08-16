@@ -83,15 +83,27 @@ export const useMovimentacoes = () => {
       setIsLoading(true);
       setError(null);
 
-      // Buscar o número de WhatsApp do usuário
+      // Primeiro, buscar o perfil do usuário para mapear números de WhatsApp
       const { data: profileData } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .limit(1);
 
-      const userWhatsapp = (profileData as any)?.[0]?.numero_wpp;
+      const profile = (profileData as any)?.[0];
+      const userWhatsapp = profile?.numero_wpp;
+      
+      // Criar mapeamento de números para nomes
+      const phoneToNameMap: Record<string, string> = {};
+      if (profile?.numero_wpp && profile?.nome) {
+        phoneToNameMap[profile.numero_wpp] = profile.nome.trim();
+      }
+      if (profile?.telefone_conjuge && profile?.nome_conjuge) {
+        phoneToNameMap[profile.telefone_conjuge] = profile.nome_conjuge.trim();
+      }
+      
       console.log('Número do usuário:', userWhatsapp);
+      console.log('Mapeamento telefone->nome:', phoneToNameMap);
 
       let registros: any[] = [];
 
@@ -203,12 +215,33 @@ export const useMovimentacoes = () => {
           }
         };
         
+        // Determinar quem registrou a transação
+        const getRegisteredBy = (item: any): string => {
+          // Se o campo nome está preenchido (movimentação manual), usa ele
+          if (item.nome && item.nome.trim()) {
+            return item.nome.trim();
+          }
+          
+          // Se tem número de WhatsApp, mapeia para o nome correspondente
+          if (item.numero_wpp && phoneToNameMap[item.numero_wpp]) {
+            return phoneToNameMap[item.numero_wpp];
+          }
+          
+          // Fallback para "WhatsApp" se não conseguir mapear
+          if (item.numero_wpp) {
+            return "WhatsApp";
+          }
+          
+          // Se não tem informação, retorna string vazia
+          return "";
+        };
+        
         return {
           id: item.id,
           valor: Math.abs(item.valor), // Sempre trabalhar com valores positivos
           data: item.data,
           categoria: item.categoria || 'Sem categoria',
-          nome: item.nome, // Nome da pessoa que fez a movimentação
+          nome: getRegisteredBy(item), // Nome da pessoa que registrou a movimentação
           titulo: getTransactionTitle(item), // Título/descrição da transação
           forma_pagamento: item.forma_pagamento,
           estabelecimento: item.estabelecimento,

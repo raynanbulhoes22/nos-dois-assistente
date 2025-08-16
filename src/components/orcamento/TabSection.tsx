@@ -119,29 +119,30 @@ export const TabSection = ({
                         <div className="flex items-center gap-2">
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Badge 
-                                variant={fonte.recebido ? "default" : "secondary"}
-                                className={`h-5 text-xs flex items-center gap-1 ${
-                                  fonte.recebido 
-                                    ? "bg-success/10 text-success border-success/20 hover:bg-success/20" 
-                                    : "bg-warning/10 text-warning border-warning/20 hover:bg-warning/20"
-                                }`}
-                              >
-                                {fonte.recebido ? (
-                                  <>
-                                    <CheckCircle className="h-3 w-3" />
-                                    {isMobile ? "Ok" : "Recebido"}
-                                  </>
-                                ) : (
-                                  <>
-                                    <Clock className="h-3 w-3" />
-                                    {isMobile ? "Pend" : "Pendente"}
-                                  </>
-                                )}
-                                {fonte.statusTipo === 'manual' && (
-                                  <RotateCw className="h-2 w-2 ml-1" />
-                                )}
-                              </Badge>
+                               <Badge 
+                                 variant={fonte.recebido ? "default" : "secondary"}
+                                 className={`h-5 text-xs flex items-center gap-1 transition-all duration-300 ease-in-out transform hover:scale-105 ${
+                                   fonte.recebido 
+                                     ? "bg-success/10 text-success border-success/20 hover:bg-success/20" 
+                                     : "bg-warning/10 text-warning border-warning/20 hover:bg-warning/20"
+                                 } ${onToggleStatusRenda ? "cursor-pointer" : ""}`}
+                                 onClick={onToggleStatusRenda ? () => onToggleStatusRenda(fonte.id, fonte.recebido ? 'pendente' : 'recebido') : undefined}
+                               >
+                                 {fonte.recebido ? (
+                                   <>
+                                     <CheckCircle className="h-3 w-3 transition-transform duration-300" />
+                                     {isMobile ? "Ok" : "Recebido"}
+                                   </>
+                                 ) : (
+                                   <>
+                                     <Clock className="h-3 w-3 transition-transform duration-300" />
+                                     {isMobile ? "Pend" : "Pendente"}
+                                   </>
+                                 )}
+                                 {fonte.statusTipo === 'manual' && (
+                                   <div className="ml-1 w-1.5 h-1.5 bg-current rounded-full animate-pulse" title="Status manual" />
+                                 )}
+                               </Badge>
                             </TooltipTrigger>
                             <TooltipContent>
                               {fonte.recebido ? (
@@ -158,29 +159,12 @@ export const TabSection = ({
                               ) : (
                                 <div className="text-xs">
                                   <p className="text-warning">⏰ {fonte.statusTipo === 'manual' ? 'Marcado manualmente como pendente' : 'Aguardando recebimento no mês'}</p>
-                                  <p className="text-muted-foreground mt-1">Clique no botão de toggle para alterar manualmente</p>
+                                  <p className="text-muted-foreground mt-1">Clique no status para alterar manualmente</p>
                                 </div>
                               )}
                             </TooltipContent>
                           </Tooltip>
                           
-                          {onToggleStatusRenda && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => onToggleStatusRenda(fonte.id, fonte.recebido ? 'pendente' : 'recebido')}
-                                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                                >
-                                  <RotateCw className="h-3 w-3" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="text-xs">Alternar status manualmente</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
                         </div>
                       )}
                     </div>

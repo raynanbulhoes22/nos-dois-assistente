@@ -148,28 +148,28 @@ export const useFontesRenda = () => {
       // Mapeamento inteligente para fontes de renda
       const categoriasRendaRelacionadas: { [key: string]: string[] } = {
         // Rendas principais
-        'Salário': ['Salário', 'Pagamento', 'Folha', 'Holerite'],
-        'Freelancer': ['Pagamento de cliente', 'Pix recebido', 'Venda realizada', 'Depósito recebido'],
-        'Autônomo': ['Pagamento de cliente', 'Pix recebido', 'Venda realizada', 'Depósito recebido'],
-        'Comissões': ['Comissão', 'Pagamento de cliente', 'Venda realizada'],
-        'Pensão': ['Benefício', 'Pensão', 'INSS', 'Auxílio'],
-        'Benefícios': ['Benefício', 'Pensão', 'INSS', 'Auxílio'],
+        'Salário': ['Salário', 'Pagamento', 'Folha', 'Holerite', 'Pix recebido', 'Depósito recebido'],
+        'Freelancer': ['Pagamento de cliente', 'Pix recebido', 'Venda realizada', 'Depósito recebido', 'Freelancer'],
+        'Autônomo': ['Pagamento de cliente', 'Pix recebido', 'Venda realizada', 'Depósito recebido', 'Autônomo'],
+        'Comissões': ['Comissão', 'Pagamento de cliente', 'Venda realizada', 'Pix recebido'],
+        'Pensão': ['Benefício', 'Pensão', 'INSS', 'Auxílio', 'Depósito recebido'],
+        'Benefícios': ['Benefício', 'Pensão', 'INSS', 'Auxílio', 'Depósito recebido'],
         'Aluguel Recebido': ['Aluguel', 'Depósito recebido', 'Pix recebido'],
-        'Renda Extra': ['Pix recebido', 'Venda realizada', 'Reembolso'],
+        'Renda Extra': ['Pix recebido', 'Venda realizada', 'Reembolso', 'Depósito recebido'],
         'Investimentos': ['Rendimento', 'Dividendo', 'Juros', 'Depósito recebido']
       };
 
       // Palavras-chave para busca por tipo ou descrição da fonte
       const palavrasChaveRenda: { [key: string]: string[] } = {
-        'salário': ['Salário'],
-        'freelancer': ['Pagamento de cliente', 'Pix recebido'],
-        'autônomo': ['Pagamento de cliente', 'Pix recebido'],
-        'comissão': ['Comissão', 'Pagamento de cliente'],
-        'pensão': ['Pensão', 'Benefício'],
-        'benefício': ['Benefício', 'INSS'],
-        'aluguel': ['Aluguel', 'Depósito recebido'],
-        'investimento': ['Rendimento', 'Dividendo'],
-        'renda': ['Pix recebido', 'Venda realizada']
+        'salário': ['Salário', 'Pix recebido', 'Depósito recebido', 'Pagamento'],
+        'freelancer': ['Pagamento de cliente', 'Pix recebido', 'Freelancer'],
+        'autônomo': ['Pagamento de cliente', 'Pix recebido', 'Autônomo'],
+        'comissão': ['Comissão', 'Pagamento de cliente', 'Pix recebido'],
+        'pensão': ['Pensão', 'Benefício', 'Depósito recebido'],
+        'benefício': ['Benefício', 'INSS', 'Depósito recebido'],
+        'aluguel': ['Aluguel', 'Depósito recebido', 'Pix recebido'],
+        'investimento': ['Rendimento', 'Dividendo', 'Depósito recebido'],
+        'renda': ['Pix recebido', 'Venda realizada', 'Depósito recebido']
       };
 
       // Determinar categorias para buscar
@@ -186,9 +186,9 @@ export const useFontesRenda = () => {
         }
       }
       
-      // Fallback: usar o tipo original se não encontrou nada
+      // Fallback: usar categorias gerais de entrada
       if (categoriasParaBuscar.length === 0) {
-        categoriasParaBuscar = [fonte.tipo];
+        categoriasParaBuscar = ['Pix recebido', 'Depósito recebido', 'Pagamento de cliente', 'Salário'];
       }
       
       const hoje = new Date();
@@ -207,15 +207,45 @@ export const useFontesRenda = () => {
 
       if (error) throw error;
 
-      // Buscar o registro mais próximo em valor (tolerância de ±10% para rendas)
-      const tolerancia = 0.10;
-      const valorMinimo = fonte.valor * (1 - tolerancia);
-      const valorMaximo = fonte.valor * (1 + tolerancia);
+      // Estratégias de matching em ordem de prioridade:
       
-      const registroEncontrado = data?.find(registro => {
-        const valorRegistro = Math.abs(registro.valor);
-        return valorRegistro >= valorMinimo && valorRegistro <= valorMaximo;
-      });
+      // 1. Match exato por valor (prioridade máxima)
+      let registroEncontrado = data?.find(registro => Math.abs(registro.valor) === fonte.valor);
+      
+      if (!registroEncontrado) {
+        // 2. Match por valor com tolerância de ±5% (para valores próximos)
+        const tolerancia = 0.05;
+        const valorMinimo = fonte.valor * (1 - tolerancia);
+        const valorMaximo = fonte.valor * (1 + tolerancia);
+        
+        registroEncontrado = data?.find(registro => {
+          const valorRegistro = Math.abs(registro.valor);
+          return valorRegistro >= valorMinimo && valorRegistro <= valorMaximo;
+        });
+      }
+      
+      if (!registroEncontrado) {
+        // 3. Match por descrição/empresa (busca por palavras da descrição da fonte)
+        if (fonte.descricao) {
+          const palavrasDescricao = fonte.descricao.toLowerCase().split(' ').filter(p => p.length > 2);
+          registroEncontrado = data?.find(registro => {
+            const textoRegistro = `${registro.titulo || ''} ${registro.estabelecimento || ''} ${registro.categoria || ''}`.toLowerCase();
+            return palavrasDescricao.some(palavra => textoRegistro.includes(palavra));
+          });
+        }
+      }
+      
+      if (!registroEncontrado) {
+        // 4. Match flexível por valor (tolerância de ±15% para casos especiais)
+        const toleranciaFlexivel = 0.15;
+        const valorMinimoFlexivel = fonte.valor * (1 - toleranciaFlexivel);
+        const valorMaximoFlexivel = fonte.valor * (1 + toleranciaFlexivel);
+        
+        registroEncontrado = data?.find(registro => {
+          const valorRegistro = Math.abs(registro.valor);
+          return valorRegistro >= valorMinimoFlexivel && valorRegistro <= valorMaximoFlexivel;
+        });
+      }
 
       return registroEncontrado || null;
     } catch (error) {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -263,7 +263,7 @@ export const useFontesRenda = () => {
     }
   };
 
-  const getFontesRendaComStatus = async () => {
+  const getFontesRendaComStatus = useCallback(async () => {
     if (!fontes.length) return [];
 
     const fontesComStatus = await Promise.all(
@@ -280,7 +280,7 @@ export const useFontesRenda = () => {
     );
 
     return fontesComStatus;
-  };
+  }, [fontes, user]);
 
   useEffect(() => {
     fetchFontes();

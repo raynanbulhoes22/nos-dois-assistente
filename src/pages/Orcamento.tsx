@@ -221,7 +221,7 @@ export const Orcamento = () => {
     if (fontes.length > 0) {
       fetchFontesComStatus();
     }
-  }, [fontes, getFontesRendaComStatus]);
+  }, [fontes]);
 
   // Função para formatar moeda
   const formatCurrency = (valor: number) => {

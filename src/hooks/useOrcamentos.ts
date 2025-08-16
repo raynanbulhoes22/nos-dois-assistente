@@ -10,6 +10,7 @@ export interface OrcamentoMensal {
   ano: number;
   saldo_inicial?: number;
   meta_economia?: number;
+  saldo_editado_manualmente?: boolean;
   created_at: string;
   updated_at: string;
 }

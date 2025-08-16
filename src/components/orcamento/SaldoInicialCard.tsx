@@ -12,6 +12,7 @@ import { useFinancialStats } from '@/hooks/useFinancialStats';
 import { useAuth } from '@/hooks/useAuth';
 import { useSaldoEsperado } from "@/hooks/useSaldoEsperado";
 import { supabase } from '@/integrations/supabase/client';
+import { recalcularSaldosEmCascata } from "@/lib/saldo-utils";
 import { useToast } from '@/hooks/use-toast';
 
 interface SaldoInicialCardProps {
@@ -132,17 +133,21 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
       const valorSaldo = parseFloat(novoSaldo.replace(',', '.')) || 0;
       console.log('💰 Valor processado:', valorSaldo);
       
-      // 1. Atualizar/criar orçamento
+      // 1. Atualizar/criar orçamento e marcar como editado manualmente
       console.log('📊 Atualizando orçamento...', { orcamento: orcamento?.id });
       if (orcamento) {
-        const result = await updateOrcamento(orcamento.id, { saldo_inicial: valorSaldo });
+        const result = await updateOrcamento(orcamento.id, { 
+          saldo_inicial: valorSaldo,
+          saldo_editado_manualmente: true 
+        });
         console.log('✅ Orçamento atualizado:', result);
       } else {
         const result = await createOrcamento({
           mes,
           ano,
           saldo_inicial: valorSaldo,
-          meta_economia: 0
+          meta_economia: 0,
+          saldo_editado_manualmente: true
         });
         console.log('✅ Orçamento criado:', result);
       }
@@ -215,12 +220,17 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
       // 4. Atualizar estado local imediatamente
       setSaldoInicialFromDB(valorSaldo);
       
-      // 5. Recarregar dados do orçamento
+      // 5. Recalcular saldos dos meses futuros em cascata
+      console.log('🔄 Iniciando recálculo em cascata...');
+      await recalcularSaldosEmCascata(user.id, mes, ano);
+      console.log('✅ Recálculo em cascata concluído');
+      
+      // 6. Recarregar dados do orçamento
       await refetch();
       
       toast({
         title: "✅ Sucesso!",
-        description: "Saldo inicial atualizado com sucesso!"
+        description: "Saldo inicial atualizado e meses futuros recalculados com sucesso!"
       });
       setIsEditModalOpen(false);
     } catch (error) {

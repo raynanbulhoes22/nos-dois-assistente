@@ -4,8 +4,22 @@ import { supabase } from "@/integrations/supabase/client";
  * Calcula e cria o saldo inicial para um novo mês baseado no saldo do mês anterior
  * mais todas as movimentações que aconteceram
  */
-export const calcularSaldoInicialNovoMes = async (userId: string, mes: number, ano: number) => {
+export const calcularSaldoInicialNovoMes = async (userId: string, mes: number, ano: number, forcarRecalculo: boolean = false) => {
   try {
+    // Verificar se já existe orçamento para o mês atual e se foi editado manualmente
+    const { data: orcamentoExistente } = await supabase
+      .from('orcamentos_mensais')
+      .select('id, saldo_inicial, saldo_editado_manualmente')
+      .eq('user_id', userId)
+      .eq('mes', mes)
+      .eq('ano', ano)
+      .maybeSingle();
+    
+    // Se existe e foi editado manualmente, não recalcular (a menos que seja forçado)
+    if (orcamentoExistente?.saldo_editado_manualmente && !forcarRecalculo) {
+      return orcamentoExistente.saldo_inicial || 0;
+    }
+    
     // Calcular o mês anterior
     let mesAnterior = mes - 1;
     let anoAnterior = ano;
@@ -52,20 +66,14 @@ export const calcularSaldoInicialNovoMes = async (userId: string, mes: number, a
     // Saldo inicial do novo mês = saldo inicial anterior + entradas - saídas
     const novoSaldoInicial = saldoInicialAnterior + totalEntradas - totalSaidas;
     
-    // Verificar se já existe orçamento para o mês atual
-    const { data: orcamentoExistente } = await supabase
-      .from('orcamentos_mensais')
-      .select('id, saldo_inicial')
-      .eq('user_id', userId)
-      .eq('mes', mes)
-      .eq('ano', ano)
-      .maybeSingle();
-    
     if (orcamentoExistente) {
       // Atualizar orçamento existente
       await supabase
         .from('orcamentos_mensais')
-        .update({ saldo_inicial: novoSaldoInicial })
+        .update({ 
+          saldo_inicial: novoSaldoInicial,
+          saldo_editado_manualmente: false // Marcar como não editado manualmente após recálculo
+        })
         .eq('id', orcamentoExistente.id);
     } else {
       // Criar novo orçamento
@@ -76,7 +84,8 @@ export const calcularSaldoInicialNovoMes = async (userId: string, mes: number, a
           mes,
           ano,
           saldo_inicial: novoSaldoInicial,
-          meta_economia: 0
+          meta_economia: 0,
+          saldo_editado_manualmente: false
         });
     }
     
@@ -112,6 +121,41 @@ export const calcularSaldoInicialNovoMes = async (userId: string, mes: number, a
   } catch (error) {
     console.error('Erro ao calcular saldo inicial do novo mês:', error);
     return 0;
+  }
+};
+
+/**
+ * Recalcula em cascata todos os meses futuros que não foram editados manualmente
+ */
+export const recalcularSaldosEmCascata = async (userId: string, mesInicial: number, anoInicial: number) => {
+  try {
+    // Buscar todos os orçamentos futuros que não foram editados manualmente
+    const { data: orcamentosFuturos } = await supabase
+      .from('orcamentos_mensais')
+      .select('mes, ano, saldo_editado_manualmente')
+      .eq('user_id', userId)
+      .eq('saldo_editado_manualmente', false)
+      .order('ano', { ascending: true })
+      .order('mes', { ascending: true });
+    
+    if (!orcamentosFuturos || orcamentosFuturos.length === 0) return;
+    
+    // Filtrar apenas os meses posteriores ao mês inicial
+    const mesesParaRecalcular = orcamentosFuturos.filter(orc => {
+      const dataOrcamento = new Date(orc.ano, orc.mes - 1);
+      const dataInicial = new Date(anoInicial, mesInicial - 1);
+      return dataOrcamento > dataInicial;
+    });
+    
+    // Recalcular cada mês em ordem cronológica
+    for (const orcamento of mesesParaRecalcular) {
+      await calcularSaldoInicialNovoMes(userId, orcamento.mes, orcamento.ano, true);
+    }
+    
+    console.log(`Recalculados ${mesesParaRecalcular.length} meses em cascata`);
+    
+  } catch (error) {
+    console.error('Erro ao recalcular saldos em cascata:', error);
   }
 };
 

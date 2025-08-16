@@ -304,36 +304,7 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
           </CardContent>
         </Card>
 
-        {/* Card 3: Saídas Esperadas */}
-        <Card className="metric-card metric-card-warning">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex flex-col space-y-1 sm:space-y-2">
-              <div className="flex items-center gap-1 sm:gap-2">
-                <div className="icon-container icon-warning">
-                  <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
-                </div>
-                <span className="text-xs sm:text-sm font-medium text-muted-foreground">
-                  Saídas Esperadas
-                </span>
-              </div>
-              <div className="space-y-1">
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-warning">
-                  {formatCurrency(saldoEsperado.totalSaidas)}
-                </p>
-                <div className="space-y-0.5">
-                  <p className="text-xs text-muted-foreground">
-                    Fixos: {formatCurrency(saldoEsperado.gastoFixoMensal)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Parcelas: {formatCurrency(saldoEsperado.parcelasMensal)}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Card 4: Saldo Esperado */}
+        {/* Card 3: Saldo Esperado */}
         <Card className={`metric-card ${saldoEsperado.saldoProjetado >= saldoInicialFromDB ? 'metric-card-success' : 'metric-card-warning'}`}>
           <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col space-y-1 sm:space-y-2">
@@ -378,6 +349,35 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
                       </div>
                     </TooltipContent>
                   </Tooltip>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Card 4: Saídas Esperadas */}
+        <Card className="metric-card metric-card-warning">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col space-y-1 sm:space-y-2">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className="icon-container icon-warning">
+                  <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                </div>
+                <span className="text-xs sm:text-sm font-medium text-muted-foreground">
+                  Saídas Esperadas
+                </span>
+              </div>
+              <div className="space-y-1">
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-warning">
+                  {formatCurrency(saldoEsperado.totalSaidas)}
+                </p>
+                <div className="space-y-0.5">
+                  <p className="text-xs text-muted-foreground">
+                    Fixos: {formatCurrency(saldoEsperado.gastoFixoMensal)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Parcelas: {formatCurrency(saldoEsperado.parcelasMensal)}
+                  </p>
                 </div>
               </div>
             </div>

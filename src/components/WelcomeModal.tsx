@@ -52,19 +52,15 @@ export const WelcomeModal = ({
   }];
   useEffect(() => {
     if (user?.email) {
-      const hasSeenWelcome = localStorage.getItem(`dashboard_welcome_shown_${user.email}`);
       const dontShow = localStorage.getItem(`dashboard_welcome_dont_show_${user.email}`);
-      if (!hasSeenWelcome && !dontShow) {
+      if (!dontShow) {
         setIsOpen(true);
       }
     }
   }, [user?.email]);
   const handleClose = () => {
-    if (user?.email) {
-      localStorage.setItem(`dashboard_welcome_shown_${user.email}`, 'true');
-      if (dontShowAgain) {
-        localStorage.setItem(`dashboard_welcome_dont_show_${user.email}`, 'true');
-      }
+    if (user?.email && dontShowAgain) {
+      localStorage.setItem(`dashboard_welcome_dont_show_${user.email}`, 'true');
     }
     setIsOpen(false);
   };

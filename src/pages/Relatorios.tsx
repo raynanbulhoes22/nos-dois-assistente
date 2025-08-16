@@ -11,6 +11,8 @@ import { SmartInsightsPanel } from "@/components/relatorios/SmartInsightsPanel";
 import { TemporalAnalysisCharts } from "@/components/relatorios/TemporalAnalysisCharts";
 import { CategoryAnalysisCharts } from "@/components/relatorios/CategoryAnalysisCharts";
 import { BehavioralAnalysisCharts } from "@/components/relatorios/BehavioralAnalysisCharts";
+import { PatrimonialAnalysisCard } from "@/components/relatorios/PatrimonialAnalysisCard";
+import { PredictabilityAnalysisCard } from "@/components/relatorios/PredictabilityAnalysisCard";
 import { useAdvancedReportsData } from "@/hooks/useAdvancedReportsData";
 
 import { formatCurrency } from "@/lib/utils";
@@ -287,6 +289,7 @@ export const Relatorios = () => {
 
               <TabsContent value="visao-geral" className="space-y-6 mt-6">
                 <AdvancedKPICards kpis={data.kpis} isLoading={data.isLoading} />
+                <PatrimonialAnalysisCard data={data.patrimonialAnalysis} isLoading={data.isLoading} />
                 <TemporalAnalysisCharts data={data.temporalAnalysis} isLoading={data.isLoading} />
               </TabsContent>
 
@@ -344,6 +347,7 @@ export const Relatorios = () => {
 
               <TabsContent value="insights" className="space-y-6 mt-6">
                 <SmartInsightsPanel insights={data.smartInsights} isLoading={data.isLoading} />
+                <PredictabilityAnalysisCard data={data.predictabilityAnalysis} isLoading={data.isLoading} />
               </TabsContent>
 
               <TabsContent value="projecoes" className="space-y-6 mt-6">
@@ -450,7 +454,9 @@ export const Relatorios = () => {
             />
 
             <AdvancedKPICards kpis={data.kpis} isLoading={data.isLoading} />
+            <PatrimonialAnalysisCard data={data.patrimonialAnalysis} isLoading={data.isLoading} />
             <SmartInsightsPanel insights={data.smartInsights} isLoading={data.isLoading} />
+            <PredictabilityAnalysisCard data={data.predictabilityAnalysis} isLoading={data.isLoading} />
 
             {/* Financial Projections - Desktop */}
             <Card className="mb-6">

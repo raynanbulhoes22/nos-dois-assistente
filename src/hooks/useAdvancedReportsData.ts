@@ -5,7 +5,9 @@ import { useCartoes } from '@/hooks/useCartoes';
 import { useGastosFixos } from '@/hooks/useGastosFixos';
 import { useContasParceladas } from '@/hooks/useContasParceladas';
 import { useFontesRenda } from '@/hooks/useFontesRenda';
+import { useOrcamentos } from '@/hooks/useOrcamentos';
 import { supabase } from '@/integrations/supabase/client';
+import { calcularSaldoAtualMes } from '@/lib/saldo-utils';
 import { startOfMonth, endOfMonth, format, subMonths, parseISO, differenceInDays } from 'date-fns';
 
 export interface ReportFilters {
@@ -87,6 +89,53 @@ export interface ProjectionData {
   };
 }
 
+// Nova interface para análise de saldo patrimonial
+export interface PatrimonialAnalysis {
+  monthlyBalanceEvolution: { month: string; saldoInicial: number; saldoFinal: number; crescimento: number }[];
+  totalGrowth: number;
+  avgMonthlyGrowth: number;
+  bestPerformingMonth: { month: string; growth: number };
+  worstPerformingMonth: { month: string; growth: number };
+  stabilityIndex: number; // 0-100, quanto maior mais estável
+}
+
+// Nova interface para análise de orçamentos
+export interface BudgetAnalysis {
+  monthlyBudgetVsActual: { 
+    month: string; 
+    orcado: number; 
+    realizado: number; 
+    diferenca: number; 
+    eficiencia: number; 
+  }[];
+  overallEfficiency: number; // % de aderência ao orçamento
+  categoriesPerformance: { 
+    categoria: string; 
+    orcado: number; 
+    realizado: number; 
+    performance: 'excelente' | 'boa' | 'atencao' | 'critica'; 
+  }[];
+  budgetTrends: { 
+    crescimento_orcamento: number; 
+    crescimento_gastos: number; 
+    tendencia: 'melhorando' | 'estavel' | 'piorando'; 
+  };
+}
+
+// Nova interface para análise de previsibilidade
+export interface PredictabilityAnalysis {
+  fixedVsVariable: { fixos: number; variaveis: number; percentualFixos: number };
+  recurringIncome: { valor: number; confiabilidade: number };
+  monthlyCommitments: { valor: number; percentualRenda: number };
+  cashFlowPredictability: number; // 0-100
+  upcomingCommitments: { 
+    mes: string; 
+    gastos_fixos: number; 
+    parcelas: number; 
+    total: number; 
+  }[];
+}
+
 export interface AdvancedReportsData {
   filters: ReportFilters;
   setFilters: (filters: Partial<ReportFilters>) => void;
@@ -97,6 +146,9 @@ export interface AdvancedReportsData {
   temporalAnalysis: TemporalAnalysis;
   smartInsights: SmartInsight[];
   projections: ProjectionData;
+  patrimonialAnalysis: PatrimonialAnalysis;
+  budgetAnalysis: BudgetAnalysis;
+  predictabilityAnalysis: PredictabilityAnalysis;
   isLoading: boolean;
   error: string | null;
   refreshData: () => void;
@@ -120,6 +172,7 @@ export const useAdvancedReportsData = (): AdvancedReportsData => {
   const { gastosFixos } = useGastosFixos();
   const { contas: contasParceladas } = useContasParceladas();
   const { fontes: fontesRenda } = useFontesRenda();
+  const { orcamentos } = useOrcamentos();
 
   const [filters, setFiltersState] = useState<ReportFilters>(defaultFilters);
   const [isLoading, setIsLoading] = useState(false);
@@ -556,6 +609,157 @@ export const useAdvancedReportsData = (): AdvancedReportsData => {
     };
   }, [temporalAnalysis, kpis]);
 
+  // Nova análise patrimonial baseada nos orçamentos mensais
+  const patrimonialAnalysis = useMemo((): PatrimonialAnalysis => {
+    const monthlyEvolution = [];
+    const growthRates = [];
+    
+    // Ordenar orçamentos por data
+    const sortedOrcamentos = [...orcamentos].sort((a, b) => {
+      const dateA = new Date(a.ano, a.mes - 1);
+      const dateB = new Date(b.ano, b.mes - 1);
+      return dateA.getTime() - dateB.getTime();
+    });
+
+    for (let i = 0; i < sortedOrcamentos.length; i++) {
+      const orcamento = sortedOrcamentos[i];
+      const saldoInicial = orcamento.saldo_inicial || 0;
+      
+      // Calcular saldo final do mês (usando função utilitária)
+      const saldoFinal = user ? 0 : 0; // Placeholder - implementaremos o cálculo real
+      
+      let crescimento = 0;
+      if (i > 0) {
+        const saldoAnterior = sortedOrcamentos[i - 1].saldo_inicial || 0;
+        crescimento = saldoAnterior !== 0 ? ((saldoInicial - saldoAnterior) / Math.abs(saldoAnterior)) * 100 : 0;
+        growthRates.push(crescimento);
+      }
+
+      monthlyEvolution.push({
+        month: `${orcamento.mes.toString().padStart(2, '0')}/${orcamento.ano}`,
+        saldoInicial,
+        saldoFinal: saldoInicial, // Placeholder
+        crescimento
+      });
+    }
+
+    const totalGrowth = monthlyEvolution.length > 0 ? 
+      ((monthlyEvolution[monthlyEvolution.length - 1].saldoInicial - monthlyEvolution[0].saldoInicial) / 
+       Math.abs(monthlyEvolution[0].saldoInicial || 1)) * 100 : 0;
+
+    const avgMonthlyGrowth = growthRates.length > 0 ? 
+      growthRates.reduce((sum, rate) => sum + rate, 0) / growthRates.length : 0;
+
+    // Encontrar melhor e pior mês
+    const bestPerformingMonth = monthlyEvolution.reduce((best, current) => 
+      current.crescimento > best.crescimento ? current : best, 
+      monthlyEvolution[0] || { month: '', growth: 0 }
+    );
+
+    const worstPerformingMonth = monthlyEvolution.reduce((worst, current) => 
+      current.crescimento < worst.crescimento ? current : worst, 
+      monthlyEvolution[0] || { month: '', growth: 0 }
+    );
+
+    // Calcular índice de estabilidade baseado na variabilidade do crescimento
+    const variance = growthRates.length > 0 ? 
+      growthRates.reduce((sum, rate) => sum + Math.pow(rate - avgMonthlyGrowth, 2), 0) / growthRates.length : 0;
+    const standardDeviation = Math.sqrt(variance);
+    const stabilityIndex = Math.max(0, 100 - standardDeviation); // Quanto menor a variação, maior a estabilidade
+
+    return {
+      monthlyBalanceEvolution: monthlyEvolution,
+      totalGrowth,
+      avgMonthlyGrowth,
+      bestPerformingMonth: { month: bestPerformingMonth.month, growth: bestPerformingMonth.crescimento },
+      worstPerformingMonth: { month: worstPerformingMonth.month, growth: worstPerformingMonth.crescimento },
+      stabilityIndex
+    };
+  }, [orcamentos, user]);
+
+  // Nova análise de orçamentos vs realizado
+  const budgetAnalysis = useMemo((): BudgetAnalysis => {
+    // Placeholder implementation - requer integração com categorias orçadas
+    return {
+      monthlyBudgetVsActual: [],
+      overallEfficiency: 0,
+      categoriesPerformance: [],
+      budgetTrends: {
+        crescimento_orcamento: 0,
+        crescimento_gastos: 0,
+        tendencia: 'estavel'
+      }
+    };
+  }, [orcamentos, categoryAnalysis]);
+
+  // Nova análise de previsibilidade
+  const predictabilityAnalysis = useMemo((): PredictabilityAnalysis => {
+    // Calcular gastos fixos vs variáveis
+    const gastosFixosTotal = gastosFixos
+      .filter(gasto => gasto.ativo)
+      .reduce((sum, gasto) => sum + gasto.valor_mensal, 0);
+
+    const parcelasAtivas = contasParceladas
+      .filter(conta => conta.ativa && conta.parcelas_pagas < conta.total_parcelas)
+      .reduce((sum, conta) => sum + conta.valor_parcela, 0);
+
+    const gastosVariaveis = kpis.totalExpenses - gastosFixosTotal - parcelasAtivas;
+    const percentualFixos = kpis.totalExpenses > 0 ? 
+      ((gastosFixosTotal + parcelasAtivas) / kpis.totalExpenses) * 100 : 0;
+
+    // Calcular renda recorrente
+    const rendaRecorrente = fontesRenda
+      .filter(fonte => fonte.ativa)
+      .reduce((sum, fonte) => sum + fonte.valor, 0);
+
+    const confiabilidadeRenda = kpis.totalIncome > 0 ? 
+      (rendaRecorrente / kpis.totalIncome) * 100 : 0;
+
+    // Comprometimentos mensais
+    const comprometimentosMensais = gastosFixosTotal + parcelasAtivas;
+    const percentualRenda = kpis.totalIncome > 0 ? 
+      (comprometimentosMensais / kpis.totalIncome) * 100 : 0;
+
+    // Previsibilidade do fluxo de caixa (0-100)
+    let cashFlowPredictability = 50; // Base
+    if (percentualFixos > 60) cashFlowPredictability += 20; // Mais gastos fixos = mais previsível
+    if (confiabilidadeRenda > 80) cashFlowPredictability += 20; // Renda estável
+    if (kpis.expenseVariability < 20) cashFlowPredictability += 10; // Baixa variação nos gastos
+    cashFlowPredictability = Math.min(100, cashFlowPredictability);
+
+    // Projetar próximos compromissos
+    const upcomingCommitments = [];
+    for (let i = 1; i <= 6; i++) {
+      const futureDate = new Date();
+      futureDate.setMonth(futureDate.getMonth() + i);
+      
+      upcomingCommitments.push({
+        mes: `${(futureDate.getMonth() + 1).toString().padStart(2, '0')}/${futureDate.getFullYear()}`,
+        gastos_fixos: gastosFixosTotal,
+        parcelas: parcelasAtivas,
+        total: gastosFixosTotal + parcelasAtivas
+      });
+    }
+
+    return {
+      fixedVsVariable: {
+        fixos: gastosFixosTotal + parcelasAtivas,
+        variaveis: Math.max(0, gastosVariaveis),
+        percentualFixos
+      },
+      recurringIncome: {
+        valor: rendaRecorrente,
+        confiabilidade: confiabilidadeRenda
+      },
+      monthlyCommitments: {
+        valor: comprometimentosMensais,
+        percentualRenda
+      },
+      cashFlowPredictability,
+      upcomingCommitments
+    };
+  }, [gastosFixos, contasParceladas, fontesRenda, kpis]);
+
   const refreshData = () => {
     // Trigger data refresh by updating filters
     setFiltersState(prev => ({ ...prev }));
@@ -571,6 +775,9 @@ export const useAdvancedReportsData = (): AdvancedReportsData => {
     temporalAnalysis,
     smartInsights,
     projections,
+    patrimonialAnalysis,
+    budgetAnalysis,
+    predictabilityAnalysis,
     isLoading: movimentacoesLoading || isLoading,
     error,
     refreshData

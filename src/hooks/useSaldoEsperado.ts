@@ -13,15 +13,28 @@ export const useSaldoEsperado = (saldoAtual: number, mesesProjetados: number = 6
     const gastoFixoMensal = getTotalGastosFixosAtivos();
     const parcelasProjetadas = calcularParcelasProjetadas(mesesProjetados);
     
-    // Calcular média mensal das parcelas projetadas
+    // Calcular saldo projetado mês a mês
+    let saldoAtualIteracao = saldoAtual;
+    
+    for (let i = 0; i < mesesProjetados; i++) {
+      // Encontrar parcelas para este mês específico
+      const parcelasMes = parcelasProjetadas[i]?.valor || 0;
+      
+      // Fluxo líquido do mês = Renda - Gastos Fixos - Parcelas do mês
+      const fluxoLiquidoMes = rendaMensal - gastoFixoMensal - parcelasMes;
+      
+      // Saldo no final do mês = Saldo início do mês + Fluxo líquido
+      saldoAtualIteracao += fluxoLiquidoMes;
+    }
+    
+    const saldoProjetado = saldoAtualIteracao;
+    
+    // Calcular média mensal das parcelas para exibição
     const totalParcelas = parcelasProjetadas.reduce((total, mes) => total + mes.valor, 0);
     const parcelasMensal = mesesProjetados > 0 ? totalParcelas / mesesProjetados : 0;
     
-    // Fluxo líquido mensal = Renda - Gastos Fixos - Parcelas
+    // Fluxo líquido médio mensal
     const fluxoLiquidoMensal = rendaMensal - gastoFixoMensal - parcelasMensal;
-    
-    // Saldo esperado = Saldo atual + (Fluxo líquido × Meses projetados)
-    const saldoProjetado = saldoAtual + (fluxoLiquidoMensal * mesesProjetados);
     
     return {
       saldoProjetado,

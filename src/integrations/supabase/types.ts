@@ -89,6 +89,9 @@ export type Database = {
           margem_consignavel: number | null
           nome: string
           parcelas_pagas: number
+          status_manual: string | null
+          status_manual_ano: number | null
+          status_manual_mes: number | null
           taxa_efetiva_anual: number | null
           taxa_juros: number | null
           taxa_nominal_anual: number | null
@@ -119,6 +122,9 @@ export type Database = {
           margem_consignavel?: number | null
           nome: string
           parcelas_pagas?: number
+          status_manual?: string | null
+          status_manual_ano?: number | null
+          status_manual_mes?: number | null
           taxa_efetiva_anual?: number | null
           taxa_juros?: number | null
           taxa_nominal_anual?: number | null
@@ -149,6 +155,9 @@ export type Database = {
           margem_consignavel?: number | null
           nome?: string
           parcelas_pagas?: number
+          status_manual?: string | null
+          status_manual_ano?: number | null
+          status_manual_mes?: number | null
           taxa_efetiva_anual?: number | null
           taxa_juros?: number | null
           taxa_nominal_anual?: number | null

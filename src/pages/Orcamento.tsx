@@ -137,6 +137,8 @@ export const Orcamento = () => {
     deleteConta, 
     getTotalParcelasAtivas, 
     calcularParcelasProjetadas,
+    getContasParceladasComStatus,
+    updateStatusManualParcela,
     isLoading: contasLoading,
     refetch: refetchContas 
   } = useContasParceladas();
@@ -181,6 +183,11 @@ export const Orcamento = () => {
   const [totalRendaRecebida, setTotalRendaRecebida] = useState(0);
   const [totalRendaPendente, setTotalRendaPendente] = useState(0);
   
+  // Contas parceladas com status de pagamento
+  const [contasParceladasComStatus, setContasParceladasComStatus] = useState<any[]>([]);
+  const [totalParcelasPagas, setTotalParcelasPagas] = useState(0);
+  const [totalParcelasPendentes, setTotalParcelasPendentes] = useState(0);
+  
   useEffect(() => {
     const fetchGastosComStatus = async () => {
       try {
@@ -224,6 +231,28 @@ export const Orcamento = () => {
       fetchFontesComStatus();
     }
   }, [fontes, mesAtual, anoAtual]);
+
+  useEffect(() => {
+    const fetchContasComStatus = async () => {
+      try {
+        const contasComStatus = await getContasParceladasComStatus(mesAtual, anoAtual);
+        setContasParceladasComStatus(contasComStatus);
+        const pagas = contasComStatus.filter(c => c.pago).reduce((sum, c) => sum + c.valor_parcela, 0);
+        const pendentes = contasComStatus.filter(c => !c.pago).reduce((sum, c) => sum + c.valor_parcela, 0);
+        setTotalParcelasPagas(pagas);
+        setTotalParcelasPendentes(pendentes);
+      } catch (error) {
+        console.error('Erro ao buscar contas com status:', error);
+        setContasParceladasComStatus([]);
+        setTotalParcelasPagas(0);
+        setTotalParcelasPendentes(0);
+      }
+    };
+    
+    if (contas.length > 0) {
+      fetchContasComStatus();
+    }
+  }, [contas, mesAtual, anoAtual]);
 
   // Função para formatar moeda
   const formatCurrency = (valor: number) => {
@@ -437,6 +466,22 @@ export const Orcamento = () => {
     }
   };
 
+  const handleToggleStatusParcela = async (id: string, novoStatus: 'pago' | 'pendente') => {
+    try {
+      await updateStatusManualParcela(id, novoStatus, mesAtual, anoAtual);
+      // Atualizar as contas com status
+      const contasComStatus = await getContasParceladasComStatus(mesAtual, anoAtual);
+      setContasParceladasComStatus(contasComStatus);
+      const pagas = contasComStatus.filter(c => c.pago).reduce((sum, c) => sum + c.valor_parcela, 0);
+      const pendentes = contasComStatus.filter(c => !c.pago).reduce((sum, c) => sum + c.valor_parcela, 0);
+      setTotalParcelasPagas(pagas);
+      setTotalParcelasPendentes(pendentes);
+      toast.success(`Status da parcela alterado para ${novoStatus}`);
+    } catch (error) {
+      toast.error('Erro ao alterar status da parcela');
+    }
+  };
+
   const resetFonteForm = () => {
     setFonteForm({
       tipo: '',
@@ -611,6 +656,7 @@ export const Orcamento = () => {
                 gastosFixos={gastosFixos}
                 gastosFixosComStatus={gastosFixosComStatus.length > 0 ? gastosFixosComStatus : undefined}
                 fontesRendaComStatus={fontesRendaComStatus.length > 0 ? fontesRendaComStatus : undefined}
+                contasParceladasComStatus={contasParceladasComStatus.length > 0 ? contasParceladasComStatus : undefined}
                 formatCurrency={formatCurrency}
                 totalRendaAtiva={totalRendaAtiva}
                 totalLimiteCartoes={totalLimiteCartoes}
@@ -620,6 +666,8 @@ export const Orcamento = () => {
                 totalGastosPendentes={totalGastosPendentes}
                 totalRendaRecebida={totalRendaRecebida}
                 totalRendaPendente={totalRendaPendente}
+                totalParcelasPagas={totalParcelasPagas}
+                totalParcelasPendentes={totalParcelasPendentes}
                 onEditFonte={handleEditFonte}
                 onDeleteFonte={deleteFonte}
                 onEditCartao={handleEditCartao}
@@ -634,6 +682,7 @@ export const Orcamento = () => {
                 onAddGastoFixo={() => setShowGastoFixoModal(true)}
                 onToggleStatusRenda={handleToggleStatusRenda}
                 onToggleStatusGastoFixo={handleToggleStatusGastoFixo}
+                onToggleStatusParcela={handleToggleStatusParcela}
               />
             </CardContent>
           </Card>

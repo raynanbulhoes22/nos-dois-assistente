@@ -15,6 +15,7 @@ interface TabSectionProps {
   gastosFixos: any[];
   gastosFixosComStatus?: any[];
   fontesRendaComStatus?: any[];
+  contasParceladasComStatus?: any[];
   formatCurrency: (value: number) => string;
   totalRendaAtiva: number;
   totalLimiteCartoes: number;
@@ -24,6 +25,8 @@ interface TabSectionProps {
   totalGastosPendentes?: number;
   totalRendaRecebida?: number;
   totalRendaPendente?: number;
+  totalParcelasPagas?: number;
+  totalParcelasPendentes?: number;
   onEditFonte: (fonte: any) => void;
   onDeleteFonte: (id: string) => void;
   onEditCartao: (cartao: any) => void;
@@ -38,6 +41,7 @@ interface TabSectionProps {
   onAddGastoFixo: () => void;
   onToggleStatusRenda?: (id: string, novoStatus: 'recebido' | 'pendente') => void;
   onToggleStatusGastoFixo?: (id: string, novoStatus: 'pago' | 'pendente') => void;
+  onToggleStatusParcela?: (id: string, novoStatus: 'pago' | 'pendente') => void;
 }
 
 export const TabSection = ({
@@ -47,6 +51,7 @@ export const TabSection = ({
   gastosFixos,
   gastosFixosComStatus,
   fontesRendaComStatus,
+  contasParceladasComStatus,
   formatCurrency,
   totalRendaAtiva,
   totalLimiteCartoes,
@@ -56,6 +61,8 @@ export const TabSection = ({
   totalGastosPendentes = 0,
   totalRendaRecebida = 0,
   totalRendaPendente = 0,
+  totalParcelasPagas = 0,
+  totalParcelasPendentes = 0,
   onEditFonte,
   onDeleteFonte,
   onEditCartao,
@@ -69,13 +76,14 @@ export const TabSection = ({
   onAddParcelamento,
   onAddGastoFixo,
   onToggleStatusRenda,
-  onToggleStatusGastoFixo
+  onToggleStatusGastoFixo,
+  onToggleStatusParcela
 }: TabSectionProps) => {
   const isMobile = useIsMobile();
   
   const activeFontes = fontesRendaComStatus || fontes.filter(fonte => fonte.ativa);
   const activeCartoes = cartoes.filter(cartao => cartao.ativo);
-  const activeContas = contas.filter(conta => conta.ativa);
+  const activeContas = contasParceladasComStatus || contas.filter(conta => conta.ativa);
   const activeGastosFixos = gastosFixosComStatus || gastosFixos.filter(gasto => gasto.ativo);
 
   return (
@@ -249,7 +257,11 @@ export const TabSection = ({
       <TabsContent value="parcelamentos" className="mt-0">
         <MobileSection
           title="Contas Parceladas"
-          subtitle={`Total Mensal: ${formatCurrency(totalParcelasAtivas)}`}
+          subtitle={
+            contasParceladasComStatus 
+              ? `Total: ${formatCurrency(totalParcelasAtivas)}${totalParcelasPagas > 0 ? ` (${formatCurrency(totalParcelasPagas)} pagas` : ''}${totalParcelasPendentes > 0 ? `${totalParcelasPagas > 0 ? ', ' : ' ('}${formatCurrency(totalParcelasPendentes)} pendentes)` : totalParcelasPagas > 0 ? ')' : ''}`
+              : `Total Mensal: ${formatCurrency(totalParcelasAtivas)}`
+          }
           icon={Building2}
           iconVariant="warning"
           onAdd={onAddParcelamento}
@@ -257,43 +269,112 @@ export const TabSection = ({
           isEmpty={activeContas.length === 0}
           emptyMessage="Nenhum parcelamento ativo"
         >
-          <div className="space-y-3">
-            {activeContas.map((conta) => (
-              <div key={conta.id} className="list-item group">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm truncate">{conta.nome}</h3>
-                    <div className="flex flex-col gap-1 mt-1">
-                      <p className="text-lg font-bold text-warning">
-                        {formatCurrency(conta.valor_parcela)}/mês
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {conta.parcelas_pagas || 0}/{conta.total_parcelas} parcelas
-                      </p>
+          <TooltipProvider>
+            <div className="space-y-3">
+              {activeContas.map((conta) => (
+                <div key={conta.id} className="list-item group">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-sm truncate">{conta.nome}</h3>
+                        {contasParceladasComStatus && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge 
+                                variant={conta.pago ? "default" : "secondary"}
+                                className={cn(
+                                  "h-6 text-xs flex items-center gap-1 px-3 py-1 font-medium",
+                                  "transition-all duration-200 ease-in-out",
+                                  "border-2 rounded-lg shadow-sm",
+                                  conta.pago 
+                                    ? "bg-success/15 text-success border-success/30 hover:bg-success/25 hover:border-success/50" 
+                                    : "bg-warning/15 text-warning border-warning/30 hover:bg-warning/25 hover:border-warning/50",
+                                  onToggleStatusParcela && [
+                                    "cursor-pointer select-none",
+                                    "hover:scale-105 hover:shadow-md",
+                                    "active:scale-95 active:shadow-sm",
+                                    "hover:ring-2 hover:ring-offset-1",
+                                    conta.pago 
+                                      ? "hover:ring-success/20" 
+                                      : "hover:ring-warning/20"
+                                  ]
+                                )}
+                                onClick={onToggleStatusParcela ? () => onToggleStatusParcela(conta.id, conta.pago ? 'pendente' : 'pago') : undefined}
+                              >
+                                {conta.pago ? (
+                                  <>
+                                    <CheckCircle className="h-3.5 w-3.5 transition-transform duration-200" />
+                                    {isMobile ? "Ok" : "Pago"}
+                                  </>
+                                ) : (
+                                  <>
+                                    <Clock className="h-3.5 w-3.5 transition-transform duration-200" />
+                                    {isMobile ? "Pend" : "Pendente"}
+                                  </>
+                                )}
+                                {conta.statusTipo === 'manual' && (
+                                  <div className="ml-1 w-1.5 h-1.5 bg-current rounded-full animate-pulse" title="Status manual" />
+                                )}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {conta.pago ? (
+                                <div className="text-xs">
+                                  <p className="font-semibold text-success">✅ {conta.statusTipo === 'manual' ? 'Marcado manualmente como pago' : 'Pagamento detectado automaticamente'}</p>
+                                  {conta.registroDetectado && (
+                                    <>
+                                      <p>Valor: {formatCurrency(Math.abs(conta.registroDetectado.valor))}</p>
+                                      <p>Data: {new Date(conta.registroDetectado.data).toLocaleDateString('pt-BR')}</p>
+                                      <p>Categoria: {conta.registroDetectado.categoria}</p>
+                                    </>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="text-xs">
+                                  <p className="text-warning">⏰ {conta.statusTipo === 'manual' ? 'Marcado manualmente como pendente' : 'Aguardando pagamento da parcela no mês'}</p>
+                                  <p className="text-muted-foreground mt-1">Clique no status para alterar manualmente</p>
+                                </div>
+                              )}
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-1 mt-1">
+                        <p className={`text-lg font-bold ${
+                          contasParceladasComStatus && conta.pago 
+                            ? "text-muted-foreground" 
+                            : "text-warning"
+                        }`}>
+                          {formatCurrency(conta.valor_parcela)}/mês
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {conta.parcelas_pagas || 0}/{conta.total_parcelas} parcelas
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 group-hover-actions">
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => onEditContaParcelada(conta)} 
+                        className="h-8 w-8 p-0 focus-ring"
+                      >
+                        <Edit3 className="h-3 w-3" />
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => onDeleteContaParcelada(conta.id)} 
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive focus-ring"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex gap-1 group-hover-actions">
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      onClick={() => onEditContaParcelada(conta)} 
-                      className="h-8 w-8 p-0 focus-ring"
-                    >
-                      <Edit3 className="h-3 w-3" />
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      onClick={() => onDeleteContaParcelada(conta.id)} 
-                      className="h-8 w-8 p-0 text-destructive hover:text-destructive focus-ring"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </TooltipProvider>
         </MobileSection>
       </TabsContent>
 

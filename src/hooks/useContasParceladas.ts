@@ -193,6 +193,174 @@ export const useContasParceladas = () => {
     }).reduce((total, conta) => total + conta.valor_parcela, 0);
   };
 
+  const checkPagamentoParcela = async (conta: ContaParcelada, mes: number, ano: number) => {
+    if (!user) return null;
+
+    try {
+      // Categorias relacionadas a financiamentos e parcelamentos
+      const categoriasRelacionadas: { [key: string]: string[] } = {
+        'parcelamento': ['Parcelamento', 'Financiamento', 'Prestação', 'Parcela'],
+        'financiamento_veiculo': ['Financiamento', 'Veículo', 'Carro', 'Moto', 'Automóvel'],
+        'financiamento_imovel': ['Financiamento', 'Imóvel', 'Casa', 'Apartamento', 'CEF', 'Caixa'],
+        'emprestimo_pessoal': ['Empréstimo', 'Crédito Pessoal', 'Financiamento'],
+        'consorcio': ['Consórcio'],
+        'outros': ['Financiamento', 'Parcelamento', 'Prestação']
+      };
+
+      // Palavras-chave para busca por nome
+      const palavrasChave: { [key: string]: string[] } = {
+        'financiamento': ['Financiamento', 'Parcelamento'],
+        'consorcio': ['Consórcio'],
+        'emprestimo': ['Empréstimo', 'Financiamento'],
+        'prestacao': ['Financiamento', 'Parcelamento'],
+        'parcela': ['Parcelamento', 'Financiamento'],
+        'caixa': ['Financiamento'],
+        'banco': ['Financiamento', 'Empréstimo'],
+        'santander': ['Financiamento', 'Empréstimo'],
+        'itau': ['Financiamento', 'Empréstimo'],
+        'bradesco': ['Financiamento', 'Empréstimo']
+      };
+
+      // Determinar categorias para buscar
+      let categoriasParaBuscar = categoriasRelacionadas[conta.tipo_financiamento] || [];
+      
+      // Buscar por palavras-chave no nome
+      const nomeConta = conta.nome.toLowerCase();
+      for (const [palavra, categorias] of Object.entries(palavrasChave)) {
+        if (nomeConta.includes(palavra)) {
+          categoriasParaBuscar = [...categoriasParaBuscar, ...categorias];
+        }
+      }
+      
+      // Remover duplicatas e adicionar fallbacks
+      categoriasParaBuscar = [...new Set(categoriasParaBuscar)];
+      if (categoriasParaBuscar.length === 0) {
+        categoriasParaBuscar = ['Financiamento', 'Parcelamento'];
+      }
+
+      // 1. Buscar por categorias
+      const { data, error } = await supabase
+        .from('registros_financeiros')
+        .select('*')
+        .eq('user_id', user.id)
+        .in('categoria', categoriasParaBuscar)
+        .gte('data', `${ano}-${mes.toString().padStart(2, '0')}-01`)
+        .lt('data', `${ano}-${(mes + 1).toString().padStart(2, '0')}-01`);
+
+      if (error) throw error;
+
+      let registrosEncontrados = data || [];
+
+      // 2. Buscar por estabelecimento/nome similar
+      if (registrosEncontrados.length === 0) {
+        const { data: dataByName, error: errorByName } = await supabase
+          .from('registros_financeiros')
+          .select('*')
+          .eq('user_id', user.id)
+          .or(`estabelecimento.ilike.%${conta.nome}%,nome.ilike.%${conta.nome}%,titulo.ilike.%${conta.nome}%`)
+          .gte('data', `${ano}-${mes.toString().padStart(2, '0')}-01`)
+          .lt('data', `${ano}-${(mes + 1).toString().padStart(2, '0')}-01`);
+        
+        if (!errorByName) {
+          registrosEncontrados = dataByName || [];
+        }
+      }
+
+      // 3. Buscar por valor similar
+      if (registrosEncontrados.length === 0) {
+        const valorParcela = Number(conta.valor_parcela);
+        const tolerancia = valorParcela * 0.1;
+
+        const { data: dataByValue, error: errorByValue } = await supabase
+          .from('registros_financeiros')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('data', `${ano}-${mes.toString().padStart(2, '0')}-01`)
+          .lt('data', `${ano}-${(mes + 1).toString().padStart(2, '0')}-01`)
+          .gte('valor', -(valorParcela + tolerancia))
+          .lte('valor', -(valorParcela - tolerancia));
+        
+        if (!errorByValue) {
+          registrosEncontrados = dataByValue || [];
+        }
+      }
+
+      // Verificar se algum registro tem valor similar (±15%)
+      const valorParcela = Number(conta.valor_parcela);
+      const tolerancia = valorParcela * 0.15;
+      
+      const registroMatch = registrosEncontrados.find(registro => {
+        const valorRegistro = Math.abs(Number(registro.valor));
+        const diferenca = Math.abs(valorRegistro - valorParcela);
+        return diferenca <= tolerancia;
+      });
+
+      return registroMatch || null;
+    } catch (err) {
+      console.error('Erro ao verificar pagamento da parcela:', err);
+      return null;
+    }
+  };
+
+  const updateStatusManualParcela = async (id: string, status: 'pago' | 'pendente', mes: number, ano: number) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('contas_parceladas')
+        .update({
+          status_manual: status,
+          status_manual_mes: mes,
+          status_manual_ano: ano
+        } as any)
+        .eq('id', id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+    } catch (err) {
+      console.error('Erro ao atualizar status manual da parcela:', err);
+      throw err;
+    }
+  };
+
+  const getContasParceladasComStatus = async (mes: number, ano: number) => {
+    const contasAtivas = contas.filter(conta => {
+      const parcelasRestantes = conta.total_parcelas - conta.parcelas_pagas;
+      return parcelasRestantes > 0;
+    });
+    
+    const contasComStatus = await Promise.all(
+      contasAtivas.map(async (conta: any) => {
+        // Verificar se tem status manual para este mês/ano
+        const temStatusManual = conta.status_manual && 
+                               conta.status_manual_mes === mes && 
+                               conta.status_manual_ano === ano;
+
+        let pago = false;
+        let registroDetectado = null;
+        let statusTipo = 'automatico';
+
+        if (temStatusManual) {
+          pago = conta.status_manual === 'pago';
+          statusTipo = 'manual';
+        } else {
+          registroDetectado = await checkPagamentoParcela(conta, mes, ano);
+          pago = !!registroDetectado;
+        }
+
+        return {
+          ...conta,
+          pago,
+          registroDetectado,
+          statusTipo
+        };
+      })
+    );
+
+    return contasComStatus;
+  };
+
   useEffect(() => {
     fetchContas();
   }, [user]);
@@ -206,6 +374,8 @@ export const useContasParceladas = () => {
     deleteConta,
     calcularParcelasProjetadas,
     getTotalParcelasAtivas,
+    getContasParceladasComStatus,
+    updateStatusManualParcela,
     refetch: fetchContas
   };
 };

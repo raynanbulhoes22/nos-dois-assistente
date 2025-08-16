@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FINANCIAL_CATEGORIES, TRANSACTION_TYPES, PAYMENT_METHODS } from "@/constants/categories";
 import { useCartoes } from "@/hooks/useCartoes";
 import { useFontesRenda } from "@/hooks/useFontesRenda";
+import { useProfileNames } from "@/hooks/useProfileNames";
 
 interface Transaction {
   id: string;
@@ -24,6 +25,7 @@ interface Transaction {
   data: string;
   categoria: string;
   nome: string;
+  titulo?: string;
   forma_pagamento?: string;
   estabelecimento?: string;
   instituicao?: string;
@@ -67,6 +69,7 @@ export const TransactionForm = ({
     data: editTransaction ? new Date(editTransaction.data) : new Date(),
     categoria: editTransaction?.categoria || "",
     nome: editTransaction?.nome || "",
+    titulo: editTransaction?.titulo || "",
     forma_pagamento: editTransaction?.forma_pagamento || "",
     estabelecimento: editTransaction?.estabelecimento || "",
     instituicao: editTransaction?.instituicao || "",
@@ -80,6 +83,7 @@ export const TransactionForm = ({
   const { toast } = useToast();
   const { cartoes } = useCartoes();
   const { fontes } = useFontesRenda();
+  const { availableNames } = useProfileNames(userId);
 
   // Categorias filtradas baseadas no tipo selecionado
   const availableCategories = useMemo(() => {
@@ -117,7 +121,8 @@ export const TransactionForm = ({
     if (!formData.tipo) newErrors.tipo = "Tipo é obrigatório";
     if (!formData.valor) newErrors.valor = "Valor é obrigatório";
     if (!formData.categoria) newErrors.categoria = "Categoria é obrigatória";
-    if (!formData.nome) newErrors.nome = "Nome/Descrição é obrigatório";
+    if (!formData.titulo) newErrors.titulo = "Descrição é obrigatória";
+    if (!formData.nome) newErrors.nome = "Registrado por é obrigatório";
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -147,6 +152,7 @@ export const TransactionForm = ({
         data: format(formData.data, "yyyy-MM-dd"),
         categoria: formData.categoria,
         nome: formData.nome,
+        titulo: formData.titulo,
         forma_pagamento: formData.forma_pagamento || null,
         estabelecimento: formData.estabelecimento || null,
         instituicao: formData.instituicao || null,
@@ -368,22 +374,45 @@ export const TransactionForm = ({
                 )}
               </div>
 
-              {/* Nome/Descrição */}
+              {/* Descrição da Transação */}
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="nome">
+                <Label htmlFor="titulo">
                   {formData.tipo === "entrada_manual" ? "Descrição da Receita" : 
                    formData.tipo === "comprovante_pagamento" ? "Descrição da Transferência" : 
                    "Descrição da Despesa"} *
                 </Label>
                 <Input
-                  value={formData.nome}
-                  onChange={(e) => updateFormData("nome", e.target.value)}
+                  value={formData.titulo}
+                  onChange={(e) => updateFormData("titulo", e.target.value)}
                   placeholder={
                     formData.tipo === "entrada_manual" ? "Ex: Salário de Janeiro" :
                     formData.tipo === "comprovante_pagamento" ? "Ex: Transferência para poupança" :
                     "Ex: Compra no supermercado"
                   }
                 />
+                {errors.titulo && (
+                  <p className="text-sm text-red-500">{errors.titulo}</p>
+                )}
+              </div>
+
+              {/* Registrado por */}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="nome">Registrado por *</Label>
+                <Select 
+                  value={formData.nome} 
+                  onValueChange={(value) => updateFormData("nome", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Quem está registrando esta transação?" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    {availableNames.map((name) => (
+                      <SelectItem key={name} value={name}>
+                        {name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 {errors.nome && (
                   <p className="text-sm text-red-500">{errors.nome}</p>
                 )}

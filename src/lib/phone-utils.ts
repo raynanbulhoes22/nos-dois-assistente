@@ -3,9 +3,9 @@
  */
 
 /**
- * Normaliza um número de telefone para o formato padrão brasileiro: 5511999999999
+ * Normaliza um número de telefone para o formato padrão brasileiro: 556992936131
  * Remove caracteres especiais e garante que tenha o código do país (55)
- * IMPORTANTE: Aceita apenas DDD + 8 dígitos (sem o 9º dígito)
+ * IMPORTANTE: Sempre retorna DDD + 8 dígitos (sem o 9º dígito)
  */
 export const normalizePhoneNumber = (phone: string): string => {
   if (!phone) return '';
@@ -15,29 +15,34 @@ export const normalizePhoneNumber = (phone: string): string => {
   
   console.log('Normalizando telefone:', phone, '-> cleaned:', cleaned);
   
-  // Se começa com +55, remove o +
-  if (phone.startsWith('+55')) {
-    cleaned = cleaned.substring(0); // já foi limpo acima
+  // Remove códigos do país duplicados (5555...)
+  while (cleaned.startsWith('5555')) {
+    cleaned = cleaned.substring(2);
   }
   
   // Se não tem código do país, adiciona 55
   if (!cleaned.startsWith('55')) {
-    // Se tem 10 dígitos (DDD + 8 dígitos - formato correto sem código do país)
-    if (cleaned.length === 10) {
-      cleaned = '55' + cleaned;
-    }
-    // Se tem 11 dígitos (DDD + 9 dígitos - remove o 9º dígito automaticamente)
-    else if (cleaned.length === 11) {
-      // Remove o 9º dígito (primeiro dígito após o DDD)
+    // Se tem 11 dígitos (DDD + 9 dígitos - remove o 9º dígito)
+    if (cleaned.length === 11) {
       const ddd = cleaned.substring(0, 2);
       const numero = cleaned.substring(3); // Pula o 9º dígito
       cleaned = '55' + ddd + numero;
       console.log('Removido 9º dígito automaticamente:', cleaned);
     }
+    // Se tem 10 dígitos (DDD + 8 dígitos - formato correto)
+    else if (cleaned.length === 10) {
+      cleaned = '55' + cleaned;
+    }
+    // Se tem 9 dígitos (DDD sem zero + 9 dígitos - remove o 9º)
+    else if (cleaned.length === 9) {
+      const ddd = cleaned.substring(0, 1);
+      const numero = cleaned.substring(2); // Pula o 9º dígito
+      cleaned = '551' + ddd + numero; // Assume DDD 11-19 (região SP)
+      console.log('DDD de 1 dígito normalizado:', cleaned);
+    }
     // Se tem 8 dígitos (só o número sem DDD)
     else if (cleaned.length === 8) {
-      // Assumir DDD padrão (11 - São Paulo)
-      cleaned = '5511' + cleaned;
+      cleaned = '5511' + cleaned; // Assume DDD 11 (São Paulo)
     }
   } else {
     // Já tem código do país (55)
@@ -48,6 +53,14 @@ export const normalizePhoneNumber = (phone: string): string => {
       const numero = cleaned.substring(5); // Pula o 9º dígito
       cleaned = codigoPais + ddd + numero;
       console.log('Removido 9º dígito automaticamente (com código país):', cleaned);
+    }
+    // Se tem 14 dígitos (duplicação do código do país)
+    else if (cleaned.length === 14) {
+      cleaned = cleaned.substring(2); // Remove o primeiro 55
+      // Agora trata como se fosse 12 dígitos normais
+      if (cleaned.length === 12) {
+        return cleaned;
+      }
     }
   }
   

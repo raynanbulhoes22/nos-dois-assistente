@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { BarChart3, Wallet, Target, Calendar, X, Sparkles, TrendingUp, Shield, Zap } from "lucide-react";
 import modalBg from "@/assets/modal-bg.jpg";
 
@@ -27,6 +29,7 @@ export const WelcomeModal = ({
   user
 }: WelcomeModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const whatsappNumber = "5569993140550";
   const whatsappLink = `https://wa.me/${whatsappNumber}?text=Olá! Acabei de me cadastrar no LucraAI e quero começar a enviar meus registros financeiros para análise inteligente!`;
   
@@ -50,7 +53,8 @@ export const WelcomeModal = ({
   useEffect(() => {
     if (user?.email) {
       const hasSeenWelcome = localStorage.getItem(`dashboard_welcome_shown_${user.email}`);
-      if (!hasSeenWelcome) {
+      const dontShow = localStorage.getItem(`dashboard_welcome_dont_show_${user.email}`);
+      if (!hasSeenWelcome && !dontShow) {
         setIsOpen(true);
       }
     }
@@ -58,6 +62,9 @@ export const WelcomeModal = ({
   const handleClose = () => {
     if (user?.email) {
       localStorage.setItem(`dashboard_welcome_shown_${user.email}`, 'true');
+      if (dontShowAgain) {
+        localStorage.setItem(`dashboard_welcome_dont_show_${user.email}`, 'true');
+      }
     }
     setIsOpen(false);
   };
@@ -160,6 +167,22 @@ export const WelcomeModal = ({
                   </CardContent>
                 </Card>
               ))}
+            </div>
+
+            {/* Don't Show Again Checkbox */}
+            <div className="flex items-center justify-center space-x-2 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+              <Checkbox 
+                id="dont-show-again"
+                checked={dontShowAgain}
+                onCheckedChange={(checked) => setDontShowAgain(checked as boolean)}
+                className="border-white/30 data-[state=checked]:bg-white/20 data-[state=checked]:border-white/50"
+              />
+              <Label 
+                htmlFor="dont-show-again" 
+                className="text-xs text-white/80 cursor-pointer"
+              >
+                Não mostrar novamente
+              </Label>
             </div>
 
             {/* Secondary CTA */}

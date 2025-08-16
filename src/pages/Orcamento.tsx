@@ -176,13 +176,10 @@ export const Orcamento = () => {
   useEffect(() => {
     const fetchGastosComStatus = async () => {
       try {
-        console.log(`🔄 Buscando gastos com status para ${mesAtual}/${anoAtual}`);
         const gastosComStatus = await getGastosFixosComStatus(mesAtual, anoAtual);
-        console.log(`📊 Resultado da busca:`, gastosComStatus);
         setGastosFixosComStatus(gastosComStatus);
         const pagos = gastosComStatus.filter(g => g.pago).reduce((sum, g) => sum + g.valor_mensal, 0);
         const pendentes = gastosComStatus.filter(g => !g.pago).reduce((sum, g) => sum + g.valor_mensal, 0);
-        console.log(`💰 Totais calculados - Pagos: ${pagos}, Pendentes: ${pendentes}`);
         setTotalGastosPagos(pagos);
         setTotalGastosPendentes(pendentes);
       } catch (error) {
@@ -193,10 +190,10 @@ export const Orcamento = () => {
       }
     };
     
-    if (mesAtual && anoAtual) {
+    if (mesAtual && anoAtual && gastosFixos.length > 0) {
       fetchGastosComStatus();
     }
-  }, [mesAtual, anoAtual, getGastosFixosComStatus]);
+  }, [mesAtual, anoAtual, gastosFixos]);
 
   // Função para formatar moeda
   const formatCurrency = (valor: number) => {

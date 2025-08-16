@@ -114,13 +114,6 @@ export const useGastosFixos = () => {
     if (!user) return null;
 
     try {
-      console.log(`🔍 Verificando pagamento para gasto: ${gastoFixo.nome}`, {
-        categoria: gastoFixo.categoria,
-        valor: gastoFixo.valor_mensal,
-        mes,
-        ano
-      });
-
       const { data, error } = await supabase
         .from('registros_financeiros')
         .select('*')
@@ -131,33 +124,17 @@ export const useGastosFixos = () => {
 
       if (error) throw error;
 
-      console.log(`📊 Registros encontrados para ${gastoFixo.nome}:`, data?.length || 0, data);
-
       // Verificar se algum registro tem valor dentro da tolerância de ±15%
       const valorGasto = Number(gastoFixo.valor_mensal);
       const tolerancia = valorGasto * 0.15;
-      
-      console.log(`💰 Valor do gasto: ${valorGasto}, Tolerância: ±${tolerancia}`);
       
       const registroMatch = data?.find(registro => {
         const valorRegistro = Math.abs(Number(registro.valor));
         const diferenca = Math.abs(valorRegistro - valorGasto);
         const dentroTolerancia = diferenca <= tolerancia;
         
-        console.log(`🔎 Comparando registro:`, {
-          valorRegistro,
-          valorGasto,
-          diferenca,
-          tolerancia,
-          dentroTolerancia,
-          data: registro.data,
-          categoria: registro.categoria
-        });
-        
         return dentroTolerancia;
       });
-
-      console.log(`✅ Match encontrado para ${gastoFixo.nome}:`, !!registroMatch, registroMatch);
 
       return registroMatch || null;
     } catch (err) {
@@ -166,27 +143,22 @@ export const useGastosFixos = () => {
     }
   };
 
-  const getGastosFixosComStatus = async (mes: number, ano: number) => {
-    console.log(`🔄 getGastosFixosComStatus chamado para ${mes}/${ano}`);
+  const getGastosFixosComStatus = useCallback(async (mes: number, ano: number) => {
     const gastosAtivos = gastosFixos.filter(gasto => gasto.ativo);
-    console.log(`📋 Gastos ativos encontrados:`, gastosAtivos.length);
     
     const gastosComStatus = await Promise.all(
       gastosAtivos.map(async (gasto) => {
         const registroPagamento = await checkPagamentoMesAtual(gasto, mes, ano);
-        const status = {
+        return {
           ...gasto,
           pago: !!registroPagamento,
           registroDetectado: registroPagamento
         };
-        console.log(`📊 Status final para ${gasto.nome}:`, status.pago ? 'PAGO' : 'PENDENTE');
-        return status;
       })
     );
 
-    console.log(`✅ Todos os gastos processados:`, gastosComStatus);
     return gastosComStatus;
-  };
+  }, [gastosFixos, user]);
 
   const getTotalGastosFixosNaoPagos = async (mes: number, ano: number) => {
     const gastosComStatus = await getGastosFixosComStatus(mes, ano);

@@ -114,18 +114,19 @@ export const useGastosFixos = () => {
     if (!user) return null;
 
     try {
-      // Mapeamento inteligente para gastos fixos essenciais (EXCLUINDO financiamentos)
+      // Categorias essenciais que são mapeadas - EXPANDIDO
       const categoriasEssenciaisRelacionadas: { [key: string]: string[] } = {
         // Moradia
         'Aluguel': ['Aluguel', 'Moradia', 'Casa', 'Apartamento', 'Condomínio'],
         'Moradia': ['Aluguel', 'Moradia', 'Casa', 'Apartamento', 'Condomínio'],
         
-        // Utilidades
-        'Água': ['Água', 'Saneamento', 'SABESP', 'COPASA'],
-        'Energia': ['Energia', 'Luz', 'Elétrica', 'CEMIG', 'CPFL', 'Light'],
-        'Internet': ['Internet', 'Banda Larga', 'Fibra', 'Wi-Fi', 'Vivo', 'Claro', 'Tim', 'Oi'],
+        // Utilidades - EXPANDIDO
+        'Água': ['Água', 'Saneamento', 'SABESP', 'COPASA', 'SANASA', 'SANEPAR', 'Serviços'],
+        'Energia': ['Energia', 'Luz', 'Elétrica', 'CEMIG', 'CPFL', 'Light', 'Copel', 'Celpe', 'Coelba', 'Serviços'],
+        'Internet': ['Internet', 'Banda Larga', 'Fibra', 'Wi-Fi', 'Vivo', 'Claro', 'Tim', 'Oi', 'Net', 'Serviços'],
+        'Telefone': ['Telefone', 'Celular', 'Vivo', 'Claro', 'Tim', 'Oi', 'Serviços'],
         
-        // Transporte essencial (SEM financiamentos)
+        // Transporte essencial
         'Transporte': ['Transporte', 'Ônibus', 'Metrô', 'Bilhete Único', 'Vale Transporte'],
         'Combustível': ['Combustível', 'Gasolina', 'Álcool', 'Diesel', 'Posto'],
         
@@ -138,26 +139,82 @@ export const useGastosFixos = () => {
         'Farmácia': ['Farmácia', 'Medicamento', 'Remédio', 'Drogaria'],
         
         // Educação
-        'Escola / Faculdade': ['Escola', 'Faculdade', 'Universidade', 'Mensalidade', 'Educação', 'Curso']
+        'Escola / Faculdade': ['Escola', 'Faculdade', 'Universidade', 'Mensalidade', 'Educação', 'Curso'],
+
+        // Serviços gerais
+        'Serviços': ['Energia', 'Água', 'Internet', 'Telefone', 'Gás', 'TV por assinatura']
       };
 
-      // Palavras-chave para busca por nome do gasto fixo
+      // Palavras-chave expandidas para busca por nome do gasto fixo
       const palavrasChaveEssenciais: { [key: string]: string[] } = {
+        // Energia
+        'luz': ['Energia', 'Serviços'],
+        'energia': ['Energia', 'Serviços'],
+        'elétrica': ['Energia', 'Serviços'],
+        'cemig': ['Energia', 'Serviços'],
+        'cpfl': ['Energia', 'Serviços'],
+        'light': ['Energia', 'Serviços'],
+        'copel': ['Energia', 'Serviços'],
+        'celpe': ['Energia', 'Serviços'],
+        'coelba': ['Energia', 'Serviços'],
+        
+        // Água
+        'água': ['Água', 'Serviços'],
+        'sabesp': ['Água', 'Serviços'],
+        'copasa': ['Água', 'Serviços'],
+        'sanasa': ['Água', 'Serviços'],
+        'sanepar': ['Água', 'Serviços'],
+        'saneamento': ['Água', 'Serviços'],
+        
+        // Internet/Telefone
+        'internet': ['Internet', 'Serviços'],
+        'telefone': ['Telefone', 'Internet', 'Serviços'],
+        'celular': ['Telefone', 'Internet', 'Serviços'],
+        'vivo': ['Internet', 'Telefone', 'Serviços'],
+        'claro': ['Internet', 'Telefone', 'Serviços'],
+        'tim': ['Internet', 'Telefone', 'Serviços'],
+        'oi': ['Internet', 'Telefone', 'Serviços'],
+        'net': ['Internet', 'Serviços'],
+        'fibra': ['Internet', 'Serviços'],
+        
+        // Moradia
         'aluguel': ['Aluguel', 'Moradia'],
-        'luz': ['Energia'],
-        'energia': ['Energia'],
-        'internet': ['Internet'],
-        'água': ['Água'],
-        'gas': ['Energia'],
+        'condomínio': ['Aluguel', 'Moradia'],
+        'condominio': ['Aluguel', 'Moradia'],
+        
+        // Outros
+        'gas': ['Energia', 'Serviços'],
+        'gás': ['Energia', 'Serviços'],
         'gasolina': ['Combustível'],
         'combustível': ['Combustível'],
         'mercado': ['Supermercado', 'Alimentação'],
         'supermercado': ['Supermercado', 'Alimentação'],
         'plano de saúde': ['Saúde'],
+        'plano': ['Saúde'],
         'farmácia': ['Farmácia'],
         'escola': ['Escola / Faculdade'],
         'faculdade': ['Escola / Faculdade'],
         'mensalidade': ['Escola / Faculdade']
+      };
+
+      // Função para calcular similaridade entre strings
+      const calcularSimilaridade = (str1: string, str2: string): number => {
+        const s1 = str1.toLowerCase().trim();
+        const s2 = str2.toLowerCase().trim();
+        
+        if (s1 === s2) return 1;
+        if (s1.includes(s2) || s2.includes(s1)) return 0.8;
+        
+        // Verificar palavras comuns
+        const palavras1 = s1.split(/\s+/);
+        const palavras2 = s2.split(/\s+/);
+        const intersecao = palavras1.filter(p => palavras2.includes(p));
+        
+        if (intersecao.length > 0) {
+          return intersecao.length / Math.max(palavras1.length, palavras2.length);
+        }
+        
+        return 0;
       };
 
       // Determinar categorias para buscar
@@ -168,17 +225,22 @@ export const useGastosFixos = () => {
         const nomeGasto = gastoFixo.nome.toLowerCase();
         for (const [palavra, categorias] of Object.entries(palavrasChaveEssenciais)) {
           if (nomeGasto.includes(palavra)) {
-            categoriasParaBuscar = categorias;
-            break;
+            categoriasParaBuscar = [...categoriasParaBuscar, ...categorias];
           }
         }
       }
       
-      // Fallback: usar a categoria original se não encontrou nada
-      if (categoriasParaBuscar.length === 0) {
-        categoriasParaBuscar = [gastoFixo.categoria].filter(Boolean);
-      }
+      // Remover duplicatas
+      categoriasParaBuscar = [...new Set(categoriasParaBuscar)];
       
+      // Fallback: incluir a categoria original e 'Serviços'
+      if (categoriasParaBuscar.length === 0) {
+        categoriasParaBuscar = [gastoFixo.categoria, 'Serviços'].filter(Boolean);
+      } else {
+        categoriasParaBuscar.push('Serviços'); // Sempre incluir 'Serviços' como fallback
+      }
+
+      // 1. Buscar por categorias mapeadas
       const { data, error } = await supabase
         .from('registros_financeiros')
         .select('*')
@@ -189,25 +251,71 @@ export const useGastosFixos = () => {
 
       if (error) throw error;
 
-      // Se não encontrou por categoria, tenta buscar por nome similar
       let registrosEncontrados = data || [];
+
+      // 2. Se não encontrou por categoria, buscar por estabelecimento/nome similar
+      if (registrosEncontrados.length === 0) {
+        const { data: dataByEstabelecimento, error: errorByEstabelecimento } = await supabase
+          .from('registros_financeiros')
+          .select('*')
+          .eq('user_id', user.id)
+          .or(`estabelecimento.ilike.%${gastoFixo.nome}%,nome.ilike.%${gastoFixo.nome}%,titulo.ilike.%${gastoFixo.nome}%`)
+          .gte('data', `${ano}-${mes.toString().padStart(2, '0')}-01`)
+          .lt('data', `${ano}-${(mes + 1).toString().padStart(2, '0')}-01`);
+        
+        if (!errorByEstabelecimento) {
+          registrosEncontrados = dataByEstabelecimento || [];
+        }
+      }
+
+      // 3. Busca mais ampla por similaridade de nome (apenas se ainda não encontrou)
       if (registrosEncontrados.length === 0) {
         const { data: dataByName, error: errorByName } = await supabase
           .from('registros_financeiros')
           .select('*')
           .eq('user_id', user.id)
-          .ilike('categoria', `%${gastoFixo.nome.toLowerCase()}%`)
           .gte('data', `${ano}-${mes.toString().padStart(2, '0')}-01`)
           .lt('data', `${ano}-${(mes + 1).toString().padStart(2, '0')}-01`);
         
-        if (!errorByName) {
-          registrosEncontrados = dataByName || [];
+        if (!errorByName && dataByName) {
+          // Filtrar por similaridade de nome
+          registrosEncontrados = dataByName.filter(registro => {
+            const campos = [
+              registro.estabelecimento,
+              registro.nome, 
+              registro.titulo,
+              registro.categoria
+            ].filter(Boolean);
+            
+            return campos.some(campo => 
+              calcularSimilaridade(campo, gastoFixo.nome) > 0.6
+            );
+          });
         }
       }
 
-      // Verificar se algum registro tem valor dentro da tolerância de ±15%
+      // 4. Como último recurso, buscar apenas por valor similar em qualquer categoria
+      if (registrosEncontrados.length === 0) {
+        const valorGasto = Number(gastoFixo.valor_mensal);
+        const toleranciaValor = valorGasto * 0.1; // 10% de tolerância
+
+        const { data: dataByValue, error: errorByValue } = await supabase
+          .from('registros_financeiros')
+          .select('*')
+          .eq('user_id', user.id)
+          .gte('data', `${ano}-${mes.toString().padStart(2, '0')}-01`)
+          .lt('data', `${ano}-${(mes + 1).toString().padStart(2, '0')}-01`)
+          .gte('valor', -(valorGasto + toleranciaValor))
+          .lte('valor', -(valorGasto - toleranciaValor));
+        
+        if (!errorByValue) {
+          registrosEncontrados = dataByValue || [];
+        }
+      }
+
+      // Verificar se algum registro tem valor dentro da tolerância de ±20% (aumentei a tolerância)
       const valorGasto = Number(gastoFixo.valor_mensal);
-      const tolerancia = valorGasto * 0.15;
+      const tolerancia = valorGasto * 0.2; // 20% de tolerância
       
       const registroMatch = registrosEncontrados.find(registro => {
         const valorRegistro = Math.abs(Number(registro.valor));

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { BarChart3, Wallet, Target, Calendar, X } from "lucide-react";
+import { BarChart3, Wallet, Target, Calendar, X, Sparkles, TrendingUp, Shield, Zap } from "lucide-react";
+import modalBg from "@/assets/modal-bg.jpg";
 
 // WhatsApp SVG Icon Component
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -27,23 +28,24 @@ export const WelcomeModal = ({
 }: WelcomeModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const whatsappNumber = "5569993140550";
-  const whatsappLink = `https://wa.me/${whatsappNumber}?text=Olá! Acabei de me cadastrar no LucraAI e quero começar a enviar meus registros financeiros para análise.`;
+  const whatsappLink = `https://wa.me/${whatsappNumber}?text=Olá! Acabei de me cadastrar no LucraAI e quero começar a enviar meus registros financeiros para análise inteligente!`;
+  
   const features = [{
-    icon: BarChart3,
-    title: "Dashboard Completo",
-    description: "Visualize suas finanças analisadas"
+    icon: Sparkles,
+    title: "IA Financeira",
+    description: "Análise inteligente dos seus gastos"
   }, {
-    icon: Wallet,
-    title: "Controle de Gastos",
-    description: "Organize por categorias"
+    icon: TrendingUp,
+    title: "Insights Personalizados",
+    description: "Recomendações sob medida"
   }, {
-    icon: Target,
-    title: "Metas Financeiras",
-    description: "Acompanhe seu progresso"
+    icon: Shield,
+    title: "100% Seguro",
+    description: "Seus dados protegidos"
   }, {
-    icon: Calendar,
-    title: "Planejamento",
-    description: "Antecipe compromissos"
+    icon: Zap,
+    title: "Resultados Rápidos",
+    description: "Análises em tempo real"
   }];
   useEffect(() => {
     if (user?.email) {
@@ -60,94 +62,118 @@ export const WelcomeModal = ({
     setIsOpen(false);
   };
   if (!isOpen) return null;
+  
   return <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 gap-0 bg-white">
-        {/* Custom Close Button */}
-        <Button variant="ghost" size="sm" className="absolute right-4 top-4 z-10 h-8 w-8 p-0 bg-white/80 backdrop-blur-sm hover:bg-gray-100" onClick={handleClose}>
-          <X className="h-4 w-4 text-gray-600" />
+      <DialogContent className="max-w-none max-h-none w-full h-full p-0 gap-0 border-0 bg-transparent overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${modalBg})` }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/80 via-slate-900/70 to-blue-800/80 backdrop-blur-[1px]" />
+        </div>
+
+        {/* Close Button */}
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="absolute right-4 top-4 z-20 h-10 w-10 p-0 bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/20 text-white" 
+          onClick={handleClose}
+        >
+          <X className="h-5 w-5" />
           <span className="sr-only">Fechar</span>
         </Button>
 
-        {/* WhatsApp Hero Section - 70% of space */}
-        <div className="bg-white border-b border-gray-100 p-8 md:p-12">
-          <div className="text-center space-y-6 max-w-2xl mx-auto">
-            <DialogHeader className="space-y-4">
-              <DialogTitle className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
-                Seu Consultor Financeiro Pessoal
-              </DialogTitle>
-              
-            </DialogHeader>
-
-            {/* WhatsApp Contact Card */}
-            <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-              <div className="flex items-center justify-center mb-4">
-                <div className="bg-green-500 rounded-full p-3">
-                  <WhatsAppIcon className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    Comece enviando seus primeiros registros
-                  </h3>
-                  
-                </div>
-                
-                <div className="bg-white rounded-lg p-4 border border-gray-200">
-                  <p className="text-sm text-gray-500 mb-1">WhatsApp Oficial</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    +55 (69) 9.9314-0550
-                  </p>
-                </div>
-
-                <Button onClick={() => window.open(whatsappLink, '_blank')} className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 h-auto text-base" size="lg">
-                  <WhatsAppIcon className="h-5 w-5 mr-2" />
-                  Enviar Primeiro Registro
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Features Section - 30% of space */}
-        <div className="bg-gray-50 p-6">
-          <div className="max-w-2xl mx-auto">
-            <div className="text-center mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Recursos da Plataforma
-              </h3>
-              <p className="text-sm text-gray-600">
-                Enquanto isso, explore o que temos disponível
+        {/* Main Content */}
+        <div className="relative z-10 flex flex-col min-h-screen px-4 py-8 md:px-8 md:py-12">
+          {/* Hero Section */}
+          <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full space-y-8 text-center">
+            
+            {/* Hero Text */}
+            <div className="space-y-4 animate-fade-in">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
+                Transforme seus Dados
+                <span className="block bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                  em Inteligência
+                </span>
+              </h1>
+              <p className="text-lg md:text-xl text-white/90 leading-relaxed">
+                Nossa IA analisa seus gastos e entrega insights personalizados direto no WhatsApp
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {features.map((feature, index) => <Card key={index} className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
+            {/* WhatsApp Card */}
+            <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-2xl shadow-blue-500/20 animate-scale-in">
+              <CardContent className="p-6 md:p-8">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-center">
+                    <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-full p-4 shadow-lg">
+                      <WhatsAppIcon className="h-8 w-8 text-white" />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                      Consultor Financeiro Pessoal
+                    </h2>
+                    <p className="text-gray-600">
+                      Comece enviando seus registros e receba análises instantâneas
+                    </p>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
+                    <p className="text-sm text-green-700 font-medium mb-1">WhatsApp Oficial</p>
+                    <p className="text-lg font-bold text-green-800">
+                      +55 (69) 9.9314-0550
+                    </p>
+                  </div>
+
+                  <Button 
+                    onClick={() => window.open(whatsappLink, '_blank')} 
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-4 h-auto text-base shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]" 
+                    size="lg"
+                  >
+                    <WhatsAppIcon className="h-5 w-5 mr-3" />
+                    Iniciar Análise Financeira
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Features Grid */}
+            <div className="grid grid-cols-2 gap-3 md:gap-4 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              {features.map((feature, index) => (
+                <Card key={index} className="bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 transition-all duration-200 group">
                   <CardContent className="p-4">
-                    <div className="flex items-start space-x-3">
-                      <div className="bg-blue-50 rounded-lg p-2 flex-shrink-0">
-                        <feature.icon className="h-4 w-4 text-blue-600" />
+                    <div className="text-center space-y-2">
+                      <div className="flex justify-center">
+                        <feature.icon className="h-5 w-5 text-cyan-400 group-hover:text-cyan-300 transition-colors" />
                       </div>
-                      <div className="space-y-1 min-w-0">
-                        <h4 className="font-medium text-gray-900 text-sm">
+                      <div>
+                        <h4 className="font-semibold text-white text-sm">
                           {feature.title}
                         </h4>
-                        <p className="text-xs text-gray-600 leading-relaxed">
+                        <p className="text-xs text-white/70 leading-relaxed">
                           {feature.description}
                         </p>
                       </div>
                     </div>
                   </CardContent>
-                </Card>)}
+                </Card>
+              ))}
             </div>
 
             {/* Secondary CTA */}
-            <div className="text-center mt-6 pt-4 border-t border-gray-200">
-              <Button onClick={handleClose} variant="outline" size="sm" className="text-gray-600 border-gray-300 hover:bg-gray-50">
+            <div className="pt-6 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+              <Button 
+                onClick={handleClose} 
+                variant="ghost" 
+                size="sm" 
+                className="text-white/80 hover:text-white hover:bg-white/10 border border-white/20 backdrop-blur-md"
+              >
                 Explorar Plataforma Depois
               </Button>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-white/60 mt-3">
                 Você sempre pode acessar o WhatsApp através do menu
               </p>
             </div>

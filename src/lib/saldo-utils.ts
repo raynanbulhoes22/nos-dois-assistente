@@ -22,7 +22,7 @@ export const calcularSaldoAtualMes = async (userId: string, mes: number, ano: nu
     
     const { data: movimentacoes } = await supabase
       .from('registros_financeiros')
-      .select('valor, tipo')
+      .select('valor, tipo_movimento')
       .eq('user_id', userId)
       .gte('data', inicioMes.toISOString().split('T')[0])
       .lte('data', fimMes.toISOString().split('T')[0])
@@ -32,9 +32,9 @@ export const calcularSaldoAtualMes = async (userId: string, mes: number, ano: nu
     let saldoAtual = saldoInicial;
     
     movimentacoes?.forEach(mov => {
-      if (mov.tipo === 'entrada') {
+      if (mov.tipo_movimento === 'entrada') {
         saldoAtual += Number(mov.valor);
-      } else {
+      } else if (mov.tipo_movimento === 'saida') {
         saldoAtual -= Number(mov.valor);
       }
     });
@@ -122,7 +122,8 @@ export const calcularSaldoInicialNovoMes = async (userId: string, mes: number, a
           user_id: userId,
           valor: Math.abs(novoSaldoInicial),
           data: primeiroDiaMes.toISOString().split('T')[0],
-          tipo: novoSaldoInicial >= 0 ? 'entrada' : 'saida',
+          tipo: 'entrada_manual', // Usar valor válido do constraint
+          tipo_movimento: novoSaldoInicial >= 0 ? 'entrada' : 'saida',
           categoria: 'Saldo Inicial',
           nome: `Saldo Inicial - ${new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
           observacao: 'Saldo inicial calculado automaticamente baseado no mês anterior',
@@ -204,6 +205,8 @@ export const garantirSaldoInicialMesAtual = async (userId: string) => {
  */
 export const garantirContinuidadeSaldos = async (userId: string, mes: number, ano: number) => {
   try {
+    console.log(`🔗 Verificando continuidade para ${mes}/${ano}`);
+    
     // Calcular o mês anterior
     let mesAnterior = mes - 1;
     let anoAnterior = ano;
@@ -213,23 +216,9 @@ export const garantirContinuidadeSaldos = async (userId: string, mes: number, an
       anoAnterior = ano - 1;
     }
     
-    // Verificar se existe orçamento para o mês anterior
-    const { data: orcamentoAnterior } = await supabase
-      .from('orcamentos_mensais')
-      .select('saldo_inicial')
-      .eq('user_id', userId)
-      .eq('mes', mesAnterior)
-      .eq('ano', anoAnterior)
-      .maybeSingle();
-    
-    // Se não existe mês anterior, não há continuidade a verificar
-    if (!orcamentoAnterior) {
-      await calcularSaldoInicialNovoMes(userId, mes, ano);
-      return;
-    }
-    
     // Calcular o saldo atual do mês anterior (saldo final)
     const saldoAtualMesAnterior = await calcularSaldoAtualMes(userId, mesAnterior, anoAnterior);
+    console.log(`💰 Saldo final do mês anterior (${mesAnterior}/${anoAnterior}): ${saldoAtualMesAnterior}`);
     
     // Verificar o orçamento do mês atual
     const { data: orcamentoAtual } = await supabase
@@ -240,26 +229,87 @@ export const garantirContinuidadeSaldos = async (userId: string, mes: number, an
       .eq('ano', ano)
       .maybeSingle();
     
+    console.log(`📊 Orçamento atual (${mes}/${ano}):`, orcamentoAtual);
+    
     // Se o saldo inicial do mês atual não bate com o saldo final do anterior
     // ou se não existe orçamento, forçar recálculo
-    if (!orcamentoAtual || 
-        Math.abs((orcamentoAtual.saldo_inicial || 0) - saldoAtualMesAnterior) > 0.01) {
+    const diferenca = orcamentoAtual ? Math.abs((orcamentoAtual.saldo_inicial || 0) - saldoAtualMesAnterior) : Infinity;
+    
+    if (!orcamentoAtual || diferenca > 0.01) {
+      console.log(`🔄 Corrigindo continuidade: Diferença de ${diferenca.toFixed(2)} detectada`);
+      console.log(`   Saldo anterior: ${saldoAtualMesAnterior}`);
+      console.log(`   Saldo atual: ${orcamentoAtual?.saldo_inicial || 0}`);
       
-      console.log(`Corrigindo continuidade: Mês ${mes}/${ano} - Saldo anterior: ${saldoAtualMesAnterior}, Saldo atual: ${orcamentoAtual?.saldo_inicial || 0}`);
-      
-      // Forçar recálculo e resetar flag de edição manual
-      await calcularSaldoInicialNovoMes(userId, mes, ano, true);
-      
-      // Se existe orçamento mas estava marcado como editado manualmente, resetar
-      if (orcamentoAtual?.saldo_editado_manualmente) {
+      // Atualizar ou criar orçamento com o saldo correto
+      if (orcamentoAtual) {
         await supabase
           .from('orcamentos_mensais')
-          .update({ saldo_editado_manualmente: false })
+          .update({ 
+            saldo_inicial: saldoAtualMesAnterior,
+            saldo_editado_manualmente: false 
+          })
           .eq('id', orcamentoAtual.id);
+      } else {
+        await supabase
+          .from('orcamentos_mensais')
+          .insert({
+            user_id: userId,
+            mes,
+            ano,
+            saldo_inicial: saldoAtualMesAnterior,
+            meta_economia: 0,
+            saldo_editado_manualmente: false
+          });
       }
+      
+      // Atualizar ou criar registro financeiro correspondente
+      const primeiroDiaMes = new Date(ano, mes - 1, 1);
+      const dataFormatada = primeiroDiaMes.toISOString().split('T')[0];
+      
+      // Buscar registro existente
+      const { data: registroExistente } = await supabase
+        .from('registros_financeiros')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('categoria', 'Saldo Inicial')
+        .eq('data', dataFormatada)
+        .maybeSingle();
+      
+      if (registroExistente) {
+        // Atualizar registro existente
+        await supabase
+          .from('registros_financeiros')
+          .update({
+            valor: Math.abs(saldoAtualMesAnterior),
+            tipo: 'entrada_manual',
+            tipo_movimento: saldoAtualMesAnterior >= 0 ? 'entrada' : 'saida',
+            nome: `Saldo Inicial - ${new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
+            observacao: 'Saldo inicial corrigido automaticamente para manter continuidade'
+          })
+          .eq('id', registroExistente.id);
+      } else if (saldoAtualMesAnterior !== 0) {
+        // Criar novo registro se não existir e saldo não for zero
+        await supabase
+          .from('registros_financeiros')
+          .insert({
+            user_id: userId,
+            valor: Math.abs(saldoAtualMesAnterior),
+            data: dataFormatada,
+            tipo: 'entrada_manual',
+            tipo_movimento: saldoAtualMesAnterior >= 0 ? 'entrada' : 'saida',
+            categoria: 'Saldo Inicial',
+            nome: `Saldo Inicial - ${new Date(ano, mes - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}`,
+            observacao: 'Saldo inicial criado automaticamente para manter continuidade',
+            origem: 'sistema'
+          });
+      }
+      
+      console.log(`✅ Continuidade corrigida para ${mes}/${ano}`);
       
       // Recalcular todos os meses futuros em cascata
       await recalcularSaldosEmCascata(userId, mes, ano);
+    } else {
+      console.log(`✅ Continuidade já está correta para ${mes}/${ano}`);
     }
     
   } catch (error) {

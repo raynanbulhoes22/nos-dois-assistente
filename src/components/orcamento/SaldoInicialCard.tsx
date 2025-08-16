@@ -27,7 +27,7 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const { saldoInicial, saldoComputado, saldoAtual } = useFinancialStats();
   const { toast } = useToast();
   
-  // Hook para garantir que o saldo inicial seja calculado automaticamente
+  // Hook para garantir continuidade automática dos saldos
   useSaldoInicial(mes, ano);
   
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

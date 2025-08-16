@@ -197,3 +197,72 @@ export const garantirSaldoInicialMesAtual = async (userId: string) => {
   
   return orcamentoAtual.saldo_inicial || 0;
 };
+
+/**
+ * Garante que o saldo inicial do mês tenha continuidade com o mês anterior
+ * e força recálculo em cascata se necessário
+ */
+export const garantirContinuidadeSaldos = async (userId: string, mes: number, ano: number) => {
+  try {
+    // Calcular o mês anterior
+    let mesAnterior = mes - 1;
+    let anoAnterior = ano;
+    
+    if (mesAnterior === 0) {
+      mesAnterior = 12;
+      anoAnterior = ano - 1;
+    }
+    
+    // Verificar se existe orçamento para o mês anterior
+    const { data: orcamentoAnterior } = await supabase
+      .from('orcamentos_mensais')
+      .select('saldo_inicial')
+      .eq('user_id', userId)
+      .eq('mes', mesAnterior)
+      .eq('ano', anoAnterior)
+      .maybeSingle();
+    
+    // Se não existe mês anterior, não há continuidade a verificar
+    if (!orcamentoAnterior) {
+      await calcularSaldoInicialNovoMes(userId, mes, ano);
+      return;
+    }
+    
+    // Calcular o saldo atual do mês anterior (saldo final)
+    const saldoAtualMesAnterior = await calcularSaldoAtualMes(userId, mesAnterior, anoAnterior);
+    
+    // Verificar o orçamento do mês atual
+    const { data: orcamentoAtual } = await supabase
+      .from('orcamentos_mensais')
+      .select('id, saldo_inicial, saldo_editado_manualmente')
+      .eq('user_id', userId)
+      .eq('mes', mes)
+      .eq('ano', ano)
+      .maybeSingle();
+    
+    // Se o saldo inicial do mês atual não bate com o saldo final do anterior
+    // ou se não existe orçamento, forçar recálculo
+    if (!orcamentoAtual || 
+        Math.abs((orcamentoAtual.saldo_inicial || 0) - saldoAtualMesAnterior) > 0.01) {
+      
+      console.log(`Corrigindo continuidade: Mês ${mes}/${ano} - Saldo anterior: ${saldoAtualMesAnterior}, Saldo atual: ${orcamentoAtual?.saldo_inicial || 0}`);
+      
+      // Forçar recálculo e resetar flag de edição manual
+      await calcularSaldoInicialNovoMes(userId, mes, ano, true);
+      
+      // Se existe orçamento mas estava marcado como editado manualmente, resetar
+      if (orcamentoAtual?.saldo_editado_manualmente) {
+        await supabase
+          .from('orcamentos_mensais')
+          .update({ saldo_editado_manualmente: false })
+          .eq('id', orcamentoAtual.id);
+      }
+      
+      // Recalcular todos os meses futuros em cascata
+      await recalcularSaldosEmCascata(userId, mes, ano);
+    }
+    
+  } catch (error) {
+    console.error('Erro ao garantir continuidade de saldos:', error);
+  }
+};

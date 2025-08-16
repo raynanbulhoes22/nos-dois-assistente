@@ -99,6 +99,7 @@ export const Orcamento = () => {
     deleteFonte, 
     getTotalRendaAtiva, 
     getFontesRendaComStatus,
+    updateStatusManual,
     isLoading: fontesLoading,
     refetch: refetchFontes 
   } = useFontesRenda();
@@ -204,7 +205,7 @@ export const Orcamento = () => {
   useEffect(() => {
     const fetchFontesComStatus = async () => {
       try {
-        const fontesComStatus = await getFontesRendaComStatus();
+        const fontesComStatus = await getFontesRendaComStatus(mesAtual, anoAtual);
         setFontesRendaComStatus(fontesComStatus);
         const recebidas = fontesComStatus.filter(f => f.recebido).reduce((sum, f) => sum + f.valor, 0);
         const pendentes = fontesComStatus.filter(f => !f.recebido && f.ativa).reduce((sum, f) => sum + f.valor, 0);
@@ -221,7 +222,7 @@ export const Orcamento = () => {
     if (fontes.length > 0) {
       fetchFontesComStatus();
     }
-  }, [fontes]);
+  }, [fontes, mesAtual, anoAtual]);
 
   // Função para formatar moeda
   const formatCurrency = (valor: number) => {
@@ -401,6 +402,21 @@ export const Orcamento = () => {
       toast.success('Gasto fixo removido com sucesso!');
     } catch (error) {
       toast.error('Erro ao remover gasto fixo');
+    }
+  };
+
+  const handleToggleStatusRenda = async (id: string, novoStatus: 'recebido' | 'pendente') => {
+    try {
+      await updateStatusManual(id, novoStatus, mesAtual, anoAtual);
+      // Atualizar as fontes com status
+      const fontesComStatus = await getFontesRendaComStatus(mesAtual, anoAtual);
+      setFontesRendaComStatus(fontesComStatus);
+      const recebidas = fontesComStatus.filter(f => f.recebido).reduce((sum, f) => sum + f.valor, 0);
+      const pendentes = fontesComStatus.filter(f => !f.recebido && f.ativa).reduce((sum, f) => sum + f.valor, 0);
+      setTotalRendaRecebida(recebidas);
+      setTotalRendaPendente(pendentes);
+    } catch (error) {
+      // Erro já tratado no hook
     }
   };
 
@@ -599,6 +615,7 @@ export const Orcamento = () => {
                 onAddCartao={() => setShowCartaoModal(true)}
                 onAddParcelamento={() => setShowContaParceladaModal(true)}
                 onAddGastoFixo={() => setShowGastoFixoModal(true)}
+                onToggleStatusRenda={handleToggleStatusRenda}
               />
             </CardContent>
           </Card>

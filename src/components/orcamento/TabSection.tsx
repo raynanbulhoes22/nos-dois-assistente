@@ -3,7 +3,7 @@ import { MobileSection } from "./MobileSection";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Edit3, Trash2, TrendingUp, CreditCard, Building2, Home, CheckCircle, Clock } from "lucide-react";
+import { Edit3, Trash2, TrendingUp, CreditCard, Building2, Home, CheckCircle, Clock, RotateCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { LimiteCartaoDisplay } from "@/components/cartoes/LimiteCartaoDisplay";
 
@@ -35,6 +35,7 @@ interface TabSectionProps {
   onAddCartao: () => void;
   onAddParcelamento: () => void;
   onAddGastoFixo: () => void;
+  onToggleStatusRenda?: (id: string, novoStatus: 'recebido' | 'pendente') => void;
 }
 
 export const TabSection = ({
@@ -64,7 +65,8 @@ export const TabSection = ({
   onAddFonte,
   onAddCartao,
   onAddParcelamento,
-  onAddGastoFixo
+  onAddGastoFixo,
+  onToggleStatusRenda
 }: TabSectionProps) => {
   const isMobile = useIsMobile();
   
@@ -114,46 +116,72 @@ export const TabSection = ({
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-sm truncate">{fonte.tipo}</h3>
                       {fontesRendaComStatus && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Badge 
-                              variant={fonte.recebido ? "default" : "secondary"}
-                              className={`h-5 text-xs flex items-center gap-1 ${
-                                fonte.recebido 
-                                  ? "bg-success/10 text-success border-success/20 hover:bg-success/20" 
-                                  : "bg-warning/10 text-warning border-warning/20 hover:bg-warning/20"
-                              }`}
-                            >
-                              {fonte.recebido ? (
-                                <>
-                                  <CheckCircle className="h-3 w-3" />
-                                  {isMobile ? "Ok" : "Recebido"}
-                                </>
-                              ) : (
-                                <>
-                                  <Clock className="h-3 w-3" />
-                                  {isMobile ? "Pend" : "Pendente"}
-                                </>
-                              )}
-                            </Badge>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {fonte.recebido ? (
-                              <div className="text-xs">
-                                <p className="font-semibold text-success">✅ Recebimento detectado</p>
-                                {fonte.registroDetectado && (
+                        <div className="flex items-center gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Badge 
+                                variant={fonte.recebido ? "default" : "secondary"}
+                                className={`h-5 text-xs flex items-center gap-1 ${
+                                  fonte.recebido 
+                                    ? "bg-success/10 text-success border-success/20 hover:bg-success/20" 
+                                    : "bg-warning/10 text-warning border-warning/20 hover:bg-warning/20"
+                                }`}
+                              >
+                                {fonte.recebido ? (
                                   <>
-                                    <p>Valor: {formatCurrency(Math.abs(fonte.registroDetectado.valor))}</p>
-                                    <p>Data: {new Date(fonte.registroDetectado.data).toLocaleDateString('pt-BR')}</p>
-                                    <p>Categoria: {fonte.registroDetectado.categoria}</p>
+                                    <CheckCircle className="h-3 w-3" />
+                                    {isMobile ? "Ok" : "Recebido"}
+                                  </>
+                                ) : (
+                                  <>
+                                    <Clock className="h-3 w-3" />
+                                    {isMobile ? "Pend" : "Pendente"}
                                   </>
                                 )}
-                              </div>
-                            ) : (
-                              <p className="text-xs text-warning">⏰ Aguardando recebimento no mês</p>
-                            )}
-                          </TooltipContent>
-                        </Tooltip>
+                                {fonte.statusTipo === 'manual' && (
+                                  <RotateCw className="h-2 w-2 ml-1" />
+                                )}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {fonte.recebido ? (
+                                <div className="text-xs">
+                                  <p className="font-semibold text-success">✅ {fonte.statusTipo === 'manual' ? 'Marcado manualmente como recebido' : 'Recebimento detectado automaticamente'}</p>
+                                  {fonte.registroDetectado && (
+                                    <>
+                                      <p>Valor: {formatCurrency(Math.abs(fonte.registroDetectado.valor))}</p>
+                                      <p>Data: {new Date(fonte.registroDetectado.data).toLocaleDateString('pt-BR')}</p>
+                                      <p>Categoria: {fonte.registroDetectado.categoria}</p>
+                                    </>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="text-xs">
+                                  <p className="text-warning">⏰ {fonte.statusTipo === 'manual' ? 'Marcado manualmente como pendente' : 'Aguardando recebimento no mês'}</p>
+                                  <p className="text-muted-foreground mt-1">Clique no botão de toggle para alterar manualmente</p>
+                                </div>
+                              )}
+                            </TooltipContent>
+                          </Tooltip>
+                          
+                          {onToggleStatusRenda && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => onToggleStatusRenda(fonte.id, fonte.recebido ? 'pendente' : 'recebido')}
+                                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                >
+                                  <RotateCw className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-xs">Alternar status manualmente</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
                       )}
                     </div>
                     {fonte.descricao && (

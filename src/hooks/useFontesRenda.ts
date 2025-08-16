@@ -12,6 +12,9 @@ export interface FonteRenda {
   descricao?: string;
   ativa: boolean;
   created_at: string;
+  status_manual?: string | null;
+  status_manual_mes?: number | null;
+  status_manual_ano?: number | null;
 }
 
 export const useFontesRenda = () => {
@@ -39,7 +42,7 @@ export const useFontesRenda = () => {
 
       if (error) throw error;
 
-      setFontes(data || []);
+      setFontes((data || []) as FonteRenda[]);
     } catch (error) {
       console.error('Erro ao buscar fontes de renda:', error);
       setError('Erro ao carregar fontes de renda');
@@ -269,18 +272,79 @@ export const useFontesRenda = () => {
     }
   };
 
-  const getFontesRendaComStatus = useCallback(async () => {
+  const updateStatusManual = async (id: string, status: 'recebido' | 'pendente' | null, mes?: number, ano?: number): Promise<boolean> => {
+    try {
+      const hoje = new Date();
+      const mesAtual = mes || hoje.getMonth() + 1;
+      const anoAtual = ano || hoje.getFullYear();
+
+      const { error } = await supabase
+        .from('fontes_renda')
+        .update({
+          status_manual: status,
+          status_manual_mes: status ? mesAtual : null,
+          status_manual_ano: status ? anoAtual : null
+        })
+        .eq('id', id)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Sucesso!",
+        description: `Status atualizado para ${status === 'recebido' ? 'Recebido' : 'Pendente'}!`
+      });
+
+      await fetchFontes();
+      return true;
+    } catch (error) {
+      console.error('Erro ao atualizar status manual:', error);
+      toast({
+        title: "❌ Erro",
+        description: "Não foi possível atualizar o status.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  const getFontesRendaComStatus = useCallback(async (mes?: number, ano?: number) => {
     if (!fontes.length) return [];
+
+    const hoje = new Date();
+    const mesAtual = mes || hoje.getMonth() + 1;
+    const anoAtual = ano || hoje.getFullYear();
 
     const fontesComStatus = await Promise.all(
       fontes.map(async (fonte) => {
-        if (!fonte.ativa) return { ...fonte, recebido: false, registroDetectado: null };
+        if (!fonte.ativa) return { 
+          ...fonte, 
+          recebido: false, 
+          registroDetectado: null, 
+          statusTipo: 'inativo' as const
+        };
         
+        // Verificar se há status manual para o mês atual
+        const temStatusManual = fonte.status_manual && 
+          fonte.status_manual_mes === mesAtual && 
+          fonte.status_manual_ano === anoAtual;
+
+        if (temStatusManual) {
+          return {
+            ...fonte,
+            recebido: fonte.status_manual === 'recebido',
+            registroDetectado: null,
+            statusTipo: 'manual' as const
+          };
+        }
+
+        // Caso contrário, usar detecção automática
         const registroDetectado = await checkRecebimentoMesAtual(fonte);
         return {
           ...fonte,
           recebido: !!registroDetectado,
-          registroDetectado
+          registroDetectado,
+          statusTipo: 'automatico' as const
         };
       })
     );
@@ -302,6 +366,7 @@ export const useFontesRenda = () => {
     refetch: fetchFontes,
     getTotalRendaAtiva,
     checkRecebimentoMesAtual,
-    getFontesRendaComStatus
+    getFontesRendaComStatus,
+    updateStatusManual
   };
 };

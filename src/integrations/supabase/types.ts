@@ -43,6 +43,7 @@ export type Database = {
           dia_vencimento: number | null
           id: string
           limite: number | null
+          limite_disponivel: string | null
           ultimos_digitos: string
           user_id: string
         }
@@ -53,6 +54,7 @@ export type Database = {
           dia_vencimento?: number | null
           id?: string
           limite?: number | null
+          limite_disponivel?: string | null
           ultimos_digitos: string
           user_id: string
         }
@@ -63,6 +65,7 @@ export type Database = {
           dia_vencimento?: number | null
           id?: string
           limite?: number | null
+          limite_disponivel?: string | null
           ultimos_digitos?: string
           user_id?: string
         }
@@ -167,6 +170,9 @@ export type Database = {
           created_at: string
           descricao: string | null
           id: string
+          status_manual: string | null
+          status_manual_ano: number | null
+          status_manual_mes: number | null
           tipo: string
           user_id: string
           valor: number
@@ -176,6 +182,9 @@ export type Database = {
           created_at?: string
           descricao?: string | null
           id?: string
+          status_manual?: string | null
+          status_manual_ano?: number | null
+          status_manual_mes?: number | null
           tipo: string
           user_id: string
           valor: number
@@ -185,6 +194,9 @@ export type Database = {
           created_at?: string
           descricao?: string | null
           id?: string
+          status_manual?: string | null
+          status_manual_ano?: number | null
+          status_manual_mes?: number | null
           tipo?: string
           user_id?: string
           valor?: number
@@ -402,6 +414,7 @@ export type Database = {
       }
       registros_financeiros: {
         Row: {
+          apelido: string | null
           cartao_final: string | null
           categoria: string | null
           criado_em: string | null
@@ -420,10 +433,12 @@ export type Database = {
           tipo_movimento: string | null
           title: string | null
           titulo: string | null
+          ultimos_digitos: string | null
           user_id: string | null
           valor: number
         }
         Insert: {
+          apelido?: string | null
           cartao_final?: string | null
           categoria?: string | null
           criado_em?: string | null
@@ -442,10 +457,12 @@ export type Database = {
           tipo_movimento?: string | null
           title?: string | null
           titulo?: string | null
+          ultimos_digitos?: string | null
           user_id?: string | null
           valor: number
         }
         Update: {
+          apelido?: string | null
           cartao_final?: string | null
           categoria?: string | null
           criado_em?: string | null
@@ -464,6 +481,7 @@ export type Database = {
           tipo_movimento?: string | null
           title?: string | null
           titulo?: string | null
+          ultimos_digitos?: string | null
           user_id?: string | null
           valor?: number
         }

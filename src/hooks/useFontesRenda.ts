@@ -147,17 +147,17 @@ export const useFontesRenda = () => {
     console.log(`🔍 Verificando recebimento da fonte: ${fonte.tipo} - ${fonte.descricao} - R$ ${fonte.valor}`);
 
     try {
-      // Mapeamento mais rigoroso para fontes de renda
+      // Mapeamento mais inteligente para fontes de renda
       const categoriasRendaRelacionadas: { [key: string]: string[] } = {
-        // Rendas principais - mais específicas
-        'Salário': ['Salário', 'Pagamento', 'Folha', 'Holerite'],
-        'Freelancer': ['Pagamento de cliente', 'Freelancer'], // Removido Pix genérico
-        'Autônomo': ['Pagamento de cliente', 'Autônomo'],
+        // Rendas principais - incluindo formas comuns de recebimento
+        'Salário': ['Salário', 'Pagamento', 'Folha', 'Holerite', 'Pix recebido', 'Depósito recebido'], // Salário pode vir via Pix
+        'Freelancer': ['Pagamento de cliente', 'Freelancer'], // Freelancer é mais específico
+        'Autônomo': ['Pagamento de cliente', 'Autônomo', 'Pix recebido'],
         'Comissões': ['Comissão', 'Pagamento de cliente'],
         'Pensão': ['Benefício', 'Pensão', 'INSS', 'Auxílio'],
         'Benefícios': ['Benefício', 'Pensão', 'INSS', 'Auxílio'],
-        'Aluguel Recebido': ['Aluguel'],
-        'Renda Extra': ['Renda Extra'],
+        'Aluguel Recebido': ['Aluguel', 'Pix recebido'],
+        'Renda Extra': ['Renda Extra', 'Pix recebido'],
         'Investimentos': ['Rendimento', 'Dividendo', 'Juros']
       };
 
@@ -189,7 +189,7 @@ export const useFontesRenda = () => {
       if (error) throw error;
       console.log(`📊 Registros encontrados:`, data?.length || 0, data);
 
-      // Estratégias de matching em ordem de prioridade - MAIS RIGOROSAS:
+      // Estratégias de matching em ordem de prioridade - BALANCEADAS:
       
       // 1. Match exato por valor E categoria específica (prioridade máxima)
       let registroEncontrado = data?.find(registro => 
@@ -199,16 +199,29 @@ export const useFontesRenda = () => {
       console.log(`🎯 Match exato valor + categoria (${fonte.valor}):`, registroEncontrado ? `Encontrado: R$ ${registroEncontrado.valor} - ${registroEncontrado.categoria}` : 'Não encontrado');
       
       if (!registroEncontrado) {
-        // 2. Match por descrição/empresa E valor próximo (±5%)
+        // 2. Match por valor próximo (±5%) EM categorias relacionadas
+        const tolerancia = 0.05;
+        const valorMinimo = fonte.valor * (1 - tolerancia);
+        const valorMaximo = fonte.valor * (1 + tolerancia);
+        
+        registroEncontrado = data?.find(registro => {
+          const valorRegistro = Math.abs(registro.valor);
+          return valorRegistro >= valorMinimo && valorRegistro <= valorMaximo;
+        });
+        console.log(`📊 Match ±5% (${valorMinimo.toFixed(2)}-${valorMaximo.toFixed(2)}):`, registroEncontrado ? `Encontrado: R$ ${registroEncontrado.valor} - ${registroEncontrado.categoria}` : 'Não encontrado');
+      }
+      
+      if (!registroEncontrado) {
+        // 3. Match por descrição/empresa E valor próximo (±10%)
         if (fonte.descricao && fonte.descricao.length > 3) {
           const palavrasDescricao = fonte.descricao.toLowerCase()
             .split(' ')
             .filter(p => p.length > 2) // Palavras com mais de 2 caracteres
-            .filter(p => !['para', 'com', 'das', 'dos', 'por', 'ser', 'tem'].includes(p)); // Remove stop words
+            .filter(p => !['para', 'com', 'das', 'dos', 'por', 'ser', 'tem', 'prestados'].includes(p)); // Remove stop words
           
           console.log(`🔍 Palavras da descrição para busca:`, palavrasDescricao);
           
-          const tolerancia = 0.05;
+          const tolerancia = 0.10;
           const valorMinimo = fonte.valor * (1 - tolerancia);
           const valorMaximo = fonte.valor * (1 + tolerancia);
           
@@ -228,14 +241,14 @@ export const useFontesRenda = () => {
             return temDescricao;
           });
           
-          console.log(`🔍 Match por descrição + valor ±5%:`, registroEncontrado ? `Encontrado: ${registroEncontrado.titulo || registroEncontrado.categoria} - R$ ${registroEncontrado.valor}` : 'Não encontrado');
+          console.log(`🔍 Match por descrição + valor ±10%:`, registroEncontrado ? `Encontrado: ${registroEncontrado.titulo || registroEncontrado.categoria} - R$ ${registroEncontrado.valor}` : 'Não encontrado');
         }
       }
       
       if (!registroEncontrado) {
-        // 3. SOMENTE para Salário: Match mais flexível por valor (±10%) mas só para categoria Salário
-        if (fonte.tipo === 'Salário') {
-          const tolerancia = 0.10;
+        // 4. SOMENTE para tipos específicos: Match mais flexível por valor (±15%)
+        if (['Salário', 'Freelancer'].includes(fonte.tipo)) {
+          const tolerancia = 0.15;
           const valorMinimo = fonte.valor * (1 - tolerancia);
           const valorMaximo = fonte.valor * (1 + tolerancia);
           
@@ -244,7 +257,7 @@ export const useFontesRenda = () => {
             return valorRegistro >= valorMinimo && valorRegistro <= valorMaximo;
           });
           
-          console.log(`💰 Match especial Salário ±10% (${valorMinimo.toFixed(2)}-${valorMaximo.toFixed(2)}):`, registroEncontrado ? `Encontrado: R$ ${registroEncontrado.valor} - ${registroEncontrado.categoria}` : 'Não encontrado');
+          console.log(`🎲 Match flexível ±15% para ${fonte.tipo} (${valorMinimo.toFixed(2)}-${valorMaximo.toFixed(2)}):`, registroEncontrado ? `Encontrado: R$ ${registroEncontrado.valor} - ${registroEncontrado.categoria}` : 'Não encontrado');
         }
       }
 

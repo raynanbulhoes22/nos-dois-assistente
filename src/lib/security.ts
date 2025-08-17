@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import { supabase } from '@/integrations/supabase/client';
 
 // Input sanitization utilities
 export const sanitizeInput = (input: string): string => {
@@ -10,6 +11,124 @@ export const sanitizeHtml = (html: string): string => {
     ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br'],
     ALLOWED_ATTR: []
   });
+};
+
+// Secure logging utility to replace console.log in production
+export const secureLog = {
+  info: (message: string, data?: any): void => {
+    if (import.meta.env.DEV) {
+      console.info(message, data);
+    }
+    // In production, send to audit logs instead of console
+    logSecurityEvent('INFO', message, data);
+  },
+  
+  warn: (message: string, data?: any): void => {
+    if (import.meta.env.DEV) {
+      console.warn(message, data);
+    }
+    logSecurityEvent('WARN', message, data);
+  },
+  
+  error: (message: string, data?: any): void => {
+    if (import.meta.env.DEV) {
+      console.error(message, data);
+    }
+    logSecurityEvent('ERROR', message, data);
+  }
+};
+
+// Security event logging
+const logSecurityEvent = async (level: 'INFO' | 'WARN' | 'ERROR', message: string, data?: any): Promise<void> => {
+  try {
+    // Only log in production and avoid logging sensitive data
+    if (!import.meta.env.DEV) {
+      const sanitizedData = data ? sanitizeLogData(data) : null;
+      
+      // Get current user from Supabase auth
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // This would typically send to a secure logging service
+      // For now, we'll store critical security events in audit logs
+      if (level === 'ERROR' || message.includes('security') || message.includes('auth')) {
+        await supabase.from('audit_logs').insert({
+          user_id: user?.id || '00000000-0000-0000-0000-000000000000',
+          table_name: 'security_logs',
+          operation: level,
+          new_values: {
+            message: sanitizeInput(message),
+            data: sanitizedData,
+            timestamp: new Date().toISOString(),
+            user_agent: navigator.userAgent,
+            url: window.location.href
+          }
+        });
+      }
+    }
+  } catch (error) {
+    // Fail silently to avoid logging loops
+  }
+};
+
+// Sanitize log data to remove sensitive information
+const sanitizeLogData = (data: any): any => {
+  if (!data) return null;
+  
+  const sensitiveFields = ['password', 'token', 'cpf', 'email', 'phone', 'numero_wpp'];
+  const sanitized = JSON.parse(JSON.stringify(data));
+  
+  const cleanObject = (obj: any): any => {
+    if (typeof obj !== 'object' || obj === null) return obj;
+    
+    for (const key in obj) {
+      if (sensitiveFields.some(field => key.toLowerCase().includes(field))) {
+        obj[key] = '[REDACTED]';
+      } else if (typeof obj[key] === 'object') {
+        obj[key] = cleanObject(obj[key]);
+      }
+    }
+    return obj;
+  };
+  
+  return cleanObject(sanitized);
+};
+
+// CPF encryption utilities
+export const encryptCPF = (cpf: string): string => {
+  if (!cpf) return '';
+  
+  // Remove formatting
+  const cleanCPF = cpf.replace(/\D/g, '');
+  
+  // Simple client-side encryption (in production, use proper encryption)
+  const encoder = new TextEncoder();
+  const data = encoder.encode(cleanCPF + 'CPF_SALT_2024');
+  
+  return btoa(String.fromCharCode(...data));
+};
+
+export const validateCPFFormat = (cpf: string): boolean => {
+  const cleanCPF = cpf.replace(/\D/g, '');
+  
+  if (cleanCPF.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(cleanCPF)) return false; // Reject same digit repeated
+  
+  // CPF validation algorithm
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cleanCPF.charAt(i)) * (10 - i);
+  }
+  let digit1 = 11 - (sum % 11);
+  if (digit1 >= 10) digit1 = 0;
+  
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cleanCPF.charAt(i)) * (11 - i);
+  }
+  let digit2 = 11 - (sum % 11);
+  if (digit2 >= 10) digit2 = 0;
+  
+  return digit1 === parseInt(cleanCPF.charAt(9)) && digit2 === parseInt(cleanCPF.charAt(10));
 };
 
 // Rate limiting utility (simple client-side implementation)

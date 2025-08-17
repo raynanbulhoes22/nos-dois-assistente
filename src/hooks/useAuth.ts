@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { secureLog } from '@/lib/security';
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -18,7 +19,7 @@ export const useAuth = () => {
       }
       return null;
     } catch (error) {
-      console.error('Erro ao verificar assinatura:', error);
+      secureLog.error('Erro ao verificar assinatura', error);
       return null;
     }
   };
@@ -48,24 +49,24 @@ export const useAuth = () => {
 
       setOnboardingCompleted(profileData?.onboarding_completed || false);
     } catch (error) {
-      console.error('Erro ao verificar plano:', error);
+      secureLog.error('Erro ao verificar plano', error);
     } finally {
       setSubscriptionLoading(false);
     }
   };
 
   useEffect(() => {
-    console.log('🔄 useAuth - Inicializando auth listener');
+    secureLog.info('Inicializando auth listener');
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('🔔 useAuth - Auth state changed:', { event, session: session?.user?.email });
+        secureLog.info('Auth state changed', { event, sessionExists: !!session });
         setSession(session);
         setUser(session?.user ?? null);
         
         if (event === 'SIGNED_IN' && session?.user?.email) {
-          console.log('✅ useAuth - User signed in, verifying subscription');
+          secureLog.info('User signed in, verifying subscription');
           // Defer subscription check to avoid blocking auth flow
           setTimeout(() => {
             verifySubscription(session.user.email!, session.user.id);
@@ -73,7 +74,7 @@ export const useAuth = () => {
         }
         
         if (event === 'SIGNED_OUT') {
-          console.log('👋 useAuth - User signed out');
+          secureLog.info('User signed out');
           setLoading(false);
           setSubscriptionStatus(null);
           setOnboardingCompleted(null);
@@ -81,18 +82,18 @@ export const useAuth = () => {
         }
         
         if (event === 'TOKEN_REFRESHED') {
-          console.log('🔄 useAuth - Token refreshed');
+          secureLog.info('Token refreshed');
         }
       }
     );
 
     // THEN check for existing session
-    console.log('🔍 useAuth - Checking for existing session');
+    secureLog.info('Checking for existing session');
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        console.error('❌ useAuth - Error getting session:', error);
+        secureLog.error('Error getting session', error);
       } else {
-        console.log('📋 useAuth - Got session:', session?.user?.email || 'No session');
+        secureLog.info('Got session', { sessionExists: !!session });
       }
       
       setSession(session);
@@ -106,7 +107,7 @@ export const useAuth = () => {
     });
 
     return () => {
-      console.log('🧹 useAuth - Cleaning up auth listener');
+      secureLog.info('Cleaning up auth listener');
       subscription.unsubscribe();
     };
   }, []);

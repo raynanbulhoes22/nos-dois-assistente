@@ -35,6 +35,39 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_logs: {
+        Row: {
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+          operation: string
+          record_id: string | null
+          table_name: string
+          timestamp: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          operation: string
+          record_id?: string | null
+          table_name: string
+          timestamp?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          operation?: string
+          record_id?: string | null
+          table_name?: string
+          timestamp?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       cartoes_credito: {
         Row: {
           apelido: string
@@ -397,6 +430,7 @@ export type Database = {
           nome_conjuge: string | null
           numero_wpp: string | null
           objetivo_principal: string | null
+          onboarding: boolean | null
           onboarding_completed: boolean
           preferencia_notificacao: string | null
           telefone_conjuge: string | null
@@ -412,6 +446,7 @@ export type Database = {
           nome_conjuge?: string | null
           numero_wpp?: string | null
           objetivo_principal?: string | null
+          onboarding?: boolean | null
           onboarding_completed?: boolean
           preferencia_notificacao?: string | null
           telefone_conjuge?: string | null
@@ -427,6 +462,7 @@ export type Database = {
           nome_conjuge?: string | null
           numero_wpp?: string | null
           objetivo_principal?: string | null
+          onboarding?: boolean | null
           onboarding_completed?: boolean
           preferencia_notificacao?: string | null
           telefone_conjuge?: string | null
@@ -455,7 +491,7 @@ export type Database = {
           title: string | null
           titulo: string | null
           ultimos_digitos: string | null
-          user_id: string | null
+          user_id: string
           valor: number
         }
         Insert: {
@@ -479,7 +515,7 @@ export type Database = {
           title?: string | null
           titulo?: string | null
           ultimos_digitos?: string | null
-          user_id?: string | null
+          user_id: string
           valor: number
         }
         Update: {
@@ -503,7 +539,7 @@ export type Database = {
           title?: string | null
           titulo?: string | null
           ultimos_digitos?: string | null
-          user_id?: string | null
+          user_id?: string
           valor?: number
         }
         Relationships: []
@@ -549,6 +585,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      encrypt_cpf: {
+        Args: { cpf_input: string }
+        Returns: string
+      }
       normalize_phone_number: {
         Args: { phone_input: string }
         Returns: string

@@ -103,12 +103,12 @@ export const PatrimonialAnalysisCard = ({ data, isLoading }: PatrimonialAnalysis
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Crescimento Total</span>
-              {getTrendIcon(data.totalGrowth)}
+              {getTrendIcon(data.totalGrowth ?? 0)}
             </div>
             <div className="text-2xl font-bold">
-              {data.totalGrowth >= 0 ? '+' : ''}{data.totalGrowth.toFixed(1)}%
+              {(data.totalGrowth ?? 0) >= 0 ? '+' : ''}{(data.totalGrowth ?? 0).toFixed(1)}%
             </div>
-            <Badge variant="outline" className={getTrendColor(data.totalGrowth)}>
+            <Badge variant="outline" className={getTrendColor(data.totalGrowth ?? 0)}>
               Período completo
             </Badge>
           </div>
@@ -116,12 +116,12 @@ export const PatrimonialAnalysisCard = ({ data, isLoading }: PatrimonialAnalysis
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Média Mensal</span>
-              {getTrendIcon(data.avgMonthlyGrowth)}
+              {getTrendIcon(data.avgMonthlyGrowth ?? 0)}
             </div>
             <div className="text-2xl font-bold">
-              {data.avgMonthlyGrowth >= 0 ? '+' : ''}{data.avgMonthlyGrowth.toFixed(1)}%
+              {(data.avgMonthlyGrowth ?? 0) >= 0 ? '+' : ''}{(data.avgMonthlyGrowth ?? 0).toFixed(1)}%
             </div>
-            <Badge variant="outline" className={getTrendColor(data.avgMonthlyGrowth)}>
+            <Badge variant="outline" className={getTrendColor(data.avgMonthlyGrowth ?? 0)}>
               Por mês
             </Badge>
           </div>
@@ -132,10 +132,10 @@ export const PatrimonialAnalysisCard = ({ data, isLoading }: PatrimonialAnalysis
               <TrendingUp className="h-4 w-4 text-green-600" />
             </div>
             <div className="text-lg font-semibold text-green-600">
-              +{data.bestPerformingMonth.growth.toFixed(1)}%
+              +{(data.bestPerformingMonth?.growth ?? 0).toFixed(1)}%
             </div>
             <div className="text-xs text-muted-foreground">
-              {data.bestPerformingMonth.month}
+              {data.bestPerformingMonth?.month ?? 'N/A'}
             </div>
           </div>
 
@@ -145,10 +145,10 @@ export const PatrimonialAnalysisCard = ({ data, isLoading }: PatrimonialAnalysis
               <TrendingDown className="h-4 w-4 text-red-600" />
             </div>
             <div className="text-lg font-semibold text-red-600">
-              {data.worstPerformingMonth.growth.toFixed(1)}%
+              {(data.worstPerformingMonth?.growth ?? 0).toFixed(1)}%
             </div>
             <div className="text-xs text-muted-foreground">
-              {data.worstPerformingMonth.month}
+              {data.worstPerformingMonth?.month ?? 'N/A'}
             </div>
           </div>
         </div>
@@ -157,18 +157,18 @@ export const PatrimonialAnalysisCard = ({ data, isLoading }: PatrimonialAnalysis
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">Índice de Estabilidade</span>
-            <span className={`text-sm font-semibold ${getStabilityColor(data.stabilityIndex)}`}>
-              {data.stabilityIndex.toFixed(0)}/100
+            <span className={`text-sm font-semibold ${getStabilityColor(data.stabilityIndex ?? 0)}`}>
+              {(data.stabilityIndex ?? 0).toFixed(0)}/100
             </span>
           </div>
           <Progress 
-            value={data.stabilityIndex} 
+            value={data.stabilityIndex ?? 0} 
             className="h-2"
           />
           <div className="text-xs text-muted-foreground">
-            {data.stabilityIndex >= 80 && "Excelente estabilidade patrimonial"}
-            {data.stabilityIndex >= 60 && data.stabilityIndex < 80 && "Boa estabilidade com algumas variações"}
-            {data.stabilityIndex < 60 && "Patrimônio com alta variabilidade"}
+            {(data.stabilityIndex ?? 0) >= 80 && "Excelente estabilidade patrimonial"}
+            {(data.stabilityIndex ?? 0) >= 60 && (data.stabilityIndex ?? 0) < 80 && "Boa estabilidade com algumas variações"}
+            {(data.stabilityIndex ?? 0) < 60 && "Patrimônio com alta variabilidade"}
           </div>
         </div>
       </CardContent>

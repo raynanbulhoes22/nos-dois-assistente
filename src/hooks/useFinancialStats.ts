@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 import { useFontesRenda } from "@/hooks/useFontesRenda";
 import { useCartoes } from "@/hooks/useCartoes";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrcamentos } from "@/hooks/useOrcamentos";
+import { useFinancialCache } from "@/contexts/FinancialDataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { garantirSaldoInicialMesAtual } from "@/lib/saldo-utils";
 
@@ -33,9 +34,10 @@ export interface Alert {
 
 export const useFinancialStats = () => {
   const { user } = useAuth();
-  const { movimentacoes, entradas, saidas } = useMovimentacoes();
-  const { fontes, getTotalRendaAtiva } = useFontesRenda();
-  const { cartoes, getTotalLimite } = useCartoes();
+  const { getFromCache, setCache } = useFinancialCache();
+  const { movimentacoes, entradas, saidas, isLoading: movLoading } = useMovimentacoes();
+  const { fontes, getTotalRendaAtiva, isLoading: fontesLoading } = useFontesRenda();
+  const { cartoes, getTotalLimite, isLoading: cartoesLoading } = useCartoes();
   const { getOrcamentoAtual } = useOrcamentos();
   
   const [stats, setStats] = useState<FinancialStats>({
@@ -54,27 +56,60 @@ export const useFinancialStats = () => {
   });
   
   const [profile, setProfile] = useState<any>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
 
+  // Cache profile data
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!user) return;
+      if (!user) {
+        setIsLoadingProfile(false);
+        return;
+      }
       
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-        
-      setProfile(data);
+      const cacheKey = `profile_${user.id}`;
+      const cachedProfile = getFromCache<any>(cacheKey);
+      
+      if (cachedProfile) {
+        setProfile(cachedProfile);
+        setIsLoadingProfile(false);
+        return;
+      }
+      
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+          
+        setProfile(data);
+        if (data) {
+          setCache(cacheKey, data, 10 * 60 * 1000); // Cache for 10 minutes
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      } finally {
+        setIsLoadingProfile(false);
+      }
     };
     
     fetchProfile();
-  }, [user]);
+  }, [user, getFromCache, setCache]);
 
-  useEffect(() => {
-    const calcularStats = async () => {
-      if (!user) return;
+  // Memoized stats calculation
+  const calculatedStats = useMemo(async () => {
+    if (!user || movLoading || fontesLoading || cartoesLoading || isLoadingProfile) {
+      return null;
+    }
 
+    const cacheKey = `financial_stats_${user.id}`;
+    const cachedStats = getFromCache<FinancialStats>(cacheKey);
+    
+    if (cachedStats) {
+      return cachedStats;
+    }
+
+    try {
       // Garantir que existe saldo inicial para o mês atual
       await garantirSaldoInicialMesAtual(user.id);
 
@@ -121,78 +156,111 @@ export const useFinancialStats = () => {
       // Saldo computado = saldo inicial + movimentações do mês
       const saldoComputado = saldoInicial + saldoMovimentacoesMes;
     
-    const metaEconomia = profile?.meta_economia_mensal || 0;
-    const percentualMeta = metaEconomia > 0 ? (saldoComputado / metaEconomia) * 100 : 0;
+      const metaEconomia = profile?.meta_economia_mensal || 0;
+      const percentualMeta = metaEconomia > 0 ? (saldoComputado / metaEconomia) * 100 : 0;
 
-    // Gerar alertas inteligentes
-    const alertas: Alert[] = [];
+      // Gerar alertas inteligentes
+      const alertas: Alert[] = [];
 
-    if (percentualMeta >= 100) {
-      alertas.push({
-        id: '1',
-        tipo: 'sucesso',
-        titulo: '🎉 Meta alcançada!',
-        mensagem: `Você já atingiu ${percentualMeta.toFixed(1)}% da sua meta de economia mensal!`,
-        acao: 'Ver detalhes'
-      });
-    } else if (percentualMeta >= 80) {
-      alertas.push({
-        id: '2',
-        tipo: 'alerta',
-        titulo: '⚡ Quase lá!',
-        mensagem: `Você está em ${percentualMeta.toFixed(1)}% da sua meta de economia.`,
-        acao: 'Ajustar gastos'
-      });
-    } else if (saldoComputado < 0) {
-      alertas.push({
-        id: '3',
-        tipo: 'perigo',
-        titulo: '⚠️ Saldo negativo',
-        mensagem: 'Seu saldo atual está negativo. Considere revisar seus gastos.',
-        acao: 'Revisar orçamento'
-      });
+      if (percentualMeta >= 100) {
+        alertas.push({
+          id: '1',
+          tipo: 'sucesso',
+          titulo: '🎉 Meta alcançada!',
+          mensagem: `Você já atingiu ${percentualMeta.toFixed(1)}% da sua meta de economia mensal!`,
+          acao: 'Ver detalhes'
+        });
+      } else if (percentualMeta >= 80) {
+        alertas.push({
+          id: '2',
+          tipo: 'alerta',
+          titulo: '⚡ Quase lá!',
+          mensagem: `Você está em ${percentualMeta.toFixed(1)}% da sua meta de economia.`,
+          acao: 'Ajustar gastos'
+        });
+      } else if (saldoComputado < 0) {
+        alertas.push({
+          id: '3',
+          tipo: 'perigo',
+          titulo: '⚠️ Saldo negativo',
+          mensagem: 'Seu saldo atual está negativo. Considere revisar seus gastos.',
+          acao: 'Revisar orçamento'
+        });
+      }
+
+      if (rendaRegistrada > 0 && entradasMes < rendaRegistrada * 0.8) {
+        alertas.push({
+          id: '4',
+          tipo: 'alerta',
+          titulo: '📊 Renda abaixo do esperado',
+          mensagem: `Sua renda real está ${((entradasMes / rendaRegistrada) * 100).toFixed(1)}% da renda registrada.`,
+          acao: 'Verificar fontes'
+        });
+      }
+
+      const limiteTotal = getTotalLimite();
+      if (limiteTotal > 0 && gastosCartao > limiteTotal * 0.8) {
+        alertas.push({
+          id: '5',
+          tipo: 'perigo',
+          titulo: '💳 Limite do cartão',
+          mensagem: `Você já usou ${((gastosCartao / limiteTotal) * 100).toFixed(1)}% do limite total dos cartões.`,
+          acao: 'Controlar gastos'
+        });
+      }
+
+      const calculatedStats: FinancialStats = {
+        rendaRegistrada,
+        rendaReal: entradasMes,
+        gastosEsteMes: saidasMes,
+        saldoAtual: saldoMovimentacoesMes,
+        saldoInicial,
+        saldoComputado,
+        percentualMetaEconomia: percentualMeta,
+        limiteCartaoTotal: limiteTotal,
+        limiteCartaoUsado: gastosCartao,
+        transacoesWhatsApp: transacoesWpp,
+        transacoesManuais,
+        metaEconomia,
+        alertas
+      };
+
+      // Cache the results
+      setCache(cacheKey, calculatedStats, 2 * 60 * 1000); // Cache for 2 minutes
+      
+      return calculatedStats;
+    } catch (error) {
+      console.error('Error calculating financial stats:', error);
+      return null;
     }
+  }, [
+    user, 
+    movimentacoes, 
+    entradas, 
+    saidas, 
+    fontes, 
+    cartoes, 
+    profile, 
+    getTotalRendaAtiva, 
+    getTotalLimite,
+    movLoading,
+    fontesLoading,
+    cartoesLoading,
+    isLoadingProfile,
+    getFromCache,
+    setCache
+  ]);
 
-    if (rendaRegistrada > 0 && entradasMes < rendaRegistrada * 0.8) {
-      alertas.push({
-        id: '4',
-        tipo: 'alerta',
-        titulo: '📊 Renda abaixo do esperado',
-        mensagem: `Sua renda real está ${((entradasMes / rendaRegistrada) * 100).toFixed(1)}% da renda registrada.`,
-        acao: 'Verificar fontes'
-      });
-    }
-
-    const limiteTotal = getTotalLimite();
-    if (limiteTotal > 0 && gastosCartao > limiteTotal * 0.8) {
-      alertas.push({
-        id: '5',
-        tipo: 'perigo',
-        titulo: '💳 Limite do cartão',
-        mensagem: `Você já usou ${((gastosCartao / limiteTotal) * 100).toFixed(1)}% do limite total dos cartões.`,
-        acao: 'Controlar gastos'
-      });
-    }
-
-    setStats({
-      rendaRegistrada,
-      rendaReal: entradasMes,
-      gastosEsteMes: saidasMes,
-      saldoAtual: saldoMovimentacoesMes,
-      saldoInicial,
-      saldoComputado,
-      percentualMetaEconomia: percentualMeta,
-      limiteCartaoTotal: limiteTotal,
-      limiteCartaoUsado: gastosCartao,
-      transacoesWhatsApp: transacoesWpp,
-      transacoesManuais,
-      metaEconomia,
-      alertas
-    });
+  useEffect(() => {
+    const updateStats = async () => {
+      const newStats = await calculatedStats;
+      if (newStats) {
+        setStats(newStats);
+      }
     };
     
-    calcularStats();
-  }, [movimentacoes, entradas, saidas, fontes, cartoes, profile, user, getTotalRendaAtiva, getTotalLimite]);
+    updateStats();
+  }, [calculatedStats]);
 
   return stats;
 };

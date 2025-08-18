@@ -3,6 +3,7 @@ import { useMovimentacoes } from "./useMovimentacoes";
 import { useFontesRenda } from "./useFontesRenda";
 import { useGastosFixos } from "./useGastosFixos";
 import { useContasParceladas } from "./useContasParceladas";
+import { useFinancialCache } from "@/contexts/FinancialDataContext";
 
 export interface ComparativoFinanceiro {
   rendaProjetada: number;
@@ -17,6 +18,7 @@ export interface ComparativoFinanceiro {
 }
 
 export const useComparativoFinanceiro = (mes?: number, ano?: number) => {
+  const { getFromCache, setCache } = useFinancialCache();
   const { entradas, saidas, isLoading: movimentacoesLoading } = useMovimentacoes();
   const { getTotalRendaAtiva, isLoading: fontesLoading } = useFontesRenda();
   const { getTotalGastosFixosAtivos, isLoading: gastosLoading } = useGastosFixos();
@@ -26,6 +28,14 @@ export const useComparativoFinanceiro = (mes?: number, ano?: number) => {
   const anoAtual = ano || new Date().getFullYear();
 
   const comparativo = useMemo((): ComparativoFinanceiro => {
+    // Check cache first
+    const cacheKey = `comparativo_${mesAtual}_${anoAtual}`;
+    const cachedData = getFromCache<ComparativoFinanceiro>(cacheKey);
+    
+    if (cachedData && !movimentacoesLoading && !fontesLoading && !gastosLoading && !contasLoading) {
+      return cachedData;
+    }
+
     // Filtrar movimentações do mês/ano específico
     const movimentacoesMes = [...entradas, ...saidas].filter(mov => {
       const dataMovimentacao = new Date(mov.data);
@@ -55,7 +65,7 @@ export const useComparativoFinanceiro = (mes?: number, ano?: number) => {
     const taxaControleGastos = gastosProjetados > 0 ? (gastosRealizados / gastosProjetados) * 100 : 0;
     const economiaEfetiva = saldoRealizado - saldoProjetado;
 
-    return {
+    const result: ComparativoFinanceiro = {
       rendaProjetada,
       rendaRealizada,
       gastosProjetados,
@@ -66,7 +76,14 @@ export const useComparativoFinanceiro = (mes?: number, ano?: number) => {
       taxaControleGastos,
       economiaEfetiva
     };
-  }, [entradas, saidas, mesAtual, anoAtual, getTotalRendaAtiva, getTotalGastosFixosAtivos, getTotalParcelasAtivas]);
+
+    // Cache the result
+    if (!movimentacoesLoading && !fontesLoading && !gastosLoading && !contasLoading) {
+      setCache(cacheKey, result, 90000); // Cache for 1.5 minutes
+    }
+
+    return result;
+  }, [entradas, saidas, mesAtual, anoAtual, getTotalRendaAtiva, getTotalGastosFixosAtivos, getTotalParcelasAtivas, getFromCache, setCache, movimentacoesLoading, fontesLoading, gastosLoading, contasLoading]);
 
   const isLoading = movimentacoesLoading || fontesLoading || gastosLoading || contasLoading;
 

@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useFinancialCache } from "@/contexts/FinancialDataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizePhoneNumber } from "@/lib/phone-utils";
 import { detectarECriarCartoesAutomaticos } from "@/lib/cartao-utils";
@@ -28,17 +29,30 @@ export interface Movimentacao {
   isEntrada: boolean;
 }
 
+interface MovimentacoesData {
+  movimentacoes: Movimentacao[];
+  entradas: Movimentacao[];
+  saidas: Movimentacao[];
+}
+
 export const useMovimentacoes = () => {
   const { user } = useAuth();
+  const { getFromCache, setCache, invalidateCache } = useFinancialCache();
   const { toast } = useToast();
   const { processarTransacoes, verificarAlertas, atualizarLimitesDisponiveis } = useCartaoProcessamento();
+  
   const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([]);
   const [entradas, setEntradas] = useState<Movimentacao[]>([]);
   const [saidas, setSaidas] = useState<Movimentacao[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Debounce and deduplication
+  const fetchTimeoutRef = useRef<NodeJS.Timeout>();
+  const lastFetchRef = useRef<string>('');
+  const isFetchingRef = useRef(false);
 
-  const categorizarMovimentacao = (item: any): boolean => {
+  const categorizarMovimentacao = useCallback((item: any): boolean => {
     // Verificar primeiro o campo tipo_movimento
     if (item.tipo_movimento) {
       return item.tipo_movimento.toLowerCase() === 'entrada';
@@ -71,15 +85,31 @@ export const useMovimentacoes = () => {
 
     // Default: valores positivos são entradas, negativos são saídas
     return item.valor > 0;
-  };
+  }, []);
 
-  const fetchMovimentacoes = async () => {
-    if (!user) {
+  const fetchMovimentacoes = useCallback(async (forceRefresh = false) => {
+    if (!user || isFetchingRef.current) {
       setIsLoading(false);
       return;
     }
 
+    // Generate cache key
+    const cacheKey = `movimentacoes_${user.id}`;
+    
+    // Check cache first (unless force refresh)
+    if (!forceRefresh) {
+      const cachedData = getFromCache<MovimentacoesData>(cacheKey);
+      if (cachedData) {
+        setMovimentacoes(cachedData.movimentacoes);
+        setEntradas(cachedData.entradas);
+        setSaidas(cachedData.saidas);
+        setIsLoading(false);
+        return;
+      }
+    }
+
     try {
+      isFetchingRef.current = true;
       setIsLoading(true);
       setError(null);
 
@@ -101,9 +131,6 @@ export const useMovimentacoes = () => {
       if (profile?.telefone_conjuge && profile?.nome_conjuge) {
         phoneToNameMap[profile.telefone_conjuge] = profile.nome_conjuge.trim();
       }
-      
-      console.log('Número do usuário:', userWhatsapp);
-      console.log('Mapeamento telefone->nome:', phoneToNameMap);
 
       let registros: any[] = [];
 
@@ -117,13 +144,11 @@ export const useMovimentacoes = () => {
 
       if (registrosPorUserId && registrosPorUserId.length > 0) {
         registros = [...registrosPorUserId];
-        console.log(`Encontrados ${registrosPorUserId.length} registros por user_id`);
       }
 
       // Estratégia 2: Buscar por numero_wpp usando TRIM() no SQL (dados do WhatsApp)
       if (userWhatsapp) {
         const normalizedWhatsapp = normalizePhoneNumber(userWhatsapp);
-        console.log('Número normalizado:', normalizedWhatsapp);
         
         // Criar diferentes formatos para busca
         const searchFormats = [
@@ -132,8 +157,6 @@ export const useMovimentacoes = () => {
           normalizedWhatsapp.substring(2), // 6992290572 (sem código do país)
           normalizedWhatsapp.substring(4), // 92290572 (sem código país e DDD)
         ].filter(num => num && num.length >= 8);
-        
-        console.log('Buscando por números:', searchFormats);
         
         // Buscar usando uma estratégia mais agressiva com ILIKE
         const { data: registrosPorWhatsapp } = await supabase
@@ -148,15 +171,22 @@ export const useMovimentacoes = () => {
           const idsExistentes = new Set(registros.map((r: any) => r.id));
           const novosRegistros = registrosPorWhatsapp.filter((r: any) => !idsExistentes.has(r.id));
           registros = [...registros, ...novosRegistros];
-          console.log(`Encontrados ${novosRegistros.length} novos registros por WhatsApp`);
         }
       }
 
       if (!registros || registros.length === 0) {
-        console.log('Nenhum registro encontrado com nenhuma estratégia');
+        const emptyData: MovimentacoesData = {
+          movimentacoes: [],
+          entradas: [],
+          saidas: []
+        };
+        
         setMovimentacoes([]);
         setEntradas([]);
         setSaidas([]);
+        
+        // Cache empty result briefly
+        setCache(cacheKey, emptyData, 30000); // 30 seconds for empty results
         return;
       }
 
@@ -265,9 +295,6 @@ export const useMovimentacoes = () => {
       const entradasList = movimentacoesProcessadas.filter(mov => mov.isEntrada);
       const saidasList = movimentacoesProcessadas.filter(mov => !mov.isEntrada);
 
-      console.log(`Processadas: ${movimentacoesProcessadas.length} movimentações`);
-      console.log(`Entradas: ${entradasList.length}, Saídas: ${saidasList.length}`);
-
       // Detectar e criar cartões automaticamente (apenas uma vez por sessão)
       const shouldDetectCards = !sessionStorage.getItem(`cards_detected_${user.id}`);
       
@@ -300,36 +327,48 @@ export const useMovimentacoes = () => {
         }
       }
 
+      const processedData: MovimentacoesData = {
+        movimentacoes: movimentacoesProcessadas,
+        entradas: entradasList,
+        saidas: saidasList
+      };
+
+      // Update state
       setMovimentacoes(movimentacoesProcessadas);
       setEntradas(entradasList);
       setSaidas(saidasList);
 
-      // Processar transações de cartão automaticamente
-      if (saidasList.length > 0) {
-        try {
-          // Buscar cartões ativos
-          const { data: cartoesData } = await supabase
-            .from('cartoes_credito')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('ativo', true);
+      // Cache the results
+      setCache(cacheKey, processedData);
 
-          if (cartoesData && cartoesData.length > 0) {
-            // Atualizar limites disponíveis se necessário
-            await atualizarLimitesDisponiveis(cartoesData, movimentacoesProcessadas);
-            
-            // Processar transações automaticamente
-            await processarTransacoes(movimentacoesProcessadas, cartoesData);
-            
-            // Verificar alertas de limite
-            const alertas = verificarAlertas(cartoesData);
-            if (alertas.length > 0) {
-              console.log('Alertas de cartão:', alertas);
+      // Processar transações de cartão automaticamente (non-blocking)
+      if (saidasList.length > 0) {
+        setTimeout(async () => {
+          try {
+            // Buscar cartões ativos
+            const { data: cartoesData } = await supabase
+              .from('cartoes_credito')
+              .select('*')
+              .eq('user_id', user.id)
+              .eq('ativo', true);
+
+            if (cartoesData && cartoesData.length > 0) {
+              // Atualizar limites disponíveis se necessário
+              await atualizarLimitesDisponiveis(cartoesData, movimentacoesProcessadas);
+              
+              // Processar transações automaticamente
+              await processarTransacoes(movimentacoesProcessadas, cartoesData);
+              
+              // Verificar alertas de limite
+              const alertas = verificarAlertas(cartoesData);
+              if (alertas.length > 0) {
+                console.log('Alertas de cartão:', alertas);
+              }
             }
+          } catch (error) {
+            console.error('Erro ao processar cartões:', error);
           }
-        } catch (error) {
-          console.error('Erro ao processar cartões:', error);
-        }
+        }, 100);
       }
 
     } catch (error) {
@@ -337,23 +376,56 @@ export const useMovimentacoes = () => {
       setError('Erro ao carregar movimentações');
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
-  };
+  }, [user, getFromCache, setCache, categorizarMovimentacao, toast, processarTransacoes, verificarAlertas, atualizarLimitesDisponiveis]);
 
+  // Debounced fetch effect
   useEffect(() => {
-    fetchMovimentacoes();
-  }, [user]);
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
 
-  const refetch = () => {
-    fetchMovimentacoes();
-  };
+    // Clear any pending fetch
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
+    }
 
-  return {
+    // Debounce the fetch
+    fetchTimeoutRef.current = setTimeout(() => {
+      const fetchKey = `${user.id}_${Date.now()}`;
+      if (lastFetchRef.current !== fetchKey) {
+        lastFetchRef.current = fetchKey;
+        fetchMovimentacoes();
+      }
+    }, 100);
+
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
+    };
+  }, [user, fetchMovimentacoes]);
+
+  const refetch = useCallback((forceRefresh = false) => {
+    if (user) {
+      if (forceRefresh) {
+        invalidateCache(`movimentacoes_${user.id}`);
+      }
+      fetchMovimentacoes(forceRefresh);
+    }
+  }, [user, fetchMovimentacoes, invalidateCache]);
+
+  // Memoize return value to prevent unnecessary re-renders
+  const returnValue = useMemo(() => ({
     movimentacoes,
     entradas,
     saidas,
     isLoading,
     error,
     refetch
-  };
+  }), [movimentacoes, entradas, saidas, isLoading, error, refetch]);
+
+  return returnValue;
 };

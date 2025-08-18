@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { FinancialDataProvider } from "@/contexts/FinancialDataContext";
 import { AuthForm } from "@/components/AuthForm";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SubscriptionRedirect } from "@/components/SubscriptionRedirect";
@@ -42,6 +43,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <FinancialDataProvider user={user}>
         <BrowserRouter>
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background">
@@ -102,6 +104,7 @@ const App = () => {
             <Sonner />
           </SidebarProvider>
         </BrowserRouter>
+        </FinancialDataProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

@@ -72,8 +72,6 @@ export const processarCompraCartao = async (
       .eq('user_id', userId);
 
     if (error) throw error;
-
-    console.log(`Compra processada: ${transacao.valor} debitado do cartão ${cartao.apelido}. Limite restante: ${novoLimite}`);
     return true;
   } catch (error) {
     console.error('Erro ao processar compra no cartão:', error);
@@ -102,8 +100,6 @@ export const processarPagamentoFatura = async (
       .eq('user_id', userId);
 
     if (error) throw error;
-
-    console.log(`Pagamento processado: ${transacao.valor} creditado ao cartão ${cartao.apelido}. Limite disponível: ${novoLimite}`);
     return true;
   } catch (error) {
     console.error('Erro ao processar pagamento de fatura:', error);

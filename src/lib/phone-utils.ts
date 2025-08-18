@@ -13,8 +13,6 @@ export const normalizePhoneNumber = (phone: string): string => {
   // Remove todos os caracteres não numéricos
   let cleaned = phone.replace(/\D/g, '');
   
-  console.log('Normalizando telefone:', phone, '-> cleaned:', cleaned);
-  
   // Remove códigos do país duplicados (5555...)
   while (cleaned.startsWith('5555')) {
     cleaned = cleaned.substring(2);
@@ -66,7 +64,6 @@ export const normalizePhoneNumber = (phone: string): string => {
   
   // Garantir que tem exatamente 12 dígitos (55 + 2 DDD + 8 número)
   if (cleaned.length === 12) {
-    console.log('Telefone normalizado:', cleaned);
     return cleaned;
   }
   
@@ -83,7 +80,6 @@ export const validatePhoneNumber = (phone: string): boolean => {
   // Deve ter exatamente 12 dígitos: 55 + 2 DDD + 8 número
   const isValid = normalized.length === 12 && normalized.startsWith('55');
   
-  console.log('Validando telefone:', phone, '-> normalized:', normalized, '-> valid:', isValid);
   return isValid;
 };
 

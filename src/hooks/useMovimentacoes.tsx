@@ -101,9 +101,6 @@ export const useMovimentacoes = () => {
       if (profile?.telefone_conjuge && profile?.nome_conjuge) {
         phoneToNameMap[profile.telefone_conjuge] = profile.nome_conjuge.trim();
       }
-      
-      console.log('Número do usuário:', userWhatsapp);
-      console.log('Mapeamento telefone->nome:', phoneToNameMap);
 
       let registros: any[] = [];
 
@@ -323,9 +320,7 @@ export const useMovimentacoes = () => {
             
             // Verificar alertas de limite
             const alertas = verificarAlertas(cartoesData);
-            if (alertas.length > 0) {
-              console.log('Alertas de cartão:', alertas);
-            }
+            // Alertas processados internamente
           }
         } catch (error) {
           console.error('Erro ao processar cartões:', error);

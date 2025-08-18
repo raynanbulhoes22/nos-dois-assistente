@@ -216,8 +216,6 @@ export const criarCartaoAutomatico = async (
       console.error('Erro ao criar cartão automaticamente:', error);
       return false;
     }
-
-    console.log(`Cartão criado automaticamente: ${dadosCartao.apelido}`);
     return true;
   } catch (error) {
     console.error('Erro ao criar cartão automaticamente:', error);

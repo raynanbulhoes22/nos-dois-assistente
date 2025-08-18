@@ -520,7 +520,7 @@ export const AuthForm = () => {
                     />
                     
                     {/* Checkbox Mantenha-me conectado e Link Esqueci Senha */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center space-x-2">
                         <Checkbox 
                           id="rememberMe" 
@@ -538,7 +538,7 @@ export const AuthForm = () => {
                       <Button
                         type="button"
                         variant="link"
-                        className="text-sm text-blue-600 hover:text-blue-800 p-0 h-auto"
+                        className="text-sm text-blue-600 hover:text-blue-800 p-0 h-auto font-medium underline-offset-4 hover:underline whitespace-nowrap"
                         onClick={() => setShowForgotPassword(true)}
                         disabled={isLoading}
                       >

@@ -643,7 +643,7 @@ export const useAdvancedReportsData = (): AdvancedReportsData => {
       });
     }
 
-    const totalGrowth = monthlyEvolution.length > 0 ? 
+    const totalGrowth = monthlyEvolution.length > 1 ? 
       ((monthlyEvolution[monthlyEvolution.length - 1].saldoInicial - monthlyEvolution[0].saldoInicial) / 
        Math.abs(monthlyEvolution[0].saldoInicial || 1)) * 100 : 0;
 
@@ -651,21 +651,23 @@ export const useAdvancedReportsData = (): AdvancedReportsData => {
       growthRates.reduce((sum, rate) => sum + rate, 0) / growthRates.length : 0;
 
     // Encontrar melhor e pior mês
-    const bestPerformingMonth = monthlyEvolution.reduce((best, current) => 
-      current.crescimento > best.crescimento ? current : best, 
-      monthlyEvolution[0] || { month: '', growth: 0 }
-    );
+    const bestPerformingMonth = monthlyEvolution.length > 0 ? 
+      monthlyEvolution.reduce((best, current) => 
+        current.crescimento > best.crescimento ? current : best, 
+        monthlyEvolution[0]
+      ) : { month: 'N/A', crescimento: 0 };
 
-    const worstPerformingMonth = monthlyEvolution.reduce((worst, current) => 
-      current.crescimento < worst.crescimento ? current : worst, 
-      monthlyEvolution[0] || { month: '', growth: 0 }
-    );
+    const worstPerformingMonth = monthlyEvolution.length > 0 ?
+      monthlyEvolution.reduce((worst, current) => 
+        current.crescimento < worst.crescimento ? current : worst, 
+        monthlyEvolution[0]
+      ) : { month: 'N/A', crescimento: 0 };
 
     // Calcular índice de estabilidade baseado na variabilidade do crescimento
     const variance = growthRates.length > 0 ? 
-      growthRates.reduce((sum, rate) => sum + Math.pow(rate - avgMonthlyGrowth, 2), 0) / growthRates.length : 0;
+      growthRates.reduce((sum, rate) => sum + Math.pow(rate - (avgMonthlyGrowth || 0), 2), 0) / growthRates.length : 0;
     const standardDeviation = Math.sqrt(variance);
-    const stabilityIndex = Math.max(0, 100 - standardDeviation); // Quanto menor a variação, maior a estabilidade
+    const stabilityIndex = Math.max(0, Math.min(100, 100 - standardDeviation)); // Clamped between 0-100
 
     return {
       monthlyBalanceEvolution: monthlyEvolution,

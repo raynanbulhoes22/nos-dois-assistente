@@ -41,23 +41,31 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     }
   }, [loading, user, subscriptionStatus, onboardingCompleted, location.pathname, navigate]);
 
-  // Show loading while checking plan
-  if (loading) {
+  // Show loading while checking plan or during state transitions
+  if (loading || subscriptionStatus === null || onboardingCompleted === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
-  // If no subscription and not on plan page, don't render content
+  // If no subscription and not on plan page, show loading instead of null
   if (user && subscriptionStatus && !subscriptionStatus.subscribed && location.pathname !== '/assinaturas') {
-    return null;
+    return (
+      <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
-  // If has subscription but no onboarding and not on onboarding page, don't render content
+  // If has subscription but no onboarding and not on onboarding page, show loading instead of null
   if (user && subscriptionStatus?.subscribed && onboardingCompleted === false && location.pathname !== '/primeiros-passos') {
-    return null;
+    return (
+      <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   return <>{children}</>;

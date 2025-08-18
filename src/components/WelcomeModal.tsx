@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -68,6 +68,9 @@ export const WelcomeModal = ({
   
   return <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-sm w-[90vw] max-h-[90vh] p-0 gap-0 border-0 bg-transparent overflow-auto">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Bem-vindo ao LucraAI</DialogTitle>
+        </DialogHeader>
         {/* Background Image with Overlay */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat rounded-lg"

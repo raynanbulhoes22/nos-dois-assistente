@@ -8,6 +8,7 @@ export const useAuth = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [subscriptionStatus, setSubscriptionStatus] = useState<any | null>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
 
   const checkSubscription = async () => {
@@ -25,19 +26,25 @@ export const useAuth = () => {
   };
 
   const verifySubscription = async (userEmail: string, userId: string) => {
-    // Check if already verified in this session
-    const sessionKey = `sub_verified_${userId}`;
+    // Prevent multiple simultaneous verifications
+    if (subscriptionLoading) {
+      return;
+    }
+
+    // Check if we already verified this user session
+    const sessionKey = `verified_${userEmail}_${userId}`;
     if (sessionStorage.getItem(sessionKey)) {
       return;
     }
 
+    setSubscriptionLoading(true);
     try {
       const subscriptionData = await checkSubscription();
       
       if (subscriptionData) {
         setSubscriptionStatus(subscriptionData);
         
-        // Check if this is first time user
+        // Check if this is first time user (no subscription record)
         const isFirstTime = !localStorage.getItem(`user_accessed_${userEmail}`);
         if (isFirstTime && !subscriptionData.subscribed) {
           localStorage.setItem('redirect_to_subscription', 'true');
@@ -54,67 +61,77 @@ export const useAuth = () => {
 
       setOnboardingCompleted(profileData?.onboarding_completed || false);
       
-      // Mark as verified
+      // Mark verification as completed for this session
       sessionStorage.setItem(sessionKey, 'true');
     } catch (error) {
       secureLog.error('Erro ao verificar plano', error);
-      // Set defaults on error
-      setSubscriptionStatus({ subscribed: false });
-      setOnboardingCompleted(false);
+    } finally {
+      setSubscriptionLoading(false);
     }
   };
 
   useEffect(() => {
-    let mounted = true;
-
-    // Single auth state listener
+    secureLog.info('Inicializando auth listener');
+    
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-
+      (event, session) => {
         secureLog.info('Auth state changed', { event, sessionExists: !!session });
-        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (event === 'SIGNED_OUT') {
+          secureLog.info('User signed out');
+          setLoading(false);
           setSubscriptionStatus(null);
           setOnboardingCompleted(null);
           localStorage.removeItem('redirect_to_subscription');
-          // Clear verification cache
+          // Clear session verification cache
           Object.keys(sessionStorage).forEach(key => {
-            if (key.startsWith('sub_verified_')) {
+            if (key.startsWith('verified_')) {
               sessionStorage.removeItem(key);
             }
           });
         }
+        
+        if (event === 'TOKEN_REFRESHED') {
+          secureLog.info('Token refreshed');
+        }
       }
     );
 
-    // Check existing session once
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return;
-
+    // THEN check for existing session
+    secureLog.info('Checking for existing session');
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        secureLog.error('Error getting session', error);
+      } else {
+        secureLog.info('Got session', { sessionExists: !!session });
+      }
+      
       setSession(session);
       setUser(session?.user ?? null);
       
-      if (session?.user?.email && session?.user?.id) {
-        await verifySubscription(session.user.email, session.user.id);
+      // Only verify subscription ONCE when component mounts and user exists
+      if (session?.user?.email) {
+        verifySubscription(session.user.email, session.user.id);
       }
       
       setLoading(false);
     });
 
     return () => {
-      mounted = false;
-      subscription.unsubscribe();
+      secureLog.info('Cleaning up auth listener');
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
-  }, []);
+  }, []); // Empty dependency array is critical
 
   return {
     user,
     session,
-    loading,
+    loading: loading || subscriptionLoading,
     subscriptionStatus,
     onboardingCompleted,
     verifySubscription: () => user?.email && user?.id ? verifySubscription(user.email, user.id) : Promise.resolve()

@@ -6,6 +6,7 @@ import { PhoneInput } from '@/components/ui/phone-input';
 import { OnboardingData } from '../OnboardingWizard';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Phone, Users, AlertCircle, CheckCircle } from 'lucide-react';
+import { logger } from '@/lib/production-logger';
 interface OnboardingStep2Props {
   data: OnboardingData;
   setData: (data: OnboardingData) => void;
@@ -21,27 +22,18 @@ export const OnboardingStep2 = ({
   const { status } = useSubscription();
   const isCasalPlan = status?.subscription_tier === 'Casal';
   
-  console.log('OnboardingStep2 - status:', status);
-  console.log('OnboardingStep2 - isCasalPlan:', isCasalPlan);
-  console.log('OnboardingStep2 - data.numero_wpp:', data.numero_wpp);
-  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('handleSubmit called');
-    console.log('data.numero_wpp (valor final):', data.numero_wpp);
-    console.log('isCasalPlan:', isCasalPlan);
-    console.log('data.nomeConjuge:', data.nomeConjuge);
-    console.log('data.telefoneConjuge (valor final):', data.telefoneConjuge);
     
     if (!data.numero_wpp) {
-      console.log('Validation failed: numero_wpp missing');
+      logger.warn('Tentativa de prosseguir sem número de WhatsApp');
       return;
     }
     if (isCasalPlan && (!data.nomeConjuge || !data.telefoneConjuge)) {
-      console.log('Validation failed: couple data missing');
+      logger.warn('Tentativa de prosseguir com dados incompletos do casal');
       return;
     }
-    console.log('Calling onNext');
+    logger.info('Validação do passo 2 concluída com sucesso');
     onNext();
   };
   return (

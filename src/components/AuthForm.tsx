@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { authSchema, type AuthFormData } from '@/lib/validations';
 import { sanitizeInput, authRateLimiter, checkPasswordStrength } from '@/lib/security';
 import { PhoneInput } from '@/components/ui/phone-input';
+import { logger } from '@/lib/production-logger';
 
 const signInSchema = authSchema.omit({ name: true });
 const signUpSchemaWithConfirm = authSchema.extend({
@@ -73,7 +74,7 @@ export const AuthForm = () => {
     const sanitizedWhatsapp = sanitizeInput(data.whatsapp || '');
 
     setIsLoading(true);
-    console.log('🔄 Iniciando cadastro para:', sanitizedEmail);
+    logger.info('Iniciando processo de cadastro');
 
     try {
       const redirectUrl = `${window.location.origin}/`;
@@ -90,13 +91,11 @@ export const AuthForm = () => {
         }
       });
 
-      console.log('📝 Resultado do cadastro:', { signUpResult, error });
-
       if (error) {
-        console.error('❌ Erro no cadastro:', error);
+        logger.error('Erro no processo de cadastro', error);
         if (error.message.includes('already registered') || error.message.includes('User already registered')) {
           // Usuário já existe, mostrar tela de confirmação mesmo assim
-          console.log('👤 Usuário já existe, mostrando tela de confirmação');
+          logger.warn('Tentativa de cadastro com email já registrado');
           setRegisteredEmail(sanitizedEmail);
           setShowEmailConfirmation(true);
           toast({
@@ -130,20 +129,20 @@ export const AuthForm = () => {
           });
         }
       } else {
-        console.log('✅ Cadastro realizado com sucesso');
+        logger.info('Cadastro realizado com sucesso');
         // Cadastro realizado com sucesso
         setRegisteredEmail(sanitizedEmail);
         setShowEmailConfirmation(true);
         
         // Verificar se precisa confirmar email
         if (!signUpResult.session && signUpResult.user) {
-          console.log('📧 Email de confirmação enviado');
+          logger.info('Email de confirmação enviado');
           toast({
             title: "Cadastro realizado com sucesso! 🎉",
             description: "Verifique sua caixa de entrada para confirmar seu email.",
           });
         } else if (signUpResult.session) {
-          console.log('🎯 Login automático realizado');
+          logger.info('Login automático realizado após cadastro');
           toast({
             title: "Cadastro e login realizados! 🎉",
             description: "Bem-vindo ao LucraAI!",
@@ -155,7 +154,7 @@ export const AuthForm = () => {
         signUpForm.reset();
       }
     } catch (error) {
-      console.error('💥 Erro inesperado no cadastro:', error);
+      logger.error('Erro inesperado durante cadastro', error);
       toast({
         title: "Erro inesperado",
         description: "Tente novamente mais tarde.",
@@ -163,7 +162,6 @@ export const AuthForm = () => {
       });
     } finally {
       setIsLoading(false);
-      console.log('🏁 Processo de cadastro finalizado');
     }
   };
 
@@ -223,7 +221,7 @@ export const AuthForm = () => {
         signInForm.reset();
       }
     } catch (error) {
-      console.error('Signin error:', error);
+      logger.error('Erro durante login', error);
       toast({
         title: "Erro inesperado",
         description: "Tente novamente mais tarde.",
@@ -252,7 +250,7 @@ export const AuthForm = () => {
         });
       }
     } catch (error) {
-      console.error('Google signin error:', error);
+      logger.error('Erro durante login com Google', error);
       toast({
         title: "Erro inesperado",
         description: "Tente novamente mais tarde.",

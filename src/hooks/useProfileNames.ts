@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/production-logger';
 
 interface ProfileNamesData {
   availableNames: string[];
@@ -49,7 +50,7 @@ export const useProfileNames = (userId?: string): ProfileNamesData => {
         setAvailableNames(names);
         setError(null);
       } catch (err: any) {
-        console.error('Erro ao buscar nomes do perfil:', err);
+        logger.error('Erro ao buscar nomes do perfil', err);
         setError(err.message);
         // Fallback em caso de erro
         setAvailableNames(['Usuário']);

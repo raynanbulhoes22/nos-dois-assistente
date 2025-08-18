@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/production-logger';
 
 export interface SubscriptionStatus {
   subscribed: boolean;
@@ -12,30 +13,29 @@ export const useSubscription = () => {
   const [loading, setLoading] = useState(false);
 
   const checkSubscription = async () => {
-    console.log('useSubscription - checkSubscription called');
+    logger.info('Verificando status da assinatura');
     setLoading(true);
     try {
       const { data: user } = await supabase.auth.getUser();
-      console.log('useSubscription - user:', user);
       if (!user.user) {
-        console.log('useSubscription - no user found');
+        logger.warn('Usuário não autenticado');
         setStatus({ subscribed: false });
         return;
       }
 
-      console.log('useSubscription - calling check-subscription function');
+      logger.info('Chamando função de verificação de assinatura');
       const { data, error } = await supabase.functions.invoke('check-subscription');
       
       if (error) {
-        console.error('useSubscription - erro ao verificar plano:', error);
+        logger.error('Erro ao verificar plano de assinatura', error);
         setStatus({ subscribed: false });
         return;
       }
 
-      console.log('useSubscription - function response:', data);
+      logger.info('Status da assinatura verificado com sucesso');
       setStatus(data);
     } catch (error) {
-      console.error('useSubscription - erro inesperado:', error);
+      logger.error('Erro inesperado ao verificar assinatura', error);
       setStatus({ subscribed: false });
     } finally {
       setLoading(false);
@@ -44,7 +44,7 @@ export const useSubscription = () => {
 
   // Auto-check subscription on mount
   useEffect(() => {
-    console.log('useSubscription - useEffect triggered');
+    logger.info('Inicializando verificação de assinatura');
     checkSubscription();
   }, []);
 

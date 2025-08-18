@@ -1,42 +1,38 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export const useSessionTimeout = () => {
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
-    const handleSessionExpired = async () => {
-      // Check if session actually expired
-      const sessionExpired = sessionStorage.getItem('session_expired');
-      
-      if (sessionExpired === 'true') {
+    // Clear any corrupted session state on mount
+    const clearCorruptedState = () => {
+      try {
         sessionStorage.removeItem('session_expired');
-        
-        // Show user-friendly message
-        toast({
-          title: "Sessão expirada",
-          description: "Sua sessão expirou por inatividade. Faça login novamente.",
-          variant: "destructive",
-        });
-        
-        // Proper logout through Supabase
-        await supabase.auth.signOut();
-        
-        // Navigate to home page
-        navigate('/', { replace: true });
+        sessionStorage.removeItem('session_timeout_id');
+        sessionStorage.removeItem('last_activity');
+      } catch (error) {
+        console.warn('Failed to clear session state:', error);
       }
     };
 
-    // Listen for session expiration events
-    window.addEventListener('sessionExpired', handleSessionExpired);
-    
-    // Check on mount in case the event was missed
-    handleSessionExpired();
+    clearCorruptedState();
 
-    return () => {
-      window.removeEventListener('sessionExpired', handleSessionExpired);
+    // Remove any existing problematic event listeners
+    const removeProblematicListeners = () => {
+      const events = ['sessionExpired', 'beforeunload', 'visibilitychange'];
+      events.forEach(event => {
+        const listeners = (window as any)._eventListeners?.[event] || [];
+        listeners.forEach((listener: EventListener) => {
+          window.removeEventListener(event, listener);
+        });
+      });
     };
-  }, [navigate]);
+
+    removeProblematicListeners();
+
+    // Only rely on Supabase's native session management
+    // No custom timeout logic that could conflict with React Router
+    
+  }, [user]);
 };

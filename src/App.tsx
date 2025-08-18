@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 import { AuthForm } from "@/components/AuthForm";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SubscriptionRedirect } from "@/components/SubscriptionRedirect";
@@ -26,6 +27,7 @@ const queryClient = new QueryClient();
 const App = () => {
   const { user, loading } = useAuth();
   useViewportHeight();
+  useSessionTimeout();
 
   if (loading) {
     return (

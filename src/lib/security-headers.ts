@@ -72,20 +72,62 @@ export const enhanceSessionSecurity = (): void => {
     sensitiveKeys.forEach(key => sessionStorage.removeItem(key));
   });
   
-  // Implement session timeout
+  // Implement smart session timeout that pauses when tab is inactive
   let sessionTimeout: NodeJS.Timeout;
-  const resetSessionTimeout = () => {
-    clearTimeout(sessionTimeout);
-    sessionTimeout = setTimeout(() => {
-      // Logout user after 30 minutes of inactivity
-      window.location.href = '/';
-      sessionStorage.clear();
-    }, 30 * 60 * 1000);
+  let lastActivity = Date.now();
+  let isTabActive = true;
+  
+  const SESSION_TIMEOUT = 2 * 60 * 60 * 1000; // 2 hours instead of 30 minutes
+  
+  const handleLogout = () => {
+    // Set flag for authentication cleanup instead of hard redirect
+    sessionStorage.setItem('session_expired', 'true');
+    // Let the app handle the logout gracefully
+    window.dispatchEvent(new CustomEvent('sessionExpired'));
   };
   
-  // Reset timeout on user activity
-  ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(event => {
-    document.addEventListener(event, resetSessionTimeout, true);
+  const resetSessionTimeout = () => {
+    if (!isTabActive) return; // Don't reset if tab is not active
+    
+    lastActivity = Date.now();
+    clearTimeout(sessionTimeout);
+    sessionTimeout = setTimeout(handleLogout, SESSION_TIMEOUT);
+  };
+  
+  const checkSessionTimeout = () => {
+    const timeSinceActivity = Date.now() - lastActivity;
+    if (timeSinceActivity >= SESSION_TIMEOUT) {
+      handleLogout();
+    } else {
+      // Set timeout for remaining time
+      clearTimeout(sessionTimeout);
+      sessionTimeout = setTimeout(handleLogout, SESSION_TIMEOUT - timeSinceActivity);
+    }
+  };
+  
+  // Handle tab visibility changes to pause/resume timeout
+  document.addEventListener('visibilitychange', () => {
+    isTabActive = !document.hidden;
+    
+    if (isTabActive) {
+      // Tab became active - check if session should still be valid
+      checkSessionTimeout();
+    } else {
+      // Tab became inactive - pause timeout
+      clearTimeout(sessionTimeout);
+    }
+  });
+  
+  // Debounced activity reset to avoid excessive timeout resets
+  let activityDebounce: NodeJS.Timeout;
+  const debouncedReset = () => {
+    clearTimeout(activityDebounce);
+    activityDebounce = setTimeout(resetSessionTimeout, 1000); // 1 second debounce
+  };
+  
+  // Reduced set of activity events with debouncing
+  ['mousedown', 'keypress', 'touchstart'].forEach(event => {
+    document.addEventListener(event, debouncedReset, true);
   });
   
   resetSessionTimeout();

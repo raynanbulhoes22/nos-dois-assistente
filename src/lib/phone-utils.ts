@@ -3,9 +3,74 @@
  */
 
 /**
- * Normaliza um número de telefone para o formato padrão brasileiro: 556992936131
- * Remove caracteres especiais e garante que tenha o código do país (55)
- * IMPORTANTE: Sempre retorna DDD + 8 dígitos (sem o 9º dígito)
+ * Normaliza um número de telefone brasileiro no formato: 55 + DDD + 8 dígitos
+ * @param ddd - DDD do estado (ex: "11", "21", "85")
+ * @param number - Número de 8 dígitos (ex: "99887766")
+ * @returns Número normalizado no formato 556992936131
+ */
+export const normalizeBrazilianPhone = (ddd: string, number: string): string => {
+  const cleanDDD = ddd.replace(/\D/g, '');
+  const cleanNumber = number.replace(/\D/g, '');
+  
+  // Validar DDD (deve ter 2 dígitos)
+  if (cleanDDD.length !== 2) {
+    console.warn('DDD inválido:', ddd);
+    return '';
+  }
+  
+  // Validar número (deve ter exatamente 8 dígitos)
+  if (cleanNumber.length !== 8) {
+    console.warn('Número deve ter exatamente 8 dígitos:', number);
+    return '';
+  }
+  
+  const normalized = '55' + cleanDDD + cleanNumber;
+  console.log('Telefone normalizado (Brasil):', normalized);
+  return normalized;
+};
+
+/**
+ * Extrai DDD de um número normalizado
+ * @param phone - Número normalizado (ex: "556992936131")
+ * @returns DDD (ex: "69") ou null se não conseguir extrair
+ */
+export const extractDDDFromPhone = (phone: string): string | null => {
+  const cleaned = phone.replace(/\D/g, '');
+  
+  if (cleaned.length === 12 && cleaned.startsWith('55')) {
+    return cleaned.substring(2, 4);
+  }
+  
+  if (cleaned.length === 10) {
+    return cleaned.substring(0, 2);
+  }
+  
+  return null;
+};
+
+/**
+ * Extrai o número (8 dígitos) de um telefone normalizado
+ * @param phone - Número normalizado (ex: "556992936131")
+ * @returns Número de 8 dígitos (ex: "92936131") ou null
+ */
+export const extractNumberFromPhone = (phone: string): string | null => {
+  const cleaned = phone.replace(/\D/g, '');
+  
+  if (cleaned.length === 12 && cleaned.startsWith('55')) {
+    return cleaned.substring(4);
+  }
+  
+  if (cleaned.length === 10) {
+    return cleaned.substring(2);
+  }
+  
+  return null;
+};
+
+/**
+ * COMPATIBILIDADE: Normaliza um número de telefone para o formato padrão brasileiro
+ * Esta função mantém compatibilidade com números já existentes no banco
+ * @deprecated Use normalizeBrazilianPhone com DDD e número separados para novos números
  */
 export const normalizePhoneNumber = (phone: string): string => {
   if (!phone) return '';
@@ -13,7 +78,7 @@ export const normalizePhoneNumber = (phone: string): string => {
   // Remove todos os caracteres não numéricos
   let cleaned = phone.replace(/\D/g, '');
   
-  console.log('Normalizando telefone:', phone, '-> cleaned:', cleaned);
+  console.log('Normalizando telefone (compatibilidade):', phone, '-> cleaned:', cleaned);
   
   // Remove códigos do país duplicados (5555...)
   while (cleaned.startsWith('5555')) {
@@ -66,7 +131,7 @@ export const normalizePhoneNumber = (phone: string): string => {
   
   // Garantir que tem exatamente 12 dígitos (55 + 2 DDD + 8 número)
   if (cleaned.length === 12) {
-    console.log('Telefone normalizado:', cleaned);
+    console.log('Telefone normalizado (compatibilidade):', cleaned);
     return cleaned;
   }
   

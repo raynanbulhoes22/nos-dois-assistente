@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useFinancialCache } from "@/contexts/FinancialDataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { startOfMonth, endOfMonth } from "date-fns";
@@ -19,6 +20,7 @@ export interface FonteRenda {
 
 export const useFontesRenda = () => {
   const { user } = useAuth();
+  const { getFromCache, setCache, invalidateCache } = useFinancialCache();
   const { toast } = useToast();
   const [fontes, setFontes] = useState<FonteRenda[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +36,15 @@ export const useFontesRenda = () => {
       setIsLoading(true);
       setError(null);
 
+      const cacheKey = `fontes_renda_${user.id}`;
+      const cachedData = getFromCache<FonteRenda[]>(cacheKey);
+      
+      if (cachedData) {
+        setFontes(cachedData);
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('fontes_renda')
         .select('*')
@@ -42,7 +53,9 @@ export const useFontesRenda = () => {
 
       if (error) throw error;
 
-      setFontes((data || []) as FonteRenda[]);
+      const fontesData = (data || []) as FonteRenda[];
+      setFontes(fontesData);
+      setCache(cacheKey, fontesData, 5 * 60 * 1000); // Cache for 5 minutes
     } catch (error) {
       console.error('Erro ao buscar fontes de renda:', error);
       setError('Erro ao carregar fontes de renda');
@@ -69,6 +82,7 @@ export const useFontesRenda = () => {
         description: "Fonte de renda adicionada com sucesso!"
       });
 
+      invalidateCache(`fontes_renda_${user.id}`);
       await fetchFontes();
       return true;
     } catch (error) {
@@ -97,6 +111,7 @@ export const useFontesRenda = () => {
         description: "Fonte de renda atualizada com sucesso!"
       });
 
+      invalidateCache(`fontes_renda_${user.id}`);
       await fetchFontes();
       return true;
     } catch (error) {
@@ -125,6 +140,7 @@ export const useFontesRenda = () => {
         description: "Fonte de renda removida com sucesso!"
       });
 
+      invalidateCache(`fontes_renda_${user.id}`);
       await fetchFontes();
       return true;
     } catch (error) {
@@ -295,6 +311,7 @@ export const useFontesRenda = () => {
         description: `Status atualizado para ${status === 'recebido' ? 'Recebido' : 'Pendente'}!`
       });
 
+      invalidateCache(`fontes_renda_${user.id}`);
       await fetchFontes();
       return true;
     } catch (error) {

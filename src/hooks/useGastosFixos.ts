@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { useFinancialCache } from '@/contexts/FinancialDataContext';
 import { toast } from 'sonner';
 
 export interface GastoFixo {
@@ -18,6 +19,7 @@ export interface GastoFixo {
 
 export const useGastosFixos = () => {
   const { user } = useAuth();
+  const { getFromCache, setCache, invalidateCache } = useFinancialCache();
   const [gastosFixos, setGastosFixos] = useState<GastoFixo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +31,15 @@ export const useGastosFixos = () => {
     setError(null);
 
     try {
+      const cacheKey = `gastos_fixos_${user.id}`;
+      const cachedData = getFromCache<GastoFixo[]>(cacheKey);
+      
+      if (cachedData) {
+        setGastosFixos(cachedData);
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('gastos_fixos')
         .select('*')
@@ -36,7 +47,9 @@ export const useGastosFixos = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setGastosFixos(data || []);
+      const gastosData = data || [];
+      setGastosFixos(gastosData);
+      setCache(cacheKey, gastosData, 5 * 60 * 1000); // Cache for 5 minutes
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao buscar gastos fixos';
       setError(errorMessage);
@@ -44,7 +57,7 @@ export const useGastosFixos = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, getFromCache, setCache]);
 
   const createGastoFixo = async (gastoFixo: Omit<GastoFixo, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return null;
@@ -62,6 +75,7 @@ export const useGastosFixos = () => {
       if (error) throw error;
 
       setGastosFixos(prev => [data, ...prev]);
+      invalidateCache(`gastos_fixos_${user.id}`);
       toast.success('Gasto fixo adicionado com sucesso!');
       return data;
     } catch (err) {
@@ -83,6 +97,7 @@ export const useGastosFixos = () => {
       if (error) throw error;
 
       setGastosFixos(prev => prev.map(item => item.id === id ? data : item));
+      invalidateCache(`gastos_fixos_${user.id}`);
       toast.success('Gasto fixo atualizado com sucesso!');
       return data;
     } catch (err) {
@@ -102,6 +117,7 @@ export const useGastosFixos = () => {
       if (error) throw error;
 
       setGastosFixos(prev => prev.filter(item => item.id !== id));
+      invalidateCache(`gastos_fixos_${user.id}`);
       toast.success('Gasto fixo removido com sucesso!');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erro ao remover gasto fixo';

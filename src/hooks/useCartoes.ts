@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useFinancialCache } from "@/contexts/FinancialDataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -17,6 +18,7 @@ export interface Cartao {
 
 export const useCartoes = () => {
   const { user } = useAuth();
+  const { getFromCache, setCache, invalidateCache } = useFinancialCache();
   const { toast } = useToast();
   const [cartoes, setCartoes] = useState<Cartao[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -32,6 +34,15 @@ export const useCartoes = () => {
       setIsLoading(true);
       setError(null);
 
+      const cacheKey = `cartoes_${user.id}`;
+      const cachedData = getFromCache<Cartao[]>(cacheKey);
+      
+      if (cachedData) {
+        setCartoes(cachedData);
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('cartoes_credito')
         .select('*')
@@ -41,7 +52,9 @@ export const useCartoes = () => {
       if (error) throw error;
 
       // @ts-ignore - Temporário: corrigir tipos depois
-      setCartoes(data || []);
+      const cartoesData = data || [];
+      setCartoes(cartoesData);
+      setCache(cacheKey, cartoesData, 5 * 60 * 1000); // Cache for 5 minutes
     } catch (error) {
       console.error('Erro ao buscar cartões:', error);
       setError('Erro ao carregar cartões');
@@ -73,6 +86,7 @@ export const useCartoes = () => {
         description: "Cartão adicionado com sucesso!"
       });
 
+      invalidateCache(`cartoes_${user.id}`);
       await fetchCartoes();
       return true;
     } catch (error) {
@@ -102,6 +116,7 @@ export const useCartoes = () => {
         description: "Cartão atualizado com sucesso!"
       });
 
+      invalidateCache(`cartoes_${user.id}`);
       await fetchCartoes();
       return true;
     } catch (error) {
@@ -130,6 +145,7 @@ export const useCartoes = () => {
         description: "Cartão removido com sucesso!"
       });
 
+      invalidateCache(`cartoes_${user.id}`);
       await fetchCartoes();
       return true;
     } catch (error) {
@@ -169,6 +185,7 @@ export const useCartoes = () => {
       if (error) throw error;
 
       // Atualizar lista local
+      invalidateCache(`cartoes_${user.id}`);
       await fetchCartoes();
       
       return data;

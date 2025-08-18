@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useFinancialCache } from "@/contexts/FinancialDataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,6 +27,7 @@ export interface OrcamentoCategoria {
 
 export const useOrcamentos = () => {
   const { user } = useAuth();
+  const { getFromCache, setCache, invalidateCache } = useFinancialCache();
   const { toast } = useToast();
   const [orcamentos, setOrcamentos] = useState<OrcamentoMensal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,6 +38,16 @@ export const useOrcamentos = () => {
     
     try {
       setIsLoading(true);
+      
+      const cacheKey = `orcamentos_${user.id}`;
+      const cachedData = getFromCache<OrcamentoMensal[]>(cacheKey);
+      
+      if (cachedData) {
+        setOrcamentos(cachedData);
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('orcamentos_mensais')
         .select('*')
@@ -44,7 +56,9 @@ export const useOrcamentos = () => {
         .order('mes', { ascending: false });
 
       if (error) throw error;
-      setOrcamentos(data || []);
+      const orcamentosData = data || [];
+      setOrcamentos(orcamentosData);
+      setCache(cacheKey, orcamentosData, 10 * 60 * 1000); // Cache for 10 minutes
     } catch (err) {
       console.error('Erro ao buscar orçamentos:', err);
       setError('Erro ao carregar orçamentos');
@@ -81,6 +95,7 @@ export const useOrcamentos = () => {
       if (error) throw error;
 
       setOrcamentos(prev => [data, ...prev]);
+      invalidateCache(`orcamentos_${user.id}`);
       toast({
         title: "✅ Sucesso!",
         description: "Orçamento criado com sucesso!"
@@ -109,6 +124,7 @@ export const useOrcamentos = () => {
       if (error) throw error;
 
       setOrcamentos(prev => prev.map(o => o.id === id ? data : o));
+      invalidateCache(`orcamentos_${user.id}`);
       toast({
         title: "✅ Sucesso!",
         description: "Orçamento atualizado com sucesso!"
@@ -135,6 +151,7 @@ export const useOrcamentos = () => {
       if (error) throw error;
 
       setOrcamentos(prev => prev.filter(o => o.id !== id));
+      invalidateCache(`orcamentos_${user.id}`);
       toast({
         title: "✅ Sucesso!",
         description: "Orçamento deletado com sucesso!"

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { useFinancialCache } from "@/contexts/FinancialDataContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
@@ -30,6 +31,7 @@ export interface ParcelaProjetada {
 
 export const useContasParceladas = () => {
   const { user } = useAuth();
+  const { getFromCache, setCache, invalidateCache } = useFinancialCache();
   const { toast } = useToast();
   const [contas, setContas] = useState<ContaParcelada[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +45,16 @@ export const useContasParceladas = () => {
     
     try {
       setIsLoading(true);
+      
+      const cacheKey = `contas_parceladas_${user.id}`;
+      const cachedData = getFromCache<ContaParcelada[]>(cacheKey);
+      
+      if (cachedData) {
+        setContas(cachedData);
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('contas_parceladas')
         .select('*')
@@ -51,7 +63,9 @@ export const useContasParceladas = () => {
         .order('nome');
 
       if (error) throw error;
-      setContas((data || []) as ContaParcelada[]);
+      const contasData = (data || []) as ContaParcelada[];
+      setContas(contasData);
+      setCache(cacheKey, contasData, 5 * 60 * 1000); // Cache for 5 minutes
     } catch (err) {
       console.error('Erro ao buscar contas parceladas:', err);
       setError('Erro ao carregar contas parceladas');
@@ -71,6 +85,7 @@ export const useContasParceladas = () => {
       if (error) throw error;
 
       setContas(prev => [...prev, data as ContaParcelada]);
+      invalidateCache(`contas_parceladas_${user.id}`);
       toast({
         title: "✅ Sucesso!",
         description: "Conta parcelada adicionada!"
@@ -99,6 +114,7 @@ export const useContasParceladas = () => {
       if (error) throw error;
 
       setContas(prev => prev.map(c => c.id === id ? data as ContaParcelada : c));
+      invalidateCache(`contas_parceladas_${user.id}`);
       toast({
         title: "✅ Sucesso!",
         description: "Conta parcelada atualizada!"
@@ -125,6 +141,7 @@ export const useContasParceladas = () => {
       if (error) throw error;
 
       setContas(prev => prev.filter(c => c.id !== id));
+      invalidateCache(`contas_parceladas_${user.id}`);
       toast({
         title: "✅ Sucesso!",
         description: "Conta parcelada removida!"

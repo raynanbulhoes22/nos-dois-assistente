@@ -27,7 +27,7 @@ export const useAuth = () => {
 
   const verifySubscription = async (userEmail: string, userId: string) => {
     // Prevent multiple simultaneous verifications
-    if (subscriptionLoading || verificationCompleted) {
+    if (subscriptionLoading) {
       return;
     }
 
@@ -63,7 +63,6 @@ export const useAuth = () => {
       
       // Mark verification as completed for this session
       sessionStorage.setItem(sessionKey, 'true');
-      setVerificationCompleted(true);
     } catch (error) {
       secureLog.error('Erro ao verificar plano', error);
     } finally {
@@ -82,12 +81,15 @@ export const useAuth = () => {
         setUser(session?.user ?? null);
         
         // Only verify subscription on initial sign in, not on every state change
-        if (event === 'SIGNED_IN' && session?.user?.email && !verificationCompleted) {
-          secureLog.info('User signed in, verifying subscription');
-          // Defer subscription check to avoid blocking auth flow
-          setTimeout(() => {
-            verifySubscription(session.user.email!, session.user.id);
-          }, 100);
+        if (event === 'SIGNED_IN' && session?.user?.email) {
+          const sessionKey = `verified_${session.user.email}_${session.user.id}`;
+          if (!sessionStorage.getItem(sessionKey)) {
+            secureLog.info('User signed in, verifying subscription');
+            // Defer subscription check to avoid blocking auth flow
+            setTimeout(() => {
+              verifySubscription(session.user.email!, session.user.id);
+            }, 100);
+          }
         }
         
         if (event === 'SIGNED_OUT') {
@@ -123,9 +125,12 @@ export const useAuth = () => {
       setSession(session);
       setUser(session?.user ?? null);
       
-      // Only verify if we don't have verification status yet
-      if (session?.user?.email && !verificationCompleted) {
-        verifySubscription(session.user.email, session.user.id);
+      // Only verify if we haven't verified this session yet
+      if (session?.user?.email) {
+        const sessionKey = `verified_${session.user.email}_${session.user.id}`;
+        if (!sessionStorage.getItem(sessionKey)) {
+          verifySubscription(session.user.email, session.user.id);
+        }
       }
       
       setLoading(false);

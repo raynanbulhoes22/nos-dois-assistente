@@ -189,69 +189,99 @@ export const Orcamento = () => {
   const [totalParcelasPendentes, setTotalParcelasPendentes] = useState(0);
   
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchGastosComStatus = async () => {
       try {
         const gastosComStatus = await getGastosFixosComStatus(mesAtual, anoAtual);
-        setGastosFixosComStatus(gastosComStatus);
-        const pagos = gastosComStatus.filter(g => g.pago).reduce((sum, g) => sum + g.valor_mensal, 0);
-        const pendentes = gastosComStatus.filter(g => !g.pago).reduce((sum, g) => sum + g.valor_mensal, 0);
-        setTotalGastosPagos(pagos);
-        setTotalGastosPendentes(pendentes);
+        if (isMounted) {
+          setGastosFixosComStatus(gastosComStatus);
+          const pagos = gastosComStatus.filter(g => g.pago).reduce((sum, g) => sum + g.valor_mensal, 0);
+          const pendentes = gastosComStatus.filter(g => !g.pago).reduce((sum, g) => sum + g.valor_mensal, 0);
+          setTotalGastosPagos(pagos);
+          setTotalGastosPendentes(pendentes);
+        }
       } catch (error) {
-        console.error('Erro ao buscar gastos com status:', error);
-        setGastosFixosComStatus([]);
-        setTotalGastosPagos(0);
-        setTotalGastosPendentes(0);
+        if (isMounted) {
+          console.error('Erro ao buscar gastos com status:', error);
+          setGastosFixosComStatus([]);
+          setTotalGastosPagos(0);
+          setTotalGastosPendentes(0);
+        }
       }
     };
     
     if (mesAtual && anoAtual && gastosFixos.length > 0) {
       fetchGastosComStatus();
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [mesAtual, anoAtual, gastosFixos]);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchFontesComStatus = async () => {
       try {
         const fontesComStatus = await getFontesRendaComStatus(mesAtual, anoAtual);
-        setFontesRendaComStatus(fontesComStatus);
-        const recebidas = fontesComStatus.filter(f => f.recebido).reduce((sum, f) => sum + f.valor, 0);
-        const pendentes = fontesComStatus.filter(f => !f.recebido && f.ativa).reduce((sum, f) => sum + f.valor, 0);
-        setTotalRendaRecebida(recebidas);
-        setTotalRendaPendente(pendentes);
+        if (isMounted) {
+          setFontesRendaComStatus(fontesComStatus);
+          const recebidas = fontesComStatus.filter(f => f.recebido).reduce((sum, f) => sum + f.valor, 0);
+          const pendentes = fontesComStatus.filter(f => !f.recebido && f.ativa).reduce((sum, f) => sum + f.valor, 0);
+          setTotalRendaRecebida(recebidas);
+          setTotalRendaPendente(pendentes);
+        }
       } catch (error) {
-        console.error('Erro ao buscar fontes com status:', error);
-        setFontesRendaComStatus([]);
-        setTotalRendaRecebida(0);
-        setTotalRendaPendente(0);
+        if (isMounted) {
+          console.error('Erro ao buscar fontes com status:', error);
+          setFontesRendaComStatus([]);
+          setTotalRendaRecebida(0);
+          setTotalRendaPendente(0);
+        }
       }
     };
     
     if (fontes.length > 0) {
       fetchFontesComStatus();
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [fontes, mesAtual, anoAtual]);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchContasComStatus = async () => {
       try {
         const contasComStatus = await getContasParceladasComStatus(mesAtual, anoAtual);
-        setContasParceladasComStatus(contasComStatus);
-        const pagas = contasComStatus.filter(c => c.pago).reduce((sum, c) => sum + c.valor_parcela, 0);
-        const pendentes = contasComStatus.filter(c => !c.pago).reduce((sum, c) => sum + c.valor_parcela, 0);
-        setTotalParcelasPagas(pagas);
-        setTotalParcelasPendentes(pendentes);
+        if (isMounted) {
+          setContasParceladasComStatus(contasComStatus);
+          const pagas = contasComStatus.filter(c => c.pago).reduce((sum, c) => sum + c.valor_parcela, 0);
+          const pendentes = contasComStatus.filter(c => !c.pago).reduce((sum, c) => sum + c.valor_parcela, 0);
+          setTotalParcelasPagas(pagas);
+          setTotalParcelasPendentes(pendentes);
+        }
       } catch (error) {
-        console.error('Erro ao buscar contas com status:', error);
-        setContasParceladasComStatus([]);
-        setTotalParcelasPagas(0);
-        setTotalParcelasPendentes(0);
+        if (isMounted) {
+          console.error('Erro ao buscar contas com status:', error);
+          setContasParceladasComStatus([]);
+          setTotalParcelasPagas(0);
+          setTotalParcelasPendentes(0);
+        }
       }
     };
     
     if (contas.length > 0) {
       fetchContasComStatus();
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [contas, mesAtual, anoAtual]);
 
   // Função para formatar moeda

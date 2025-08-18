@@ -32,6 +32,7 @@ const signUpSchemaWithConfirm = authSchema.extend({
 export const AuthForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [passwordStrength, setPasswordStrength] = useState({ isStrong: false, score: 0, feedback: [] as string[] });
   const [rememberMe, setRememberMe] = useState(false);
@@ -266,6 +267,40 @@ export const AuthForm = () => {
     setPasswordStrength(strength);
   };
 
+  const handleForgotPassword = async (email: string) => {
+    const sanitizedEmail = sanitizeInput(email);
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
+        redirectTo: `${window.location.origin}/`,
+      });
+
+      if (error) {
+        toast({
+          title: "Erro ao enviar email",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Email enviado!",
+          description: "Verifique sua caixa de entrada para redefinir sua senha.",
+        });
+        setShowForgotPassword(false);
+      }
+    } catch (error) {
+      logger.error('Erro durante reset de senha', error);
+      toast({
+        title: "Erro inesperado",
+        description: "Tente novamente mais tarde.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 p-4 relative overflow-hidden">
       {/* Animated Background Elements */}
@@ -295,7 +330,65 @@ export const AuthForm = () => {
         </CardHeader>
         
         <CardContent>
-          {showEmailConfirmation ? (
+          {showForgotPassword ? (
+            <div className="space-y-6 py-4">
+              <div className="text-center space-y-2">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Esqueci minha senha
+                </h3>
+                <p className="text-gray-600">
+                  Digite seu email para receber as instruções de redefinição
+                </p>
+              </div>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const email = formData.get('email') as string;
+                if (email) {
+                  handleForgotPassword(email);
+                }
+              }} className="space-y-4">
+                <div>
+                  <Label htmlFor="forgot-email">Email</Label>
+                  <Input
+                    id="forgot-email"
+                    name="email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+                
+                <div className="space-y-3">
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Enviando...
+                      </>
+                    ) : (
+                      "Enviar instruções"
+                    )}
+                  </Button>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setShowForgotPassword(false)}
+                  >
+                    Voltar para o login
+                  </Button>
+                </div>
+              </form>
+            </div>
+          ) : showEmailConfirmation ? (
             <div className="text-center space-y-6 py-8">
               <div className="relative">
                 <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center">
@@ -426,20 +519,31 @@ export const AuthForm = () => {
                       )}
                     />
                     
-                    {/* Checkbox Mantenha-me conectado */}
-                    <div className="flex items-center space-x-2">
-                      <Checkbox 
-                        id="rememberMe" 
-                        checked={rememberMe}
-                        onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                    {/* Checkbox Mantenha-me conectado e Link Esqueci Senha */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="rememberMe" 
+                          checked={rememberMe}
+                          onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                          disabled={isLoading}
+                        />
+                        <Label 
+                          htmlFor="rememberMe" 
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          Mantenha-me conectado
+                        </Label>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="text-sm text-blue-600 hover:text-blue-800 p-0 h-auto"
+                        onClick={() => setShowForgotPassword(true)}
                         disabled={isLoading}
-                      />
-                      <Label 
-                        htmlFor="rememberMe" 
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                       >
-                        Mantenha-me conectado
-                      </Label>
+                        Esqueci minha senha
+                      </Button>
                     </div>
                     
                     <Button 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useFontesRenda } from "@/hooks/useFontesRenda";
 import { useCartoes } from "@/hooks/useCartoes";
 import { useOrcamentos } from "@/hooks/useOrcamentos";

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useMovimentacoes } from '@/hooks/useMovimentacoes';
 import { useCartoes } from '@/hooks/useCartoes';
 import { useGastosFixos } from '@/hooks/useGastosFixos';

@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, TrendingUp, TrendingDown, RefreshCw, AlertCircle } from "lucide-react";
 import { TransactionForm } from "@/components/TransactionForm";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { MovimentacoesList } from "@/components/MovimentacoesList";
 import { MovimentacaoDetailsDialog } from "@/components/MovimentacaoDetailsDialog";
 import { FloatingSearchFilters } from "@/components/movimentacoes/FloatingSearchFilters";

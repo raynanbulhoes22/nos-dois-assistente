@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 import { useFontesRenda } from "@/hooks/useFontesRenda";
 import { useCartoes } from "@/hooks/useCartoes";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { useOrcamentos } from "@/hooks/useOrcamentos";
 import { supabase } from "@/integrations/supabase/client";
 import { garantirSaldoInicialMesAtual } from "@/lib/saldo-utils";

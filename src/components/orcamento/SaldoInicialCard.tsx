@@ -9,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Wallet, Edit2, TrendingUp, TrendingDown, Plus, AlertCircle, Minus, Target, Clock, DollarSign, Info } from 'lucide-react';
 import { useOrcamentos } from '@/hooks/useOrcamentos';
 import { useFinancialStats } from '@/hooks/useFinancialStats';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useSaldoEsperado } from "@/hooks/useSaldoEsperado";
 import { useSaldoInicial } from "@/hooks/useSaldoInicial";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";

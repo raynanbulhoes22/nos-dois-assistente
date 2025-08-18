@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { processarTransacoesCartao, verificarAlertasCartao, TransacaoCartao } from '@/lib/cartao-management';
 import { Cartao } from '@/hooks/useCartoes';
@@ -24,7 +24,9 @@ export const useCartaoProcessamento = () => {
       // Verificar se já foi processado nesta sessão
       const sessionKey = `card_processing_${user.id}_${new Date().toDateString()}`;
       const jaProcessado = sessionStorage.getItem(sessionKey);
+      
       if (jaProcessado) {
+        console.log('Transações de cartão já processadas hoje');
         return;
       }
 
@@ -93,6 +95,8 @@ export const useCartaoProcessamento = () => {
             .update({ limite_disponivel: limiteCalculado.toString() } as any)
             .eq('id', cartao.id)
             .eq('user_id', user.id);
+
+          console.log(`Limite disponível atualizado para cartão ${cartao.apelido}: R$ ${limiteCalculado.toFixed(2)}`);
         }
       }
     } catch (error) {

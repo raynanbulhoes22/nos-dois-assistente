@@ -7,7 +7,7 @@ import { OnboardingStep4 } from './onboarding/OnboardingStep4';
 import { OnboardingStep5 } from './onboarding/OnboardingStep5';
 import { OnboardingStep6 } from './onboarding/OnboardingStep6';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useMovimentacoes } from '@/hooks/useMovimentacoes';
 import { useCartoes } from '@/hooks/useCartoes';
 import { detectarDadosCartao, encontrarCartaoParaTransacao } from '@/lib/cartao-utils';

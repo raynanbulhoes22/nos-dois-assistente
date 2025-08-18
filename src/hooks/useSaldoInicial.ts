@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { garantirContinuidadeSaldos } from "@/lib/saldo-utils";
 
 /**

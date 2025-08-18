@@ -101,7 +101,16 @@ export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: Lim
     });
   };
 
-  // Componente atualizado sem logs sensíveis
+  console.log('[LimiteCartaoDisplay] Renderizando cartão:', cartao.apelido);
+  console.log('[LimiteCartaoDisplay] Dados dinâmicos:', {
+    limiteTotal,
+    limiteAtualDisponivel,
+    limiteUtilizado,
+    percentualUtilizado,
+    comprasNoMes,
+    pagamentosNoMes,
+    isLoading
+  });
 
   if (isLoading) {
     return (

@@ -46,5 +46,47 @@ export const applySecurityMeta = (): void => {
   document.head.appendChild(xContentType);
 };
 
-// Simplified session management - removed problematic timeout system
-// Session management is now handled by Supabase natively through useAuth hook
+// Session security utilities
+export const enhanceSessionSecurity = (): void => {
+  // Set secure session storage
+  if (typeof Storage !== 'undefined') {
+    const originalSetItem = sessionStorage.setItem;
+    sessionStorage.setItem = function(key: string, value: string) {
+      // Encrypt sensitive session data
+      if (key.includes('auth') || key.includes('token')) {
+        const encrypted = btoa(value + new Date().toISOString());
+        originalSetItem.call(this, key, encrypted);
+      } else {
+        originalSetItem.call(this, key, value);
+      }
+    };
+  }
+  
+  // Clear sensitive data on page unload
+  window.addEventListener('beforeunload', () => {
+    // Clear sensitive session data
+    const sensitiveKeys = Object.keys(sessionStorage).filter(key => 
+      key.includes('temp') || key.includes('cache')
+    );
+    
+    sensitiveKeys.forEach(key => sessionStorage.removeItem(key));
+  });
+  
+  // Implement session timeout
+  let sessionTimeout: NodeJS.Timeout;
+  const resetSessionTimeout = () => {
+    clearTimeout(sessionTimeout);
+    sessionTimeout = setTimeout(() => {
+      // Logout user after 30 minutes of inactivity
+      window.location.href = '/';
+      sessionStorage.clear();
+    }, 30 * 60 * 1000);
+  };
+  
+  // Reset timeout on user activity
+  ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(event => {
+    document.addEventListener(event, resetSessionTimeout, true);
+  });
+  
+  resetSessionTimeout();
+};

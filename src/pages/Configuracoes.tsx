@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { normalizePhoneNumber, validatePhoneNumber as validatePhone } from "@/lib/phone-utils";
 import { User, DollarSign, AlertTriangle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useFinancialStats } from "@/hooks/useFinancialStats";

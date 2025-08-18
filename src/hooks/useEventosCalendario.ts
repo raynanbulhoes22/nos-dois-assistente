@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useContasParceladas } from '@/hooks/useContasParceladas';
 import { useCartoes } from '@/hooks/useCartoes';
 import { useFontesRenda } from '@/hooks/useFontesRenda';

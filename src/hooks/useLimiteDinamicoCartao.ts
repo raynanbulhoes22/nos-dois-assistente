@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Cartao } from "@/hooks/useCartoes";
 
@@ -35,6 +35,8 @@ export const useLimiteDinamicoCartao = (cartao: Cartao) => {
   const [transacoes, setTransacoes] = useState<TransacaoCartao[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  console.log(`[DEBUG] Hook executado para cartão: ${cartao.apelido}`);
+  console.log(`[DEBUG] Cartão dados:`, cartao);
 
   // Função para detectar se uma transação é pagamento de fatura
   const isPagamentoFatura = (transacao: TransacaoCartao): boolean => {
@@ -120,8 +122,14 @@ export const useLimiteDinamicoCartao = (cartao: Cartao) => {
 
       if (error) throw error;
 
+      console.log(`[DEBUG] Buscando transações para cartão ${cartao.apelido} (${cartao.ultimos_digitos})`);
+      console.log(`[DEBUG] Total transações encontradas: ${data?.length || 0}`);
+
       // Filtrar apenas transações que pertencem a este cartão
       const transacoesDoCartao = (data || []).filter((transacao: any) => pertenceAoCartao(transacao));
+      
+      console.log(`[DEBUG] Transações filtradas para o cartão: ${transacoesDoCartao.length}`);
+      console.log(`[DEBUG] Amostras das transações:`, transacoesDoCartao.slice(0, 3));
       
       setTransacoes(transacoesDoCartao);
     } catch (error) {
@@ -171,6 +179,15 @@ export const useLimiteDinamicoCartao = (cartao: Cartao) => {
     const limiteUtilizado = limiteTotal - limiteAtualDisponivel;
     const percentualUtilizado = limiteTotal > 0 ? Math.max(0, (limiteUtilizado / limiteTotal) * 100) : 0;
     const diferenca = limiteAtualDisponivel - limiteInicialDisponivel;
+
+    console.log(`[DEBUG] Limite dinâmico para ${cartao.apelido}:`, {
+      limiteTotal,
+      limiteInicialDisponivel,
+      limiteAtualDisponivel,
+      comprasNoMes,
+      pagamentosNoMes,
+      diferenca
+    });
 
     return {
       limiteTotal,

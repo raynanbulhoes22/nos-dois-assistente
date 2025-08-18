@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizePhoneNumber } from "@/lib/phone-utils";
 import { detectarECriarCartoesAutomaticos } from "@/lib/cartao-utils";
@@ -101,6 +101,9 @@ export const useMovimentacoes = () => {
       if (profile?.telefone_conjuge && profile?.nome_conjuge) {
         phoneToNameMap[profile.telefone_conjuge] = profile.nome_conjuge.trim();
       }
+      
+      console.log('Número do usuário:', userWhatsapp);
+      console.log('Mapeamento telefone->nome:', phoneToNameMap);
 
       let registros: any[] = [];
 
@@ -320,7 +323,9 @@ export const useMovimentacoes = () => {
             
             // Verificar alertas de limite
             const alertas = verificarAlertas(cartoesData);
-            // Alertas processados internamente
+            if (alertas.length > 0) {
+              console.log('Alertas de cartão:', alertas);
+            }
           }
         } catch (error) {
           console.error('Erro ao processar cartões:', error);

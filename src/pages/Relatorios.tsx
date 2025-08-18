@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -19,18 +18,15 @@ import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { exportToPDF } from "@/lib/export-utils";
-import { Progress } from "@/components/ui/progress";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   TrendingUp, 
   TrendingDown, 
   Target, 
-  Calendar, 
   Filter,
   Download,
-  BarChart3,
-  PieChart,
   Activity,
+  PieChart,
   Brain,
   Wallet
 } from "lucide-react";
@@ -41,6 +37,7 @@ export const Relatorios = () => {
   const { toast } = useToast();
   const [exportLoading, setExportLoading] = useState<'pdf' | null>(null);
   const [activeTab, setActiveTab] = useState("visao-geral");
+  const [showFilters, setShowFilters] = useState(false);
   const isMobile = useIsMobile();
 
   // Get available categories and payment methods for filters
@@ -51,59 +48,19 @@ export const Relatorios = () => {
     };
   }, []);
 
-  // Use the transaction count from useAdvancedReportsData's KPIs as indicator
-  const hasTransactions = useMemo(() => {
-    const transactionCount = data.kpis?.transactionCount || 0;
-    console.log('Debug: === VERIFICANDO TRANSAÇÕES ===');
-    console.log('Debug: data.isLoading:', data.isLoading);
-    console.log('Debug: KPI transaction count:', transactionCount);
-    console.log('Debug: data.kpis exists:', !!data.kpis);
-    console.log('Debug: categoryAnalysis length:', data.categoryAnalysis?.length || 0);
-    
-    // Se temos dados nos KPIs, assumimos que há transações
-    return transactionCount > 0;
-  }, [data]);
-
-  console.log('Debug: === RESULTADO FINAL ===');
-  console.log('Debug: hasTransactions:', hasTransactions);
-  console.log('Debug: Data loading:', data.isLoading);
+  const tabs = [
+    { id: "visao-geral", label: "Geral", icon: Activity },
+    { id: "categorias", label: "Categorias", icon: PieChart },
+    { id: "comportamento", label: "Análise", icon: Brain },
+    { id: "projetos", label: "Futuro", icon: Target }
+  ];
 
   // Export functionality
   const handleExportPDF = async () => {
-    // Verificações mais rigorosas para PDF
     if (data.isLoading) {
       toast({
         title: "Aguarde o carregamento",
-        description: "Os dados ainda estão sendo carregados. Aguarde um momento.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!data.kpis || !data.categoryAnalysis || data.categoryAnalysis.length === 0) {
-      toast({
-        title: "Nenhum dado disponível",
-        description: "Aguarde o carregamento dos dados ou aplique filtros válidos.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!hasTransactions) {
-      toast({
-        title: "Nenhuma transação encontrada",
-        description: "Não há dados suficientes para gerar o relatório PDF.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Verificar se o elemento existe e está renderizado
-    const reportElement = document.getElementById('relatorios-content');
-    if (!reportElement) {
-      toast({
-        title: "Erro de renderização",
-        description: "O relatório não está pronto para exportação. Recarregue a página.",
+        description: "Os dados ainda estão sendo carregados.",
         variant: "destructive",
       });
       return;
@@ -111,12 +68,11 @@ export const Relatorios = () => {
 
     setExportLoading('pdf');
     try {
-      // Aguardar um momento para garantir que tudo está renderizado
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const exportData = {
         reportData: data,
-        filteredTransactions: [] // Usar array vazio já que os dados estão nos KPIs
+        filteredTransactions: []
       };
       
       const result = await exportToPDF(exportData, data.filters);
@@ -138,481 +94,274 @@ export const Relatorios = () => {
 
   if (data.isLoading) {
     return (
-      <div className="container mx-auto p-4 space-y-6">
-        <div className="h-8 w-48 bg-muted animate-pulse rounded" />
-        <div className="h-40 bg-muted animate-pulse rounded" />
-        <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-2 lg:grid-cols-4'}`}>
-          {Array.from({ length: isMobile ? 4 : 8 }).map((_, i) => (
+      <div className="flex-1 space-y-4 p-4 pt-6">
+        <div className="flex flex-col gap-4">
+          <div className="h-8 w-48 bg-muted animate-pulse rounded" />
+          <div className="h-4 w-64 bg-muted animate-pulse rounded" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
             <div key={i} className="h-32 bg-muted animate-pulse rounded" />
           ))}
         </div>
+        <div className="h-64 bg-muted animate-pulse rounded" />
       </div>
     );
   }
-
-  if (data.error) {
-    return (
-      <div className="container mx-auto p-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">
-              <p className="text-red-600">Erro ao carregar relatórios: {data.error}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // Mobile Quick Actions
-  const MobileQuickActions = () => (
-    <div className="grid grid-cols-2 gap-3 mb-6">
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" className="w-full h-12">
-            <Filter className="h-4 w-4 mr-2" />
-            Filtros
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="bottom" className="h-[70vh]">
-          <div className="py-4">
-            <h3 className="font-semibold mb-4">Filtros de Relatório</h3>
-            <ReportsFilters
-              filters={data.filters}
-              onFiltersChange={data.setFilters}
-              availableCategories={availableCategories}
-              availablePaymentMethods={availablePaymentMethods}
-              onExportPDF={handleExportPDF}
-              exportLoading={exportLoading}
-            />
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button variant="outline" className="w-full h-12">
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="bottom">
-          <div className="py-4 space-y-3">
-            <h3 className="font-semibold mb-4">Exportar Relatório</h3>
-            <Button 
-              onClick={handleExportPDF}
-              disabled={exportLoading === 'pdf'}
-              className="w-full h-12"
-              variant="outline"
-            >
-              {exportLoading === 'pdf' ? 'Gerando PDF...' : 'Exportar PDF'}
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </div>
-  );
-
-  // Mobile Tabs Configuration
-  const mobileTabs = [
-    { id: "visao-geral", label: "Geral", icon: BarChart3 },
-    { id: "categorias", label: "Categorias", icon: PieChart },
-    { id: "comportamento", label: "Padrões", icon: Activity },
-    { id: "insights", label: "Insights", icon: Brain },
-    { id: "projecoes", label: "Futuro", icon: Target }
-  ];
 
   return (
-    <div className={`${isMobile ? 'p-4' : 'container mx-auto p-6'}`}>
-      <div className="flex flex-col gap-6 bg-background" id="relatorios-content" data-export="relatorios">
-        {/* Header */}
-        <div className="text-center">
-          <motion.h1 
-            className={`font-bold tracking-tight text-foreground mb-2 ${isMobile ? 'text-2xl' : 'text-3xl'}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+    <div className="flex-1 space-y-4 p-3 sm:p-4 sm:pt-6">
+      {/* Header Mobile-First */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Relatórios</h1>
+          <p className="text-sm text-muted-foreground">
+            Análise detalhada das suas finanças
+          </p>
+        </div>
+        
+        {/* Mobile Actions */}
+        <div className="flex gap-2 sm:gap-3">
+          <Sheet open={showFilters} onOpenChange={setShowFilters}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
+                <Filter className="h-4 w-4 mr-2" />
+                Filtros
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[80vh]">
+              <div className="py-4">
+                <h2 className="text-lg font-semibold mb-4">Filtros e Configurações</h2>
+                <ReportsFilters
+                  filters={data.filters}
+                  onFiltersChange={data.setFilters}
+                  availableCategories={availableCategories}
+                  availablePaymentMethods={availablePaymentMethods}
+                  onExportPDF={handleExportPDF}
+                  exportLoading={exportLoading}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+          
+          <Button 
+            onClick={handleExportPDF} 
+            disabled={exportLoading === 'pdf'}
+            size="sm"
+            className="flex-1 sm:flex-none"
           >
-            Relatórios Financeiros
-          </motion.h1>
-          <motion.p 
-            className={`text-muted-foreground ${isMobile ? 'text-sm' : ''}`}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            Análise completa dos seus dados financeiros
-          </motion.p>
+            {exportLoading === 'pdf' ? (
+              <div className="animate-spin h-4 w-4 mr-2 border border-current border-t-transparent rounded-full" />
+            ) : (
+              <Download className="h-4 w-4 mr-2" />
+            )}
+            PDF
+          </Button>
+        </div>
+      </div>
+
+      {/* Mobile-First Tab Navigation */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="relative">
+          <TabsList className="grid w-full grid-cols-4 h-12 sm:h-10 text-xs sm:text-sm">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger 
+                  key={tab.id} 
+                  value={tab.id}
+                  className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2 p-1.5 sm:p-2"
+                >
+                  <Icon className="h-4 w-4 flex-shrink-0" />
+                  <span className="leading-none">{tab.label}</span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
         </div>
 
-        {isMobile ? (
-          <>
-            {/* Mobile Quick Actions */}
-            <MobileQuickActions />
+        {/* Tab Content */}
+        <div className="mt-4 space-y-4">
+          <TabsContent value="visao-geral" className="space-y-4 mt-0">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              <AdvancedKPICards kpis={data.kpis} isLoading={data.isLoading} />
+              <PatrimonialAnalysisCard data={data.patrimonialAnalysis} isLoading={data.isLoading} />
+              <TemporalAnalysisCharts data={data.temporalAnalysis} isLoading={data.isLoading} />
+            </motion.div>
+          </TabsContent>
 
-            {/* Mobile Tabs */}
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3 h-auto p-1">
-                {mobileTabs.slice(0, 3).map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <TabsTrigger 
-                      key={tab.id} 
-                      value={tab.id}
-                      className="flex flex-col gap-1 py-3 text-xs"
-                    >
-                      <Icon className="h-4 w-4" />
-                      {tab.label}
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-
-              {/* Secondary tabs for remaining items */}
-              <div className="flex gap-2 mt-2">
-                {mobileTabs.slice(3).map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <Button
-                      key={tab.id}
-                      variant={activeTab === tab.id ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setActiveTab(tab.id)}
-                      className="flex-1"
-                    >
-                      <Icon className="h-4 w-4 mr-1" />
-                      {tab.label}
-                    </Button>
-                  );
-                })}
-              </div>
-
-              <TabsContent value="visao-geral" className="space-y-6 mt-6">
-                <AdvancedKPICards kpis={data.kpis} isLoading={data.isLoading} />
-                <PatrimonialAnalysisCard data={data.patrimonialAnalysis} isLoading={data.isLoading} />
-                <TemporalAnalysisCharts data={data.temporalAnalysis} isLoading={data.isLoading} />
-              </TabsContent>
-
-              <TabsContent value="categorias" className="space-y-6 mt-6">
-                <CategoryAnalysisCharts data={data.categoryAnalysis} isLoading={data.isLoading} />
-                
-                {/* Payment Methods - Mobile Optimized */}
-                <Card>
-                  <CardHeader className="pb-4">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Wallet className="h-5 w-5" />
-                      Formas de Pagamento
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {data.paymentMethodAnalysis.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <p className="text-sm">Nenhuma forma de pagamento identificada</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {data.paymentMethodAnalysis.slice(0, 5).map((method, index) => (
-                          <div key={method.method} className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <Badge variant="outline" className="w-6 h-6 rounded-full p-0 flex items-center justify-center text-xs">
-                                  {index + 1}
-                                </Badge>
-                                <div className="min-w-0 flex-1">
-                                  <div className="font-medium text-sm truncate">{method.method}</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {method.transactionCount} transações
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="font-semibold text-sm">{formatCurrency(method.amount)}</div>
-                                <div className="text-xs text-muted-foreground">
-                                  {method.percentage.toFixed(1)}%
-                                </div>
-                              </div>
-                            </div>
-                            <Progress value={method.percentage} className="h-2" />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="comportamento" className="space-y-6 mt-6">
-                <BehavioralAnalysisCharts data={data.behavioralInsights} isLoading={data.isLoading} />
-              </TabsContent>
-
-              <TabsContent value="insights" className="space-y-6 mt-6">
-                <SmartInsightsPanel insights={data.smartInsights} isLoading={data.isLoading} />
-                <PredictabilityAnalysisCard data={data.predictabilityAnalysis} isLoading={data.isLoading} />
-              </TabsContent>
-
-              <TabsContent value="projecoes" className="space-y-6 mt-6">
-                {/* Mobile Projections */}
-                <Card>
-                  <CardHeader className="pb-4">
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <Target className="h-5 w-5" />
-                      Projeções Financeiras
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-6">
-                      {/* Next Month */}
-                      <div className="space-y-3">
-                        <h4 className="font-medium text-sm border-b pb-2">Próximo Mês</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Receitas previstas:</span>
-                            <span className="text-green-600 font-medium">
-                              {formatCurrency(data.projections.nextMonth.income)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Gastos previstos:</span>
-                            <span className="text-red-600 font-medium">
-                              {formatCurrency(data.projections.nextMonth.expenses)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between font-medium border-t pt-2">
-                            <span>Saldo projetado:</span>
-                            <span className={data.projections.nextMonth.balance >= 0 ? 'text-green-600' : 'text-red-600'}>
-                              {formatCurrency(data.projections.nextMonth.balance)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 3 Months */}
-                      <div className="space-y-3">
-                        <h4 className="font-medium text-sm border-b pb-2">Próximos 3 Meses</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Receitas previstas:</span>
-                            <span className="text-green-600 font-medium">
-                              {formatCurrency(data.projections.next3Months.income)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Gastos previstos:</span>
-                            <span className="text-red-600 font-medium">
-                              {formatCurrency(data.projections.next3Months.expenses)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between font-medium border-t pt-2">
-                            <span>Saldo projetado:</span>
-                            <span className={data.projections.next3Months.balance >= 0 ? 'text-green-600' : 'text-red-600'}>
-                              {formatCurrency(data.projections.next3Months.balance)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Scenarios */}
-                      <div className="space-y-3">
-                        <h4 className="font-medium text-sm border-b pb-2">Cenários</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span>Otimista:</span>
-                            <span className="text-green-600 font-medium">
-                              {formatCurrency(data.projections.scenarios.optimistic)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Realista:</span>
-                            <span className="font-medium">
-                              {formatCurrency(data.projections.scenarios.realistic)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span>Pessimista:</span>
-                            <span className="text-red-600 font-medium">
-                              {formatCurrency(data.projections.scenarios.pessimistic)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </>
-        ) : (
-          <>
-            {/* Desktop Layout */}
-            <ReportsFilters
-              filters={data.filters}
-              onFiltersChange={data.setFilters}
-              availableCategories={availableCategories}
-              availablePaymentMethods={availablePaymentMethods}
-              onExportPDF={handleExportPDF}
-              exportLoading={exportLoading}
-            />
-
-            <AdvancedKPICards kpis={data.kpis} isLoading={data.isLoading} />
-            <PatrimonialAnalysisCard data={data.patrimonialAnalysis} isLoading={data.isLoading} />
-            <SmartInsightsPanel insights={data.smartInsights} isLoading={data.isLoading} />
-            <PredictabilityAnalysisCard data={data.predictabilityAnalysis} isLoading={data.isLoading} />
-
-            {/* Financial Projections - Desktop */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Projeções Financeiras
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-sm">Próximo Mês</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Receitas previstas:</span>
-                        <span className="text-green-600 font-medium">
-                          {formatCurrency(data.projections.nextMonth.income)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Gastos previstos:</span>
-                        <span className="text-red-600 font-medium">
-                          {formatCurrency(data.projections.nextMonth.expenses)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between font-medium border-t pt-2">
-                        <span>Saldo projetado:</span>
-                        <span className={data.projections.nextMonth.balance >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {formatCurrency(data.projections.nextMonth.balance)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="font-medium text-sm">Próximos 3 Meses</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span>Receitas previstas:</span>
-                        <span className="text-green-600 font-medium">
-                          {formatCurrency(data.projections.next3Months.income)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Gastos previstos:</span>
-                        <span className="text-red-600 font-medium">
-                          {formatCurrency(data.projections.next3Months.expenses)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between font-medium border-t pt-2">
-                        <span>Saldo projetado:</span>
-                        <span className={data.projections.next3Months.balance >= 0 ? 'text-green-600' : 'text-red-600'}>
-                          {formatCurrency(data.projections.next3Months.balance)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm">Cenários de Saldo Mensal</h4>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Otimista:</span>
-                        <span className="text-green-600 font-medium">
-                          {formatCurrency(data.projections.scenarios.optimistic)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Realista:</span>
-                        <span className="font-medium">
-                          {formatCurrency(data.projections.scenarios.realistic)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Pessimista:</span>
-                        <span className="text-red-600 font-medium">
-                          {formatCurrency(data.projections.scenarios.pessimistic)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <TemporalAnalysisCharts data={data.temporalAnalysis} isLoading={data.isLoading} />
-            <CategoryAnalysisCharts data={data.categoryAnalysis} isLoading={data.isLoading} />
-            <BehavioralAnalysisCharts data={data.behavioralInsights} isLoading={data.isLoading} />
-
-            {/* Payment Method Analysis - Desktop */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5" />
-                  Análise por Forma de Pagamento
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {data.paymentMethodAnalysis.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>Nenhuma forma de pagamento identificada no período</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
+          <TabsContent value="categorias" className="space-y-4 mt-0">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              <CategoryAnalysisCharts data={data.categoryAnalysis} isLoading={data.isLoading} />
+              
+              {/* Payment Methods - Mobile Optimized */}
+              <Card>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Wallet className="h-5 w-5" />
+                    Métodos de Pagamento
+                  </CardTitle>
+                  <CardDescription>
+                    Distribuição por forma de pagamento
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {data.paymentMethodAnalysis.map((method, index) => (
-                      <div key={method.method} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="w-8 h-8 rounded-full p-0 flex items-center justify-center">
-                              {index + 1}
-                            </Badge>
-                            <div>
-                              <div className="font-medium">{method.method}</div>
-                              <div className="text-sm text-muted-foreground">
-                                {method.transactionCount} transações • Ticket médio: {formatCurrency(method.avgAmount)}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Categorias: {method.categories.slice(0, 3).join(', ')}
-                                {method.categories.length > 3 && ` +${method.categories.length - 3}`}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold">{formatCurrency(method.amount)}</div>
-                            <div className="text-sm text-muted-foreground">
-                              {method.percentage.toFixed(1)}%
-                            </div>
+                      <div 
+                        key={method.method}
+                        className="flex items-center justify-between p-3 rounded-lg border bg-card/50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: `hsl(${index * 45}, 70%, 60%)` }}
+                          />
+                          <div>
+                            <p className="font-medium text-sm">{method.method}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {method.transactionCount} transações
+                            </p>
                           </div>
                         </div>
-                        <Progress value={method.percentage} className="h-2" />
+                        <div className="text-right">
+                          <p className="font-semibold text-sm">{formatCurrency(method.amount)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {method.percentage.toFixed(1)}%
+                          </p>
+                        </div>
                       </div>
                     ))}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </>
-        )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
 
-        {/* Summary Footer */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center text-xs text-muted-foreground space-y-1">
-              <p>
-                Relatório gerado baseado em {data.kpis.transactionCount} transações 
-                de {data.filters.startDate.toLocaleDateString('pt-BR')} até {data.filters.endDate.toLocaleDateString('pt-BR')}
-              </p>
-              <p>
-                Score de Saúde Financeira: {data.kpis.financialHealthScore.toFixed(0)}/100 • 
-                Última atualização: {new Date().toLocaleString('pt-BR')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <TabsContent value="comportamento" className="space-y-4 mt-0">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              <BehavioralAnalysisCharts data={data.behavioralInsights} isLoading={data.isLoading} />
+              <SmartInsightsPanel insights={data.smartInsights} isLoading={data.isLoading} />
+              <PredictabilityAnalysisCard data={data.predictabilityAnalysis} isLoading={data.isLoading} />
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="projetos" className="space-y-4 mt-0">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {/* Financial Projections - Mobile First */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5" />
+                    Projeções Financeiras
+                  </CardTitle>
+                  <CardDescription>
+                    Cenários futuros baseados no histórico atual
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-green-500 rounded-full" />
+                        <span className="text-sm font-medium">Próximo Mês</span>
+                      </div>
+                      <div className="pl-5 space-y-1">
+                        <p className="text-sm text-muted-foreground">
+                          Receitas: {formatCurrency(data.projections.nextMonth.income)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Despesas: {formatCurrency(data.projections.nextMonth.expenses)}
+                        </p>
+                        <p className="text-sm font-semibold">
+                          Saldo: {formatCurrency(data.projections.nextMonth.balance)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-blue-500 rounded-full" />
+                        <span className="text-sm font-medium">3 Meses</span>
+                      </div>
+                      <div className="pl-5 space-y-1">
+                        <p className="text-sm text-muted-foreground">
+                          Receitas: {formatCurrency(data.projections.next3Months.income)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Despesas: {formatCurrency(data.projections.next3Months.expenses)}
+                        </p>
+                        <p className="text-sm font-semibold">
+                          Saldo: {formatCurrency(data.projections.next3Months.balance)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-purple-500 rounded-full" />
+                        <span className="text-sm font-medium">6 Meses</span>
+                      </div>
+                      <div className="pl-5 space-y-1">
+                        <p className="text-sm text-muted-foreground">
+                          Receitas: {formatCurrency(data.projections.next6Months.income)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Despesas: {formatCurrency(data.projections.next6Months.expenses)}
+                        </p>
+                        <p className="text-sm font-semibold">
+                          Saldo: {formatCurrency(data.projections.next6Months.balance)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Scenarios */}
+                  <div className="mt-6 pt-6 border-t">
+                    <h4 className="font-medium mb-4">Cenários de Crescimento</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {[
+                        { name: "Otimista", value: data.projections.scenarios.optimistic, color: "bg-green-100 text-green-800" },
+                        { name: "Realista", value: data.projections.scenarios.realistic, color: "bg-blue-100 text-blue-800" },
+                        { name: "Pessimista", value: data.projections.scenarios.pessimistic, color: "bg-orange-100 text-orange-800" }
+                      ].map((scenario) => (
+                        <div key={scenario.name} className="text-center">
+                          <Badge variant="outline" className={scenario.color}>
+                            {scenario.name}
+                          </Badge>
+                          <p className="mt-2 font-semibold">
+                            {formatCurrency(scenario.value)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
+        </div>
+      </Tabs>
     </div>
   );
 };

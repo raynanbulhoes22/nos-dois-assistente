@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AuthForm } from "@/components/AuthForm";
 import { SessionManager } from "@/components/SessionManager";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -25,6 +25,20 @@ import { useViewportHeight } from "@/hooks/use-viewport-height";
 const queryClient = new QueryClient();
 
 const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <AppWithAuth />
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
+
+const AppWithAuth = () => {
   const { user, loading } = useAuth();
   useViewportHeight();
 
@@ -41,10 +55,8 @@ const App = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BrowserRouter>
-          <SessionManager />
+    <>
+      <SessionManager />
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background">
           {/* Desktop Sidebar - Hidden on mobile */}
@@ -103,9 +115,7 @@ const App = () => {
             <Toaster />
             <Sonner />
           </SidebarProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    </>
   );
 };
 

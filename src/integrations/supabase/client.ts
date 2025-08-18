@@ -12,7 +12,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
   auth: {
     storage: localStorage,
     persistSession: true,
-    autoRefreshToken: false, // Disable aggressive token refresh
+    autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce'
   }

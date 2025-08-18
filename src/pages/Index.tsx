@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { AuthForm } from "@/components/AuthForm";
 import { Dashboard } from "@/components/Dashboard";
 import { Heart } from "lucide-react";

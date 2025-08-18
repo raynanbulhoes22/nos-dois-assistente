@@ -52,7 +52,7 @@ export function AppSidebar() {
   // Filter navigation items based on subscription status
   const availableMainItems = subscriptionStatus?.subscribed 
     ? mainNavigationItems 
-    : [];
+    : mainNavigationItems; // Show all items for now, subscription redirect will handle access
   
   const availableBottomItems = bottomNavigationItems;
 

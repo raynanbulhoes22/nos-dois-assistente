@@ -33,12 +33,12 @@ export const normalizePhoneNumber = (phone: string): string => {
     else if (cleaned.length === 10) {
       cleaned = '55' + cleaned;
     }
-    // Se tem 9 dígitos (DDD sem zero + 9 dígitos - remove o 9º)
+    // Se tem 9 dígitos (DDD de 1 dígito + 8 dígitos)
     else if (cleaned.length === 9) {
       const ddd = cleaned.substring(0, 1);
-      const numero = cleaned.substring(2); // Pula o 9º dígito
-      cleaned = '551' + ddd + numero; // Assume DDD 11-19 (região SP)
-      console.log('DDD de 1 dígito normalizado:', cleaned);
+      const numero = cleaned.substring(1); // Pega o restante (8 dígitos)
+      cleaned = '551' + ddd + numero; // DDD 11-19 (região SP/RJ)
+      console.log('DDD de 1 dígito normalizado (assumindo região SP/RJ):', cleaned);
     }
     // Se tem 8 dígitos (só o número sem DDD)
     else if (cleaned.length === 8) {

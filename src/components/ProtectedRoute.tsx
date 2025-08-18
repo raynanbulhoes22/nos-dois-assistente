@@ -41,8 +41,8 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     }
   }, [loading, user, subscriptionStatus, onboardingCompleted, location.pathname, navigate]);
 
-  // Show loading while checking plan or during state transitions
-  if (loading || subscriptionStatus === null || onboardingCompleted === null) {
+  // Show loading while auth is still loading or subscription status is unknown
+  if (loading || subscriptionStatus === null) {
     return (
       <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -50,22 +50,21 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
-  // If no subscription and not on plan page, show loading instead of null
-  if (user && subscriptionStatus && !subscriptionStatus.subscribed && location.pathname !== '/assinaturas') {
-    return (
-      <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+  // Allow access to subscription page regardless of subscription status
+  if (location.pathname === '/assinaturas') {
+    return <>{children}</>;
   }
 
-  // If has subscription but no onboarding and not on onboarding page, show loading instead of null
-  if (user && subscriptionStatus?.subscribed && onboardingCompleted === false && location.pathname !== '/primeiros-passos') {
-    return (
-      <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
+  // If no subscription, redirect to subscription page
+  if (!subscriptionStatus?.subscribed) {
+    navigate('/assinaturas', { replace: true });
+    return null;
+  }
+
+  // If subscription exists but onboarding not completed, redirect to onboarding
+  if (onboardingCompleted === false) {
+    navigate('/primeiros-passos', { replace: true });
+    return null;
   }
 
   return <>{children}</>;

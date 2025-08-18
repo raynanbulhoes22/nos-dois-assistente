@@ -9,6 +9,7 @@ export const useAuth = () => {
   const [subscriptionStatus, setSubscriptionStatus] = useState<any | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
   const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
+  const [verificationCompleted, setVerificationCompleted] = useState(false);
 
   const checkSubscription = async () => {
     try {
@@ -25,6 +26,17 @@ export const useAuth = () => {
   };
 
   const verifySubscription = async (userEmail: string, userId: string) => {
+    // Prevent multiple simultaneous verifications
+    if (subscriptionLoading || verificationCompleted) {
+      return;
+    }
+
+    // Check if we already verified this session
+    const sessionKey = `verified_${userEmail}_${userId}`;
+    if (sessionStorage.getItem(sessionKey)) {
+      return;
+    }
+
     setSubscriptionLoading(true);
     try {
       const subscriptionData = await checkSubscription();
@@ -48,6 +60,10 @@ export const useAuth = () => {
         .single();
 
       setOnboardingCompleted(profileData?.onboarding_completed || false);
+      
+      // Mark verification as completed for this session
+      sessionStorage.setItem(sessionKey, 'true');
+      setVerificationCompleted(true);
     } catch (error) {
       secureLog.error('Erro ao verificar plano', error);
     } finally {
@@ -78,7 +94,14 @@ export const useAuth = () => {
           setLoading(false);
           setSubscriptionStatus(null);
           setOnboardingCompleted(null);
+          setVerificationCompleted(false);
           localStorage.removeItem('redirect_to_subscription');
+          // Clear session verification cache
+          Object.keys(sessionStorage).forEach(key => {
+            if (key.startsWith('verified_')) {
+              sessionStorage.removeItem(key);
+            }
+          });
         }
         
         if (event === 'TOKEN_REFRESHED') {

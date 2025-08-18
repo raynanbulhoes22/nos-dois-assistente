@@ -164,7 +164,7 @@ export const Movimentacoes = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={refetch}
+              onClick={() => refetch(true)}
               className="ml-2"
             >
               <RefreshCw className="h-4 w-4 mr-2" />

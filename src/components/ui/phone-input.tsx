@@ -86,12 +86,23 @@ export function PhoneInput({ value = "", onChange, placeholder, disabled, classN
     const formatted = formatPhoneNumber(input, selectedCountry);
     setPhoneNumber(formatted);
     
-    // For Brazil, normalize the phone number before calling onChange
+    // For Brazil, only normalize when we have enough digits (DDD + number)
     if (selectedCountry.code === 'BR') {
-      // Remove formatting first, then normalize
       const digitsOnly = formatted.replace(/\D/g, '');
-      const normalized = normalizePhoneNumber(digitsOnly);
-      onChange?.(normalized);
+      
+      // Only normalize if we have at least DDD + some number digits
+      if (digitsOnly.length >= 2) {
+        // If we have complete number (DDD + 8 digits), normalize it
+        if (digitsOnly.length === 10) {
+          const normalized = normalizePhoneNumber(digitsOnly);
+          onChange?.(normalized);
+        } else {
+          // Just pass the raw digits for partial numbers
+          onChange?.(digitsOnly);
+        }
+      } else {
+        onChange?.(digitsOnly);
+      }
     } else {
       // For other countries, just remove formatting and add dial code
       const digitsOnly = formatted.replace(/\D/g, '');

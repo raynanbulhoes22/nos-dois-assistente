@@ -13,6 +13,11 @@ export const normalizePhoneNumber = (phone: string): string => {
   // Remove todos os caracteres não numéricos
   let cleaned = phone.replace(/\D/g, '');
   
+  // Se o número tem menos de 10 dígitos, retornar como está (número incompleto)
+  if (cleaned.length < 10) {
+    return cleaned;
+  }
+  
   console.log('Normalizando telefone:', phone, '-> cleaned:', cleaned);
   
   // Remove códigos do país duplicados (5555...)
@@ -70,7 +75,7 @@ export const normalizePhoneNumber = (phone: string): string => {
     return cleaned;
   }
   
-  console.warn('Telefone com tamanho inesperado:', cleaned, 'length:', cleaned.length);
+  // Se chegou aqui, retornar como está (pode ser número incompleto sendo digitado)
   return cleaned;
 };
 

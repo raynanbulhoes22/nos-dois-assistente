@@ -302,437 +302,456 @@ export const AuthForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 p-4 relative overflow-hidden">
-      {/* Animated Background Elements */}
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 relative overflow-hidden">
+      {/* Mobile-optimized animated background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 w-48 h-48 bg-green-500/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/4 left-0 w-48 h-48 bg-primary/5 rounded-full blur-2xl animate-float"></div>
+        <div className="absolute bottom-1/4 right-0 w-64 h-64 bg-accent/5 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }}></div>
       </div>
       
-      <Card variant="floating" className="w-full max-w-md backdrop-blur-sm bg-white/90 border border-gray-200 animate-fade-in shadow-xl">
-        <CardHeader className="text-center space-y-6">
-          <div className="flex items-center justify-center gap-3">
-            <div className="relative">
-              <Heart className="h-10 w-10 text-blue-500 animate-pulse-glow" />
-              <div className="absolute inset-0 h-10 w-10 text-blue-500/20 animate-ping"></div>
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 bg-clip-text text-transparent">
-                LucraAI
-              </h1>
-              <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 rounded-full mt-2"></div>
-            </div>
-          </div>
-          <CardDescription className="text-center text-base text-gray-600">
-            Seu assistente pessoal para finanças, tarefas e agendamentos
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          {showForgotPassword ? (
-            <div className="space-y-6 py-4">
-              <div className="text-center space-y-2">
-                <h3 className="text-xl font-semibold text-gray-900">
-                  Esqueci minha senha
-                </h3>
-                <p className="text-gray-600">
-                  Digite seu email para receber as instruções de redefinição
-                </p>
-              </div>
-              
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                const email = formData.get('email') as string;
-                if (email) {
-                  handleForgotPassword(email);
-                }
-              }} className="space-y-4">
-                <div>
-                  <Label htmlFor="forgot-email">Email</Label>
-                  <Input
-                    id="forgot-email"
-                    name="email"
-                    type="email"
-                    placeholder="seu@email.com"
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-                
-                <div className="space-y-3">
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Enviando...
-                      </>
-                    ) : (
-                      "Enviar instruções"
-                    )}
-                  </Button>
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => setShowForgotPassword(false)}
-                  >
-                    Voltar para o login
-                  </Button>
-                </div>
-              </form>
-            </div>
-          ) : showEmailConfirmation ? (
-            <div className="text-center space-y-6 py-8">
+      <div className="flex flex-col min-h-screen">
+        {/* Mobile Header */}
+        <div className="flex-shrink-0 pt-safe-top px-4 sm:px-6">
+          <div className="flex flex-col items-center justify-center pt-8 pb-6">
+            <div className="flex items-center gap-3 mb-4">
               <div className="relative">
-                <div className="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-                  <svg className="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 3.26a2 2 0 001.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <div className="absolute -top-2 -right-2 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center animate-bounce">
-                  <span className="text-white text-xs font-bold">!</span>
-                </div>
+                <Heart className="h-8 w-8 sm:h-10 sm:w-10 text-primary animate-pulse" />
+                <div className="absolute inset-0 h-8 w-8 sm:h-10 sm:w-10 text-primary/20 animate-ping"></div>
               </div>
-              
-              <div className="space-y-3">
-                <h3 className="text-xl font-semibold text-gray-900">
-                  Verifique seu email
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Enviamos um email de confirmação para:
-                </p>
-                <p className="font-semibold text-blue-600 bg-blue-50 py-2 px-4 rounded-lg">
-                  {registeredEmail}
-                </p>
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 text-left">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary via-purple-600 to-accent bg-clip-text text-transparent">
+                  LucraAI
+                </h1>
+                <div className="h-1 w-full bg-gradient-to-r from-primary via-purple-500 to-accent rounded-full mt-1"></div>
+              </div>
+            </div>
+            <p className="text-center text-sm sm:text-base text-muted-foreground max-w-sm">
+              Seu assistente pessoal para finanças, tarefas e agendamentos
+            </p>
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex-1 flex items-start justify-center px-4 sm:px-6 pb-safe-bottom">
+          <Card className="w-full max-w-sm sm:max-w-md bg-card/95 backdrop-blur-sm border-border/60 shadow-lg animate-fade-in">
+            <CardContent className="p-4 sm:p-6">
+              {showForgotPassword ? (
+                <div className="space-y-6">
+                  <div className="text-center space-y-2">
+                    <h3 className="text-lg sm:text-xl font-semibold">
+                      Esqueci minha senha
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Digite seu email para receber as instruções de redefinição
+                    </p>
+                  </div>
+                  
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const email = formData.get('email') as string;
+                    if (email) {
+                      handleForgotPassword(email);
+                    }
+                  }} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="forgot-email" className="text-sm font-medium">Email</Label>
+                      <Input
+                        id="forgot-email"
+                        name="email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        required
+                        disabled={isLoading}
+                        className="h-12 text-base"
+                      />
+                    </div>
+                    
+                    <div className="space-y-3 pt-2">
+                      <Button
+                        type="submit"
+                        className="w-full h-12 text-base font-medium"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Enviando...
+                          </>
+                        ) : (
+                          "Enviar instruções"
+                        )}
+                      </Button>
+                      
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full h-12 text-base"
+                        onClick={() => setShowForgotPassword(false)}
+                      >
+                        Voltar para o login
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              ) : showEmailConfirmation ? (
+                <div className="text-center space-y-6 py-4">
+                  <div className="relative">
+                    <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+                      <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 3.26a2 2 0 001.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
-                    <div className="ml-3">
-                      <p className="text-sm text-yellow-700">
-                        <strong>Importante:</strong> O email será enviado em nome do <strong>Supabase</strong>. 
-                        Verifique também sua pasta de spam.
-                      </p>
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center animate-bounce">
+                      <span className="text-primary-foreground text-xs font-bold">!</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold">
+                      Verifique seu email
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Enviamos um email de confirmação para:
+                    </p>
+                    <p className="font-medium text-primary bg-muted py-2 px-3 rounded-lg text-sm">
+                      {registeredEmail}
+                    </p>
+                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-left">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <svg className="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-2">
+                          <p className="text-xs text-yellow-700">
+                            <strong>Importante:</strong> O email será enviado em nome do <strong>Supabase</strong>. 
+                            Verifique também sua pasta de spam.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <Button
+                      onClick={() => setShowEmailConfirmation(false)}
+                      variant="outline"
+                      className="w-full h-12"
+                    >
+                      Voltar para o login
+                    </Button>
+                    
+                    <Button
+                      onClick={() => {
+                        // Tentar reenviar email de confirmação
+                        supabase.auth.resend({
+                          type: 'signup',
+                          email: registeredEmail,
+                          options: {
+                            emailRedirectTo: `${window.location.origin}/`
+                          }
+                        }).then(({ error }) => {
+                          if (error) {
+                            toast({
+                              title: "Erro ao reenviar email",
+                              description: "Tente novamente em alguns minutos.",
+                              variant: "destructive"
+                            });
+                          } else {
+                            toast({
+                              title: "Email reenviado!",
+                              description: "Verifique sua caixa de entrada.",
+                            });
+                          }
+                        });
+                      }}
+                      variant="default"
+                      className="w-full h-12"
+                    >
+                      Reenviar email de confirmação
+                    </Button>
+                    
+                    <div className="text-xs text-muted-foreground">
+                      Não recebeu o email? Verifique sua caixa de spam ou tente novamente em alguns minutos.
                     </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="space-y-4">
-                <Button
-                  onClick={() => setShowEmailConfirmation(false)}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Voltar para o login
-                </Button>
-                
-                <Button
-                  onClick={() => {
-                    // Tentar reenviar email de confirmação
-                    supabase.auth.resend({
-                      type: 'signup',
-                      email: registeredEmail,
-                      options: {
-                        emailRedirectTo: `${window.location.origin}/`
-                      }
-                    }).then(({ error }) => {
-                      if (error) {
-                        toast({
-                          title: "Erro ao reenviar email",
-                          description: "Tente novamente em alguns minutos.",
-                          variant: "destructive"
-                        });
-                      } else {
-                        toast({
-                          title: "Email reenviado!",
-                          description: "Verifique sua caixa de entrada.",
-                        });
-                      }
-                    });
-                  }}
-                  variant="default"
-                  className="w-full"
-                >
-                  Reenviar email de confirmação
-                </Button>
-                
-                <div className="text-xs text-gray-500">
-                  Não recebeu o email? Verifique sua caixa de spam ou tente novamente em alguns minutos.
-                </div>
-              </div>
-            </div>
-          ) : (
-            <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-gray-100/80 backdrop-blur-sm">
-                <TabsTrigger value="signin" className="transition-smooth data-[state=active]:bg-blue-500 data-[state=active]:text-white">Entrar</TabsTrigger>
-                <TabsTrigger value="signup" className="transition-smooth data-[state=active]:bg-blue-500 data-[state=active]:text-white">Cadastrar</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="signin">
-                <Form {...signInForm}>
-                  <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
-                    <FormField
-                      control={signInForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="seu@email.com"
-                              disabled={isLoading}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signInForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Senha</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder="••••••••"
-                              disabled={isLoading}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    {/* Checkbox Mantenha-me conectado e Link Esqueci Senha */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox 
-                          id="rememberMe" 
-                          checked={rememberMe}
-                          onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                          disabled={isLoading}
-                        />
-                        <Label 
-                          htmlFor="rememberMe" 
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
-                          Mantenha-me conectado
-                        </Label>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="link"
-                        className="text-sm text-blue-600 hover:text-blue-800 p-0 h-auto font-medium underline-offset-4 hover:underline whitespace-nowrap"
-                        onClick={() => setShowForgotPassword(true)}
-                        disabled={isLoading}
-                      >
-                        Esqueci minha senha
-                      </Button>
-                    </div>
-                    
-                    <Button 
-                      type="submit" 
-                      className="w-full font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
-                      size="lg"
-                      disabled={isLoading}
-                    >
-                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      {isLoading ? "Entrando..." : "Entrar"}
-                    </Button>
-                    
-                    <div className="relative my-6">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-gray-300" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white px-2 text-gray-500">ou</span>
-                      </div>
-                    </div>
-                    
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="lg"
-                      className="w-full"
-                      onClick={handleGoogleSignIn}
-                      disabled={isLoading}
-                    >
-                      <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                        <path
-                          fill="currentColor"
-                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        />
-                        <path
-                          fill="currentColor"
-                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        />
-                        <path
-                          fill="currentColor"
-                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                        />
-                        <path
-                          fill="currentColor"
-                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                        />
-                      </svg>
-                      Continuar com Google
-                    </Button>
-                  </form>
-                </Form>
-              </TabsContent>
-              
-              <TabsContent value="signup">
-                <Form {...signUpForm}>
-                  <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
-                    <FormField
-                      control={signUpForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="text"
-                              placeholder="Seu nome"
-                              disabled={isLoading}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signUpForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="seu@email.com"
-                              disabled={isLoading}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signUpForm.control}
-                      name="whatsapp"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-1">
-                            WhatsApp
-                            <span className="text-destructive">*</span>
-                          </FormLabel>
-                          <FormControl>
-                            <PhoneInput
-                              value={field.value}
-                              onChange={field.onChange}
-                              placeholder="(11) 9999-9999"
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signUpForm.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Senha</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder="••••••••"
-                              disabled={isLoading}
-                              {...field}
-                              onChange={(e) => {
-                                field.onChange(e);
-                                handlePasswordChange(e.target.value);
-                              }}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                          {field.value && (
-                            <div className="text-xs space-y-1">
-                              <div className={`${passwordStrength.isStrong ? 'text-green-600' : 'text-red-600'}`}>
-                                Força da senha: {passwordStrength.score}/5
-                              </div>
-                              {passwordStrength.feedback.length > 0 && (
-                                <ul className="text-red-600 list-disc list-inside">
-                                  {passwordStrength.feedback.map((tip, index) => (
-                                    <li key={index}>{tip}</li>
-                                  ))}
-                                </ul>
-                              )}
-                            </div>
+              ) : (
+                <Tabs defaultValue="signin" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 h-12 bg-muted/50">
+                    <TabsTrigger value="signin" className="h-10 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground">
+                      Entrar
+                    </TabsTrigger>
+                    <TabsTrigger value="signup" className="h-10 text-sm font-medium data-[state=active]:bg-background data-[state=active]:text-foreground">
+                      Cadastrar
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="signin" className="mt-6">
+                    <Form {...signInForm}>
+                      <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
+                        <FormField
+                          control={signInForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">Email</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="email"
+                                  placeholder="seu@email.com"
+                                  disabled={isLoading}
+                                  className="h-12 text-base"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
                           )}
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={signUpForm.control}
-                      name="confirmPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Confirmar Senha</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              placeholder="••••••••"
+                        />
+                        <FormField
+                          control={signInForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">Senha</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="password"
+                                  placeholder="••••••••"
+                                  disabled={isLoading}
+                                  className="h-12 text-base"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        {/* Mobile-optimized checkbox and forgot password */}
+                        <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox 
+                              id="rememberMe" 
+                              checked={rememberMe}
+                              onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                               disabled={isLoading}
-                              {...field}
                             />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button 
-                      type="submit" 
-                      className="w-full font-semibold bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white"
-                      size="lg"
-                      disabled={isLoading || !passwordStrength.isStrong}
-                    >
-                      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      {isLoading ? "Criando conta..." : "Criar conta"}
-                    </Button>
-                    
-                    {!passwordStrength.isStrong && signUpForm.watch('password') && (
-                      <p className="text-xs text-amber-600 text-center">
-                        ⚠️ Fortaleça sua senha para continuar
-                      </p>
-                    )}
-                  </form>
-                </Form>
-              </TabsContent>
-            </Tabs>
-          )}
-        </CardContent>
-      </Card>
+                            <Label 
+                              htmlFor="rememberMe" 
+                              className="text-sm font-medium cursor-pointer"
+                            >
+                              Mantenha-me conectado
+                            </Label>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="link"
+                            className="text-sm text-primary hover:text-primary/80 p-0 h-auto font-medium underline-offset-4 hover:underline self-start sm:self-center"
+                            onClick={() => setShowForgotPassword(true)}
+                            disabled={isLoading}
+                          >
+                            Esqueci minha senha
+                          </Button>
+                        </div>
+                        
+                        <Button 
+                          type="submit" 
+                          className="w-full h-12 text-base font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                          disabled={isLoading}
+                        >
+                          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          {isLoading ? "Entrando..." : "Entrar"}
+                        </Button>
+                        
+                        <div className="relative my-6">
+                          <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t border-border" />
+                          </div>
+                          <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-card px-2 text-muted-foreground">ou</span>
+                          </div>
+                        </div>
+                        
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full h-12 text-base"
+                          onClick={handleGoogleSignIn}
+                          disabled={isLoading}
+                        >
+                          <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+                            <path
+                              fill="currentColor"
+                              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                            />
+                            <path
+                              fill="currentColor"
+                              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                            />
+                            <path
+                              fill="currentColor"
+                              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                            />
+                            <path
+                              fill="currentColor"
+                              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                            />
+                          </svg>
+                          Continuar com Google
+                        </Button>
+                      </form>
+                    </Form>
+                  </TabsContent>
+                  
+                  <TabsContent value="signup" className="mt-6">
+                    <Form {...signUpForm}>
+                      <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
+                        <FormField
+                          control={signUpForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">Nome</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="text"
+                                  placeholder="Seu nome"
+                                  disabled={isLoading}
+                                  className="h-12 text-base"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={signUpForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">Email</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="email"
+                                  placeholder="seu@email.com"
+                                  disabled={isLoading}
+                                  className="h-12 text-base"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={signUpForm.control}
+                          name="whatsapp"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="flex items-center gap-1 text-sm font-medium">
+                                WhatsApp
+                                <span className="text-destructive">*</span>
+                              </FormLabel>
+                              <FormControl>
+                                <PhoneInput
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder="(11) 9999-9999"
+                                  disabled={isLoading}
+                                  className="h-12"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={signUpForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">Senha</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="password"
+                                  placeholder="••••••••"
+                                  disabled={isLoading}
+                                  className="h-12 text-base"
+                                  {...field}
+                                  onChange={(e) => {
+                                    field.onChange(e);
+                                    handlePasswordChange(e.target.value);
+                                  }}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                              {field.value && (
+                                <div className="text-xs space-y-1 mt-2">
+                                  <div className={`font-medium ${passwordStrength.isStrong ? 'text-green-600' : 'text-red-600'}`}>
+                                    Força da senha: {passwordStrength.score}/5
+                                  </div>
+                                  {passwordStrength.feedback.length > 0 && (
+                                    <ul className="text-red-600 space-y-1">
+                                      {passwordStrength.feedback.map((tip, index) => (
+                                        <li key={index} className="flex items-start gap-1">
+                                          <span className="text-xs">•</span>
+                                          <span>{tip}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </div>
+                              )}
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={signUpForm.control}
+                          name="confirmPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-medium">Confirmar Senha</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="password"
+                                  placeholder="••••••••"
+                                  disabled={isLoading}
+                                  className="h-12 text-base"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button 
+                          type="submit" 
+                          className="w-full h-12 text-base font-medium bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90"
+                          disabled={isLoading || !passwordStrength.isStrong}
+                        >
+                          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          {isLoading ? "Criando conta..." : "Criar conta"}
+                        </Button>
+                        
+                        {!passwordStrength.isStrong && signUpForm.watch('password') && (
+                          <p className="text-xs text-amber-600 text-center bg-amber-50 p-2 rounded-lg">
+                            ⚠️ Fortaleça sua senha para continuar
+                          </p>
+                        )}
+                      </form>
+                    </Form>
+                  </TabsContent>
+                </Tabs>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

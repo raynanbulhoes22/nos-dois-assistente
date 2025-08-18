@@ -81,7 +81,8 @@ export const useAuth = () => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (event === 'SIGNED_IN' && session?.user?.email) {
+        // Only verify subscription on initial sign in, not on every state change
+        if (event === 'SIGNED_IN' && session?.user?.email && !verificationCompleted) {
           secureLog.info('User signed in, verifying subscription');
           // Defer subscription check to avoid blocking auth flow
           setTimeout(() => {
@@ -122,7 +123,8 @@ export const useAuth = () => {
       setSession(session);
       setUser(session?.user ?? null);
       
-      if (session?.user?.email) {
+      // Only verify if we don't have verification status yet
+      if (session?.user?.email && !verificationCompleted) {
         verifySubscription(session.user.email, session.user.id);
       }
       
@@ -133,7 +135,7 @@ export const useAuth = () => {
       secureLog.info('Cleaning up auth listener');
       subscription.unsubscribe();
     };
-  }, []);
+  }, []); // Empty dependency array to avoid re-running
 
   return {
     user,

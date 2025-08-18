@@ -5,8 +5,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useSessionTimeout } from "@/hooks/useSessionTimeout";
 import { AuthForm } from "@/components/AuthForm";
+import { SessionManager } from "@/components/SessionManager";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SubscriptionRedirect } from "@/components/SubscriptionRedirect";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -27,7 +27,6 @@ const queryClient = new QueryClient();
 const App = () => {
   const { user, loading } = useAuth();
   useViewportHeight();
-  useSessionTimeout();
 
   if (loading) {
     return (
@@ -45,6 +44,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter>
+          <SessionManager />
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background">
           {/* Desktop Sidebar - Hidden on mobile */}

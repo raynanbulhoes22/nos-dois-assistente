@@ -1,9 +1,8 @@
 import * as React from "react"
 import { Input } from "@/components/ui/input"
 import { CountrySelector, Country, countries } from "@/components/ui/country-selector"
-import { DDDSelector, useDDDFromPhone, type DDDOption } from "@/components/ui/ddd-selector"
 import { cn } from "@/lib/utils"
-import { normalizePhoneNumber, normalizeBrazilianPhone, extractDDDFromPhone, extractNumberFromPhone, validatePhoneNumber, formatPhoneForDisplay } from "@/lib/phone-utils"
+import { normalizePhoneNumber, validatePhoneNumber, formatPhoneForDisplay } from "@/lib/phone-utils"
 
 interface PhoneInputProps {
   value?: string
@@ -19,28 +18,19 @@ export function PhoneInput({ value = "", onChange, placeholder, disabled, classN
     return countries.find(c => c.code === "BR")!
   })
   
-  const [selectedDDD, setSelectedDDD] = React.useState<DDDOption | undefined>()
   const [phoneNumber, setPhoneNumber] = React.useState("")
-  
-  // Hook para extrair DDD de números existentes
-  const extractedDDD = useDDDFromPhone(value)
 
   // Parse initial value if provided
   React.useEffect(() => {
     if (value && value !== phoneNumber) {
       console.log('PhoneInput: Parsing initial value:', value);
       
-      // Para números brasileiros normalizados
-      if (value.match(/^55\d{10}$/)) {
-        const ddd = extractDDDFromPhone(value);
-        const number = extractNumberFromPhone(value);
-        
-        if (ddd && number && extractedDDD) {
-          console.log('PhoneInput: Número brasileiro detectado, DDD:', ddd, 'Número:', number);
-          setSelectedDDD(extractedDDD);
-          setPhoneNumber(formatBrazilianNumber(number));
-          return;
-        }
+      // Se o valor já está normalizado (como 556992290572), exibir formatado
+      if (value.match(/^55\d{10,11}$/)) {
+        const formatted = formatPhoneForDisplay(value);
+        console.log('PhoneInput: Valor já normalizado, formatando para exibição:', formatted);
+        setPhoneNumber(formatted);
+        return;
       }
       
       // Try to extract country code and number from international format
@@ -62,32 +52,29 @@ export function PhoneInput({ value = "", onChange, placeholder, disabled, classN
         setPhoneNumber(formatPhoneNumber(cleanValue, selectedCountry))
       }
     }
-  }, [value, extractedDDD])
-
-  const formatBrazilianNumber = (number: string): string => {
-    // Remove all non-digits and limit to 8
-    const cleaned = number.replace(/\D/g, '').slice(0, 8)
-    
-    // Format as 9999-9999
-    const match = cleaned.match(/^(\d{0,4})(\d{0,4})$/)
-    if (match) {
-      let formatted = match[1]
-      if (match[1] && match[1].length === 4 && match[2]) {
-        formatted += `-${match[2]}`
-      }
-      return formatted
-    }
-    
-    return cleaned
-  }
+  }, [value])
 
   const formatPhoneNumber = (number: string, country: Country): string => {
     // Remove all non-digits
     const cleaned = number.replace(/\D/g, '')
     
-    // For Brazil, don't format here anymore (handled separately)
-    if (country.code === "BR") {
-      return cleaned
+    // Apply country-specific formatting
+    if (country.code === "BR" && country.mask) {
+      // Brazilian format: (99) 9999-9999 (DDD + 8 dígitos)
+      // Limitar a 10 dígitos máximo
+      const limitedCleaned = cleaned.slice(0, 10)
+      
+      if (limitedCleaned.length <= 10) {
+        const match = limitedCleaned.match(/^(\d{0,2})(\d{0,4})(\d{0,4})$/)
+        if (match) {
+          let formatted = ""
+          if (match[1]) formatted += `(${match[1]}`
+          if (match[1] && match[1].length === 2) formatted += ") "
+          if (match[2]) formatted += match[2]
+          if (match[2] && match[2].length === 4 && match[3]) formatted += `-${match[3]}`
+          return formatted
+        }
+      }
     }
     
     // For other countries, just return the cleaned number
@@ -96,55 +83,32 @@ export function PhoneInput({ value = "", onChange, placeholder, disabled, classN
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
+    const formatted = formatPhoneNumber(input, selectedCountry);
+    setPhoneNumber(formatted);
     
+    // For Brazil, normalize the phone number before calling onChange
     if (selectedCountry.code === 'BR') {
-      // Para Brasil, formatar como número de 8 dígitos
-      const formatted = formatBrazilianNumber(input);
-      setPhoneNumber(formatted);
-      
-      // Só normalizar se temos DDD selecionado e 8 dígitos
-      if (selectedDDD && formatted.replace(/\D/g, '').length === 8) {
-        const normalized = normalizeBrazilianPhone(selectedDDD.ddd, formatted.replace(/\D/g, ''));
-        console.log('Número brasileiro normalizado:', normalized);
-        onChange?.(normalized);
-      } else {
-        // Limpar valor se não está completo
-        onChange?.('');
-      }
+      // Remove formatting first, then normalize
+      const digitsOnly = formatted.replace(/\D/g, '');
+      const normalized = normalizePhoneNumber(digitsOnly);
+      onChange?.(normalized);
     } else {
-      // Para outros países, usar lógica anterior
-      const formatted = formatPhoneNumber(input, selectedCountry);
-      setPhoneNumber(formatted);
-      
+      // For other countries, just remove formatting and add dial code
       const digitsOnly = formatted.replace(/\D/g, '');
       const withDialCode = selectedCountry.dialCode + digitsOnly;
       onChange?.(withDialCode);
     }
   };
 
-  const handleDDDSelect = (ddd: DDDOption) => {
-    setSelectedDDD(ddd);
-    
-    // Se já temos um número de 8 dígitos, normalizar imediatamente
-    const digitsOnly = phoneNumber.replace(/\D/g, '');
-    if (digitsOnly.length === 8) {
-      const normalized = normalizeBrazilianPhone(ddd.ddd, digitsOnly);
-      onChange?.(normalized);
-    }
-  };
-
   const handleCountrySelect = (country: Country) => {
     setSelectedCountry(country);
     
-    // Reset DDD quando mudar de país
-    if (country.code !== 'BR') {
-      setSelectedDDD(undefined);
-    }
-    
-    // Para Brasil, limpar campos para nova seleção
-    if (country.code === 'BR') {
-      setPhoneNumber('');
-      onChange?.('');
+    // For Brazil, ensure the phone number is normalized
+    if (country.code === 'BR' && phoneNumber) {
+      // Extract only the number part without country code for normalization
+      const digitsOnly = phoneNumber.replace(/\D/g, '');
+      const normalized = normalizePhoneNumber(digitsOnly);
+      onChange?.(normalized);
     } else if (phoneNumber) {
       // For other countries, format with new dial code
       const digitsOnly = phoneNumber.replace(/\D/g, '');
@@ -153,17 +117,6 @@ export function PhoneInput({ value = "", onChange, placeholder, disabled, classN
     }
   };
 
-  // Atualizar DDD quando valor inicial for detectado
-  React.useEffect(() => {
-    if (extractedDDD && !selectedDDD) {
-      setSelectedDDD(extractedDDD);
-    }
-  }, [extractedDDD, selectedDDD]);
-
-  const isBrazil = selectedCountry.code === 'BR';
-  const is8Digits = phoneNumber.replace(/\D/g, '').length === 8;
-  const isValidBrazilian = isBrazil && selectedDDD && is8Digits;
-
   return (
     <div className={cn("flex gap-2", className)}>
       <CountrySelector
@@ -171,36 +124,13 @@ export function PhoneInput({ value = "", onChange, placeholder, disabled, classN
         onSelect={handleCountrySelect}
         disabled={disabled}
       />
-      
-      {isBrazil && (
-        <DDDSelector
-          value={selectedDDD}
-          onSelect={handleDDDSelect}
-          disabled={disabled}
-        />
-      )}
-      
       <Input
         value={phoneNumber}
         onChange={handlePhoneChange}
-        placeholder={
-          isBrazil 
-            ? "Digite os 8 dígitos (9999-9999)" 
-            : placeholder || selectedCountry.mask || "Digite o número"
-        }
+        placeholder={placeholder || selectedCountry.mask || "Digite o número"}
         disabled={disabled}
-        className={cn(
-          "flex-1",
-          isBrazil && !isValidBrazilian && phoneNumber ? "border-yellow-500" : ""
-        )}
-        maxLength={isBrazil ? 9 : undefined} // 8 dígitos + 1 hífen
+        className="flex-1"
       />
-      
-      {isBrazil && phoneNumber && (
-        <div className="flex items-center text-xs text-muted-foreground">
-          {phoneNumber.replace(/\D/g, '').length}/8
-        </div>
-      )}
     </div>
   )
 }

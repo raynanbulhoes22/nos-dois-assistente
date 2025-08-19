@@ -108,13 +108,14 @@ export const useFaturasFuturas = () => {
           data: fatura.data,
           titulo: fatura.descricao,
           categoria: fatura.categoria || 'Cartão de Crédito',
-          observacao: 'Fatura futura programada',
+          observacao: `Fatura futura programada - ${fatura.apelido_cartao}`,
           origem: 'fatura_futura',
           tipo_movimento: 'saida',
           forma_pagamento: 'cartao_credito',
           cartao_final: fatura.ultimos_digitos,
           apelido: fatura.apelido_cartao,
-          tipo: 'registro_manual'
+          tipo: 'registro_manual',
+          id_transacao: `fatura_futura_${Date.now()}_${fatura.cartao_id}` // ID único para vincular
         });
 
       if (error) throw error;

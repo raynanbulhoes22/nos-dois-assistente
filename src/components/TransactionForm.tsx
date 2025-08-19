@@ -17,6 +17,8 @@ import { FINANCIAL_CATEGORIES, TRANSACTION_TYPES, PAYMENT_METHODS } from "@/cons
 import { useCartoes } from "@/hooks/useCartoes";
 import { useFontesRenda } from "@/hooks/useFontesRenda";
 import { useProfileNames } from "@/hooks/useProfileNames";
+import { useFaturaVinculacao } from "@/hooks/useFaturaVinculacao";
+import { VinculacaoFaturaDialog } from "@/components/cartoes/VinculacaoFaturaDialog";
 
 interface Transaction {
   id: string;
@@ -80,10 +82,14 @@ export const TransactionForm = ({
     parcelas: "1",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showVinculacaoDialog, setShowVinculacaoDialog] = useState(false);
+  const [transacaoParaVincular, setTransacaoParaVincular] = useState<any>(null);
+  
   const { toast } = useToast();
   const { cartoes } = useCartoes();
   const { fontes } = useFontesRenda();
   const { availableNames } = useProfileNames(userId);
+  const { getFaturasPossiveis, marcarFaturaComoPaga, tentarVinculacaoAutomatica } = useFaturaVinculacao();
 
   // Categorias filtradas baseadas no tipo selecionado
   const availableCategories = useMemo(() => {
@@ -146,6 +152,12 @@ export const TransactionForm = ({
         tipo_movimento = "saida"; // default para saída
       }
 
+      // Buscar dados do cartão selecionado se aplicável
+      let cartaoSelecionado = null;
+      if (formData.cartao_id && cartoes.length > 0) {
+        cartaoSelecionado = cartoes.find(c => c.id === formData.cartao_id);
+      }
+
       const transactionData = {
         tipo: formData.tipo,
         valor: parseFloat(formData.valor),
@@ -160,10 +172,13 @@ export const TransactionForm = ({
         recorrente: formData.recorrente,
         observacao: formData.observacao || null,
         user_id: userId,
-        tipo_movimento: tipo_movimento
+        tipo_movimento: tipo_movimento,
+        cartao_final: cartaoSelecionado?.ultimos_digitos || null,
+        apelido: cartaoSelecionado?.apelido || null
       };
 
       let error;
+      let transacaoId;
       
       if (editTransaction) {
         // Atualizar transação existente
@@ -173,23 +188,65 @@ export const TransactionForm = ({
           .eq('id', editTransaction.id)
           .eq('user_id', userId);
         error = result.error;
+        transacaoId = editTransaction.id;
       } else {
         // Criar nova transação
         const result = await supabase
           .from('registros_financeiros')
-          .insert([transactionData]);
+          .insert([transactionData])
+          .select()
+          .single();
         error = result.error;
+        transacaoId = result.data?.id;
       }
 
       if (error) throw error;
+
+      // Se é uma nova transação de cartão de crédito, tentar vinculação automática
+      if (!editTransaction && 
+          transactionData.forma_pagamento === 'cartao_credito' && 
+          transactionData.tipo_movimento === 'saida' &&
+          transacaoId) {
+        
+        const vinculacaoAutomatica = await tentarVinculacaoAutomatica({
+          id: transacaoId,
+          valor: transactionData.valor,
+          cartao_final: transactionData.cartao_final,
+          data: transactionData.data,
+          forma_pagamento: transactionData.forma_pagamento
+        });
+
+        // Se não houve vinculação automática, verificar se há faturas possíveis para vinculação manual
+        if (!vinculacaoAutomatica) {
+          const faturasPossiveis = getFaturasPossiveis(
+            transactionData.valor,
+            transactionData.cartao_final,
+            transactionData.data
+          );
+
+          if (faturasPossiveis.length > 0) {
+            setTransacaoParaVincular({
+              id: transacaoId,
+              valor: transactionData.valor,
+              cartao_final: transactionData.cartao_final,
+              data: transactionData.data,
+              titulo: transactionData.titulo
+            });
+            setShowVinculacaoDialog(true);
+          }
+        }
+      }
 
       toast({
         title: editTransaction ? "Transação atualizada" : "Transação criada",
         description: editTransaction ? "A transação foi atualizada com sucesso." : "A transação foi adicionada com sucesso."
       });
 
-      onSuccess();
-      onOpenChange(false);
+      // Só fechar o modal se não houver vinculação pendente
+      if (!showVinculacaoDialog) {
+        onSuccess();
+        onOpenChange(false);
+      }
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -594,6 +651,27 @@ export const TransactionForm = ({
           </div>
         </form>
       </DialogContent>
+
+      {/* Dialog de vinculação de fatura */}
+      {transacaoParaVincular && (
+        <VinculacaoFaturaDialog
+          open={showVinculacaoDialog}
+          onOpenChange={setShowVinculacaoDialog}
+          transacao={transacaoParaVincular}
+          faturasPossiveis={getFaturasPossiveis(
+            transacaoParaVincular.valor,
+            transacaoParaVincular.cartao_final,
+            transacaoParaVincular.data
+          )}
+          onVincular={async (faturaId) => {
+            await marcarFaturaComoPaga(faturaId, transacaoParaVincular.id);
+            setShowVinculacaoDialog(false);
+            setTransacaoParaVincular(null);
+            onSuccess();
+            onOpenChange(false);
+          }}
+        />
+      )}
     </Dialog>
   );
 };

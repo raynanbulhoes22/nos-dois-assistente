@@ -19,6 +19,7 @@ import { LimiteCartaoDisplay } from "@/components/cartoes/LimiteCartaoDisplay";
 import { AlertasCartaoPanel } from "@/components/cartoes/AlertasCartaoPanel";
 import { CartaoDetectionAlert } from "@/components/cartoes/CartaoDetectionAlert";
 import { FaturasFuturasTab } from "@/components/cartoes/FaturasFuturasTab";
+import { FaturasFuturasSection } from "@/components/cartoes/FaturasFuturasSection";
 import { formatCurrency } from "@/lib/utils";
 import { 
   CreditCard, 
@@ -181,175 +182,205 @@ export const Cartoes = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="container mx-auto p-6 space-y-8">
+      {/* Header com Quick Actions */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-3xl font-bold flex items-center gap-3">
             <CreditCard className="h-8 w-8 text-primary" />
-            Cartões de Crédito
+            Meus Cartões
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Gerencie seus cartões, limites e gastos
+          <p className="text-muted-foreground mt-2">
+            Gerencie cartões, programe faturas e controle limites
           </p>
         </div>
         
-        <Dialog open={showCartaoModal} onOpenChange={setShowCartaoModal}>
-          <DialogTrigger asChild>
-            <Button onClick={() => {
-              setEditingCartao(null);
-              resetCartaoForm();
-            }}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Cartão
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>
-                {editingCartao ? 'Editar Cartão' : 'Adicionar Cartão'}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={editingCartao ? handleUpdateCartao : handleAddCartao} className="space-y-4">
-              <div>
-                <Label htmlFor="apelido">Apelido do Cartão</Label>
-                <Input
-                  id="apelido"
-                  value={cartaoForm.apelido}
-                  onChange={(e) => setCartaoForm({...cartaoForm, apelido: e.target.value})}
-                  placeholder="Ex: Cartão Principal"
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="ultimos_digitos">Últimos 4 Dígitos</Label>
-                <Input
-                  id="ultimos_digitos"
-                  value={cartaoForm.ultimos_digitos}
-                  onChange={(e) => setCartaoForm({...cartaoForm, ultimos_digitos: e.target.value})}
-                  placeholder="0000"
-                  maxLength={4}
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="limite">Limite Total</Label>
-                <CurrencyInput
-                  value={cartaoForm.limite}
-                  onChange={(value) => setCartaoForm({...cartaoForm, limite: value || 0})}
-                  placeholder="R$ 0,00"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="limite_disponivel">Limite Disponível</Label>
-                <CurrencyInput
-                  value={cartaoForm.limite_disponivel}
-                  onChange={(value) => setCartaoForm({...cartaoForm, limite_disponivel: value || 0})}
-                  placeholder="R$ 0,00"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="dia_vencimento">Dia do Vencimento</Label>
-                <Select 
-                  value={cartaoForm.dia_vencimento} 
-                  onValueChange={(value) => setCartaoForm({...cartaoForm, dia_vencimento: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o dia" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Array.from({length: 28}, (_, i) => i + 1).map(dia => (
-                      <SelectItem key={dia} value={dia.toString()}>
-                        Dia {dia}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="ativo"
-                  checked={cartaoForm.ativo}
-                  onCheckedChange={(checked) => setCartaoForm({...cartaoForm, ativo: checked})}
-                />
-                <Label htmlFor="ativo">Cartão Ativo</Label>
-              </div>
-              
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setShowCartaoModal(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  {editingCartao ? 'Atualizar' : 'Adicionar'}
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-3">
+          <Dialog open={showCartaoModal} onOpenChange={setShowCartaoModal}>
+            <DialogTrigger asChild>
+              <Button variant="outline" onClick={() => {
+                setEditingCartao(null);
+                resetCartaoForm();
+              }}>
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Cartão
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {editingCartao ? 'Editar Cartão' : 'Adicionar Cartão'}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={editingCartao ? handleUpdateCartao : handleAddCartao} className="space-y-4">
+                <div>
+                  <Label htmlFor="apelido">Apelido do Cartão</Label>
+                  <Input
+                    id="apelido"
+                    value={cartaoForm.apelido}
+                    onChange={(e) => setCartaoForm({...cartaoForm, apelido: e.target.value})}
+                    placeholder="Ex: Cartão Principal"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="ultimos_digitos">Últimos 4 Dígitos</Label>
+                  <Input
+                    id="ultimos_digitos"
+                    value={cartaoForm.ultimos_digitos}
+                    onChange={(e) => setCartaoForm({...cartaoForm, ultimos_digitos: e.target.value})}
+                    placeholder="0000"
+                    maxLength={4}
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="limite">Limite Total</Label>
+                  <CurrencyInput
+                    value={cartaoForm.limite}
+                    onChange={(value) => setCartaoForm({...cartaoForm, limite: value || 0})}
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="limite_disponivel">Limite Disponível</Label>
+                  <CurrencyInput
+                    value={cartaoForm.limite_disponivel}
+                    onChange={(value) => setCartaoForm({...cartaoForm, limite_disponivel: value || 0})}
+                    placeholder="R$ 0,00"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="dia_vencimento">Dia do Vencimento</Label>
+                  <Select 
+                    value={cartaoForm.dia_vencimento} 
+                    onValueChange={(value) => setCartaoForm({...cartaoForm, dia_vencimento: value})}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o dia" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({length: 28}, (_, i) => i + 1).map(dia => (
+                        <SelectItem key={dia} value={dia.toString()}>
+                          Dia {dia}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="ativo"
+                    checked={cartaoForm.ativo}
+                    onCheckedChange={(checked) => setCartaoForm({...cartaoForm, ativo: checked})}
+                  />
+                  <Label htmlFor="ativo">Cartão Ativo</Label>
+                </div>
+                
+                <div className="flex justify-end space-x-2">
+                  <Button type="button" variant="outline" onClick={() => setShowCartaoModal(false)}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit">
+                    {editingCartao ? 'Atualizar' : 'Adicionar'}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Cartão Detection Alert */}
       <CartaoDetectionAlert />
 
-      {/* Resumo Geral */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+      {/* Cards de Resumo Melhorados */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-primary/10 rounded-full -mr-8 -mt-8"></div>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total de Cartões</p>
-                <p className="text-2xl font-bold">{cartoesAtivos.length}</p>
+                <p className="text-sm font-medium text-muted-foreground">Cartões Ativos</p>
+                <p className="text-3xl font-bold">{cartoesAtivos.length}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {cartoes.length - cartoesAtivos.length} inativos
+                </p>
               </div>
-              <CreditCard className="h-8 w-8 text-muted-foreground" />
+              <div className="p-3 bg-primary/10 rounded-xl">
+                <CreditCard className="h-6 w-6 text-primary" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/10 rounded-full -mr-8 -mt-8"></div>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Limite Total</p>
-                <p className="text-2xl font-bold">{formatCurrency(totalLimite)}</p>
-              </div>
-              <DollarSign className="h-8 w-8 text-muted-foreground" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Disponível</p>
-                <p className={`text-2xl font-bold ${totalDisponivel >= 0 ? 'text-success' : 'text-destructive'}`}>
-                  {formatCurrency(totalDisponivel)}
+                <p className="text-3xl font-bold">{formatCurrency(totalLimite)}</p>
+                <p className="text-xs text-success mt-1">
+                  Disponível: {formatCurrency(totalDisponivel)}
                 </p>
               </div>
-              {totalDisponivel >= 0 ? (
-                <TrendingUp className="h-8 w-8 text-success" />
-              ) : (
-                <TrendingDown className="h-8 w-8 text-destructive" />
-              )}
+              <div className="p-3 bg-blue-500/10 rounded-xl">
+                <DollarSign className="h-6 w-6 text-blue-500" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden">
+          <div className={`absolute top-0 right-0 w-16 h-16 rounded-full -mr-8 -mt-8 ${
+            totalDisponivel >= 0 ? 'bg-success/10' : 'bg-destructive/10'
+          }`}></div>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Utilização</p>
-                <p className="text-2xl font-bold">{percentualUtilizacao.toFixed(1)}%</p>
+                <p className="text-sm font-medium text-muted-foreground">Crédito Disponível</p>
+                <p className={`text-3xl font-bold ${totalDisponivel >= 0 ? 'text-success' : 'text-destructive'}`}>
+                  {formatCurrency(totalDisponivel)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {((totalLimite - totalDisponivel) / totalLimite * 100 || 0).toFixed(1)}% usado
+                </p>
               </div>
-              <BarChart3 className="h-8 w-8 text-muted-foreground" />
+              <div className={`p-3 rounded-xl ${
+                totalDisponivel >= 0 ? 'bg-success/10' : 'bg-destructive/10'
+              }`}>
+                {totalDisponivel >= 0 ? (
+                  <TrendingUp className="h-6 w-6 text-success" />
+                ) : (
+                  <TrendingDown className="h-6 w-6 text-destructive" />
+                )}
+              </div>
             </div>
-            <Progress value={percentualUtilizacao} className="mt-2" />
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-16 h-16 bg-warning/10 rounded-full -mr-8 -mt-8"></div>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Gasto do Mês</p>
+                <p className="text-3xl font-bold text-warning">{formatCurrency(gastosCartoesMes)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Média: {formatCurrency(cartoesAtivos.length > 0 ? gastosCartoesMes / cartoesAtivos.length : 0)}
+                </p>
+              </div>
+              <div className="p-3 bg-warning/10 rounded-xl">
+                <BarChart3 className="h-6 w-6 text-warning" />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -362,24 +393,19 @@ export const Cartoes = () => {
         />
       )}
 
-      {/* Tabs */}
-      <Tabs defaultValue="visao-geral" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="visao-geral" className="flex items-center gap-2">
-            <Eye className="h-4 w-4" />
-            Visão Geral
+      {/* Seção de Faturas Futuras em Destaque */}
+      <FaturasFuturasSection />
+
+      {/* Tabs Simplificadas */}
+      <Tabs defaultValue="cartoes" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="cartoes" className="flex items-center gap-2">
+            <CreditCard className="h-4 w-4" />
+            Meus Cartões
           </TabsTrigger>
           <TabsTrigger value="limites" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
-            Limites
-          </TabsTrigger>
-          <TabsTrigger value="faturas-futuras" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            Faturas Futuras
-          </TabsTrigger>
-          <TabsTrigger value="transacoes" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Transações
+            Controle de Limites
           </TabsTrigger>
           <TabsTrigger value="configuracoes" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
@@ -387,69 +413,78 @@ export const Cartoes = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="visao-geral" className="space-y-6">
-          {/* Gastos do Mês */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Gastos do Mês Atual
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Total Gasto</p>
-                  <p className="text-2xl font-bold text-destructive">
-                    {formatCurrency(gastosCartoesMes)}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">Valor Médio</p>
-                  <p className="text-xl font-semibold">
-                    {formatCurrency(cartoesAtivos.length > 0 ? gastosCartoesMes / cartoesAtivos.length : 0)}
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-muted-foreground">% do Limite</p>
-                  <p className="text-xl font-semibold">
-                    {totalLimite > 0 ? ((gastosCartoesMes / totalLimite) * 100).toFixed(1) : 0}%
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <TabsContent value="cartoes" className="space-y-6">
+          {cartoesAtivos.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <CreditCard className="h-16 w-16 text-muted-foreground mx-auto mb-6" />
+                <h3 className="text-xl font-semibold mb-3">Nenhum cartão cadastrado</h3>
+                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                  Adicione seu primeiro cartão para começar a gerenciar seus limites e programar faturas futuras.
+                </p>
+                <Button onClick={() => setShowCartaoModal(true)} size="lg">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Adicionar Primeiro Cartão
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {/* Gastos do Mês Atual */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <div className="p-2 bg-warning/10 rounded-lg">
+                      <Calendar className="h-5 w-5 text-warning" />
+                    </div>
+                    Resumo do Mês Atual
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center p-4 bg-destructive/10 rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-1">Total Gasto</p>
+                      <p className="text-2xl font-bold text-destructive">
+                        {formatCurrency(gastosCartoesMes)}
+                      </p>
+                    </div>
+                    <div className="text-center p-4 bg-blue-500/10 rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-1">Valor Médio</p>
+                      <p className="text-xl font-semibold text-blue-500">
+                        {formatCurrency(cartoesAtivos.length > 0 ? gastosCartoesMes / cartoesAtivos.length : 0)}
+                      </p>
+                    </div>
+                    <div className="text-center p-4 bg-warning/10 rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-1">% do Limite</p>
+                      <p className="text-xl font-semibold text-warning">
+                        {totalLimite > 0 ? ((gastosCartoesMes / totalLimite) * 100).toFixed(1) : 0}%
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Lista de Cartões */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Meus Cartões</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {cartoesAtivos.length === 0 ? (
-                <div className="text-center py-8">
-                  <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    Nenhum cartão ativo encontrado
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Adicione seu primeiro cartão para começar
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {cartoesAtivos.map(cartao => (
-                    <LimiteCartaoDisplay
-                      key={cartao.id}
-                      cartao={cartao}
-                      onEdit={() => handleEditCartao(cartao)}
-                      onDelete={() => deleteCartao(cartao.id)}
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              {/* Lista de Cartões Melhorada */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Seus Cartões</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {cartoesAtivos.map(cartao => (
+                      <LimiteCartaoDisplay
+                        key={cartao.id}
+                        cartao={cartao}
+                        onEdit={() => handleEditCartao(cartao)}
+                        onDelete={() => deleteCartao(cartao.id)}
+                        className="hover:shadow-md transition-shadow"
+                      />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="limites" className="space-y-6">

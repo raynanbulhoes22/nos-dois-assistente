@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { LimiteCartaoDisplay } from "@/components/cartoes/LimiteCartaoDisplay";
 import { AlertasCartaoPanel } from "@/components/cartoes/AlertasCartaoPanel";
 import { CartaoDetectionAlert } from "@/components/cartoes/CartaoDetectionAlert";
+import { FaturasFuturasTab } from "@/components/cartoes/FaturasFuturasTab";
 import { formatCurrency } from "@/lib/utils";
 import { 
   CreditCard, 
@@ -363,7 +364,7 @@ export const Cartoes = () => {
 
       {/* Tabs */}
       <Tabs defaultValue="visao-geral" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="visao-geral" className="flex items-center gap-2">
             <Eye className="h-4 w-4" />
             Visão Geral
@@ -371,6 +372,10 @@ export const Cartoes = () => {
           <TabsTrigger value="limites" className="flex items-center gap-2">
             <Target className="h-4 w-4" />
             Limites
+          </TabsTrigger>
+          <TabsTrigger value="faturas-futuras" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Faturas Futuras
           </TabsTrigger>
           <TabsTrigger value="transacoes" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
@@ -496,6 +501,10 @@ export const Cartoes = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="faturas-futuras" className="space-y-6">
+          <FaturasFuturasTab />
         </TabsContent>
 
         <TabsContent value="transacoes" className="space-y-6">

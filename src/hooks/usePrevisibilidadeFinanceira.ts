@@ -4,6 +4,7 @@ import { useContasParceladas } from '@/hooks/useContasParceladas';
 import { useFontesRenda } from '@/hooks/useFontesRenda';
 import { useMovimentacoes } from '@/hooks/useMovimentacoes';
 import { useCartoes } from '@/hooks/useCartoes';
+import { useFaturasFuturas } from '@/hooks/useFaturasFuturas';
 import { calcularGastoCartao } from '@/lib/cartao-utils';
 
 export interface PrevisaoMensal {
@@ -44,6 +45,7 @@ export const usePrevisibilidadeFinanceira = () => {
   const { fontes: fontesRenda, getTotalRendaAtiva } = useFontesRenda();
   const { movimentacoes } = useMovimentacoes();
   const { cartoes } = useCartoes();
+  const { faturas: faturasFuturas } = useFaturasFuturas();
   
   const [previsoes, setPrevisoes] = useState<PrevisaoMensal[]>([]);
   const [alertas, setAlertas] = useState<AlertaFinanceiro[]>([]);
@@ -145,9 +147,25 @@ export const usePrevisibilidadeFinanceira = () => {
           };
         });
 
-      // 2. Faturas de cartão de crédito
+      // 2. Faturas futuras programadas para este mês
+      const faturasFuturasDoMes = faturasFuturas
+        .filter(fatura => fatura.mes === mes && fatura.ano === ano)
+        .map(fatura => ({
+          id: `fatura-futura-${fatura.id}`,
+          nome: `Fatura Programada: ${fatura.descricao}`,
+          valor: fatura.valor,
+          categoria: fatura.categoria || 'Cartão de Crédito',
+          tipo: 'cartao' as const
+        }));
+
+      // 3. Faturas de cartão de crédito (histórico médio, apenas se não há faturas futuras programadas)
       const cartoesDoMes = cartoes
-        .filter(cartao => cartao.ativo)
+        .filter(cartao => {
+          const cartaoTemFaturaFutura = faturasFuturasDoMes.some(ff => 
+            ff.nome.toLowerCase().includes(cartao.apelido.toLowerCase())
+          );
+          return cartao.ativo && !cartaoTemFaturaFutura;
+        })
         .map(cartao => {
           const valorMedio = calcularValorMedioCartao(cartao);
           
@@ -159,9 +177,9 @@ export const usePrevisibilidadeFinanceira = () => {
             tipo: 'cartao' as const
           };
         })
-        .filter(cartao => cartao.valor > 0); // Só incluir se houver histórico de gastos
+        .filter(cartao => cartao.valor > 0);
 
-      compromissosDoMes.push(...parcelasDoMes, ...cartoesDoMes);
+      compromissosDoMes.push(...parcelasDoMes, ...faturasFuturasDoMes, ...cartoesDoMes);
 
       const gastosFixos = compromissosDoMes.reduce((total, c) => total + c.valor, 0);
       const saldoProjetado = rendaMensal - gastosFixos;
@@ -196,7 +214,7 @@ export const usePrevisibilidadeFinanceira = () => {
     }
 
     return previsoesMensais;
-  }, [contas, cartoes, movimentacoes, getTotalRendaAtiva, user, transacoesFormatadas]);
+  }, [contas, cartoes, movimentacoes, faturasFuturas, getTotalRendaAtiva, user, transacoesFormatadas]);
 
   // Gerar alertas baseados nas previsões
   const gerarAlertas = useMemo(() => {
@@ -295,7 +313,8 @@ export const usePrevisibilidadeFinanceira = () => {
     contas.length, 
     getTotalParcelasAtivas(),
     cartoes.length,
-    movimentacoes.length
+    movimentacoes.length,
+    faturasFuturas.length
   ]);
 
   useEffect(() => {

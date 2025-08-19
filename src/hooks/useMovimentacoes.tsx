@@ -140,7 +140,6 @@ export const useMovimentacoes = () => {
         .select('*')
         .eq('user_id', user.id)
         .neq('categoria', 'Saldo Inicial') // Filtrar registros de Saldo Inicial
-        .neq('origem', 'fatura_futura') // Filtrar faturas futuras
         .order('data', { ascending: false });
 
       if (registrosPorUserId && registrosPorUserId.length > 0) {

@@ -90,9 +90,37 @@ export const FaturaFuturaForm = ({ onSuccess, cartoes }: FaturaFuturaFormProps) 
 
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Quando selecionar um cartão, calcular automaticamente a data de vencimento
+    if (field === "cartao_id" && value) {
+      const cartaoSelecionado = cartoes.find(c => c.id === value);
+      if (cartaoSelecionado?.dia_vencimento) {
+        const proximaDataVencimento = calcularProximaDataVencimento(cartaoSelecionado.dia_vencimento);
+        setFormData(prev => ({ ...prev, [field]: value, data: proximaDataVencimento }));
+        return;
+      }
+    }
+    
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }));
     }
+  };
+
+  // Função para calcular a próxima data de vencimento
+  const calcularProximaDataVencimento = (diaVencimento: number) => {
+    const hoje = new Date();
+    const anoAtual = hoje.getFullYear();
+    const mesAtual = hoje.getMonth();
+    
+    // Tenta criar a data no mês atual
+    let proximaData = new Date(anoAtual, mesAtual, diaVencimento);
+    
+    // Se a data já passou este mês, vai para o próximo
+    if (proximaData <= hoje) {
+      proximaData = new Date(anoAtual, mesAtual + 1, diaVencimento);
+    }
+    
+    return proximaData;
   };
 
   return (
@@ -110,7 +138,14 @@ export const FaturaFuturaForm = ({ onSuccess, cartoes }: FaturaFuturaFormProps) 
           <SelectContent>
             {cartoes.map((cartao) => (
               <SelectItem key={cartao.id} value={cartao.id}>
-                {cartao.apelido} - •••• {cartao.ultimos_digitos}
+                <div className="flex items-center justify-between w-full">
+                  <span>{cartao.apelido} - •••• {cartao.ultimos_digitos}</span>
+                  {cartao.dia_vencimento && (
+                    <span className="text-xs text-muted-foreground ml-2">
+                      (Vence dia {cartao.dia_vencimento})
+                    </span>
+                  )}
+                </div>
               </SelectItem>
             ))}
           </SelectContent>
@@ -161,9 +196,18 @@ export const FaturaFuturaForm = ({ onSuccess, cartoes }: FaturaFuturaFormProps) 
                 hoje.setHours(0, 0, 0, 0);
                 return date < hoje;
               }}
+              className="pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
+        {formData.cartao_id && (() => {
+          const cartaoSelecionado = cartoes.find(c => c.id === formData.cartao_id);
+          return cartaoSelecionado?.dia_vencimento && (
+            <p className="text-xs text-muted-foreground">
+              💡 Data preenchida automaticamente baseada no vencimento do cartão (dia {cartaoSelecionado.dia_vencimento})
+            </p>
+          );
+        })()}
         {errors.data && (
           <p className="text-sm text-destructive">{errors.data}</p>
         )}

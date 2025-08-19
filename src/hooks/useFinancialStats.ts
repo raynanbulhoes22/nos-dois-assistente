@@ -117,19 +117,16 @@ export const useFinancialStats = () => {
       const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
       const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
       
-      // Buscar saldo inicial dos registros financeiros (fonte da verdade)
-      const { data: registroSaldo } = await supabase
-        .from('registros_financeiros')
-        .select('valor, tipo_movimento')
+      // Buscar saldo inicial do orçamento mensal (fonte da verdade)
+      const { data: orcamentoMensal } = await supabase
+        .from('orcamentos_mensais')
+        .select('saldo_inicial')
         .eq('user_id', user.id)
-        .eq('categoria', 'Saldo Inicial')
-        .gte('data', inicioMes.toISOString().split('T')[0])
-        .lte('data', ultimoDiaMes.toISOString().split('T')[0])
+        .eq('mes', hoje.getMonth() + 1)
+        .eq('ano', hoje.getFullYear())
         .maybeSingle();
       
-      const saldoInicial = registroSaldo 
-        ? (registroSaldo.tipo_movimento === 'entrada' ? registroSaldo.valor : -registroSaldo.valor)
-        : 0;
+      const saldoInicial = orcamentoMensal?.saldo_inicial || 0;
     
       // Calcular entradas e saídas do mês atual (excluindo saldo inicial)
       const entradasMes = entradas.filter(entrada => 

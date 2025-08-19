@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useFontesRenda } from "@/hooks/useFontesRenda";
-import { useCartoes } from "@/hooks/useCartoes";
+import { useCartoes } from "@/hooks/useCartoes"; // Manter apenas para referência de tipos
 import { useOrcamentos } from "@/hooks/useOrcamentos";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 import { useContasParceladas } from "@/hooks/useContasParceladas";
@@ -58,12 +58,10 @@ export const Orcamento = () => {
   const [mesAtual, setMesAtual] = useState(new Date().getMonth() + 1);
   const [anoAtual, setAnoAtual] = useState(new Date().getFullYear());
   const [showFonteModal, setShowFonteModal] = useState(false);
-  const [showCartaoModal, setShowCartaoModal] = useState(false);
   const [showOrcamentoModal, setShowOrcamentoModal] = useState(false);
   const [showContaParceladaModal, setShowContaParceladaModal] = useState(false);
   const [showDetalheMensal, setShowDetalheMensal] = useState(false);
   const [editingFonte, setEditingFonte] = useState<any>(null);
-  const [editingCartao, setEditingCartao] = useState<any>(null);
   const [editingContaParcelada, setEditingContaParcelada] = useState<any>(null);
   const [editingGastoFixo, setEditingGastoFixo] = useState<any>(null);
   const [showGastoFixoModal, setShowGastoFixoModal] = useState(false);
@@ -75,15 +73,6 @@ export const Orcamento = () => {
     valor: '',
     descricao: '',
     ativa: true
-  });
-
-  const [cartaoForm, setCartaoForm] = useState({
-    apelido: '',
-    ultimos_digitos: '',
-    limite: 0,
-    limite_disponivel: 0,
-    dia_vencimento: '',
-    ativo: true
   });
 
   const [orcamentoForm, setOrcamentoForm] = useState({
@@ -105,14 +94,11 @@ export const Orcamento = () => {
   } = useFontesRenda();
 
   const { 
-    cartoes, 
-    addCartao, 
-    updateCartao, 
-    deleteCartao, 
-    getTotalLimite, 
+    // Removemos o hook de cartões da página de orçamento
+    // pois agora os cartões têm página própria
     isLoading: cartoesLoading,
     refetch: refetchCartoes 
-  } = useCartoes();
+  } = { isLoading: false, refetch: () => {} };
 
   const { 
     orcamentos, 
@@ -167,7 +153,6 @@ export const Orcamento = () => {
 
   // Calculados
   const totalRendaAtiva = getTotalRendaAtiva();
-  const totalLimiteCartoes = getTotalLimite();
   const totalParcelasAtivas = getTotalParcelasAtivas();
   const totalGastosFixos = getTotalGastosFixosAtivos();
   const orcamentoAtual = orcamentos.find(o => o.mes === mesAtual && o.ano === anoAtual);
@@ -377,58 +362,6 @@ export const Orcamento = () => {
     }
   };
 
-  const handleAddCartao = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await addCartao({
-        apelido: cartaoForm.apelido,
-        ultimos_digitos: cartaoForm.ultimos_digitos,
-        limite: cartaoForm.limite,
-        limite_disponivel: (cartaoForm.limite_disponivel || cartaoForm.limite).toString(), // Converter para string
-        dia_vencimento: parseInt(cartaoForm.dia_vencimento),
-        ativo: cartaoForm.ativo
-      });
-      setShowCartaoModal(false);
-      resetCartaoForm();
-      toast.success('Cartão adicionado com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao adicionar cartão');
-    }
-  };
-
-  const handleEditCartao = (cartao: any) => {
-    setEditingCartao(cartao);
-    setCartaoForm({
-      apelido: cartao.apelido || '',
-      ultimos_digitos: cartao.ultimos_digitos || '',
-      limite: cartao.limite || 0,
-      limite_disponivel: parseFloat(cartao.limite_disponivel) || cartao.limite || 0,
-      dia_vencimento: (cartao.dia_vencimento || '').toString(),
-      ativo: cartao.ativo !== false
-    });
-    setShowCartaoModal(true);
-  };
-
-  const handleUpdateCartao = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await updateCartao(editingCartao.id, {
-        apelido: cartaoForm.apelido,
-        ultimos_digitos: cartaoForm.ultimos_digitos,
-        limite: cartaoForm.limite,
-        limite_disponivel: cartaoForm.limite_disponivel.toString(), // Converter para string
-        dia_vencimento: parseInt(cartaoForm.dia_vencimento),
-        ativo: cartaoForm.ativo
-      });
-      setShowCartaoModal(false);
-      setEditingCartao(null);
-      resetCartaoForm();
-      toast.success('Cartão atualizado com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao atualizar cartão');
-    }
-  };
-
   const handleCreateOrcamento = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -518,17 +451,6 @@ export const Orcamento = () => {
       valor: '',
       descricao: '',
       ativa: true
-    });
-  };
-
-  const resetCartaoForm = () => {
-    setCartaoForm({
-      apelido: '',
-      ultimos_digitos: '',
-      limite: 0,
-      limite_disponivel: 0,
-      dia_vencimento: '',
-      ativo: true
     });
   };
 
@@ -681,7 +603,6 @@ export const Orcamento = () => {
             <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6">
               <TabSection
                 fontes={fontes}
-                cartoes={cartoes}
                 contas={contas}
                 gastosFixos={gastosFixos}
                 gastosFixosComStatus={gastosFixosComStatus.length > 0 ? gastosFixosComStatus : undefined}
@@ -689,7 +610,6 @@ export const Orcamento = () => {
                 contasParceladasComStatus={contasParceladasComStatus.length > 0 ? contasParceladasComStatus : undefined}
                 formatCurrency={formatCurrency}
                 totalRendaAtiva={totalRendaAtiva}
-                totalLimiteCartoes={totalLimiteCartoes}
                 totalParcelasAtivas={totalParcelasAtivas}
                 totalGastosFixosAtivos={getTotalGastosFixosAtivos()}
                 totalGastosPagos={totalGastosPagos}
@@ -700,14 +620,11 @@ export const Orcamento = () => {
                 totalParcelasPendentes={totalParcelasPendentes}
                 onEditFonte={handleEditFonte}
                 onDeleteFonte={deleteFonte}
-                onEditCartao={handleEditCartao}
-                onDeleteCartao={deleteCartao}
                 onEditContaParcelada={handleEditContaParcelada}
                 onDeleteContaParcelada={deleteConta}
                 onEditGastoFixo={handleEditGastoFixo}
                 onDeleteGastoFixo={handleDeleteGastoFixo}
                 onAddFonte={() => setShowFonteModal(true)}
-                onAddCartao={() => setShowCartaoModal(true)}
                 onAddParcelamento={() => setShowContaParceladaModal(true)}
                 onAddGastoFixo={() => setShowGastoFixoModal(true)}
                 onToggleStatusRenda={handleToggleStatusRenda}
@@ -788,107 +705,6 @@ export const Orcamento = () => {
                 className="w-full sm:w-auto order-1 sm:order-2"
               >
                 {editingFonte ? 'Atualizar' : 'Adicionar'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal Cartão - Mobile Optimized */}
-      <Dialog open={showCartaoModal} onOpenChange={setShowCartaoModal}>
-        <DialogContent className="w-[95vw] max-w-md mx-auto rounded-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="space-y-1">
-            <DialogTitle className="text-lg">
-              {editingCartao ? 'Editar' : 'Novo'} Cartão
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={editingCartao ? handleUpdateCartao : handleAddCartao} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="apelido" className="text-sm font-medium">Apelido</Label>
-              <Input
-                id="apelido"
-                value={cartaoForm.apelido}
-                onChange={(e) => setCartaoForm({...cartaoForm, apelido: e.target.value})}
-                placeholder="Ex: Cartão Principal"
-                required
-                className="h-11"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="ultimos_digitos" className="text-sm font-medium">Últimos 4 dígitos</Label>
-              <Input
-                id="ultimos_digitos"
-                value={cartaoForm.ultimos_digitos}
-                onChange={(e) => setCartaoForm({...cartaoForm, ultimos_digitos: e.target.value})}
-                placeholder="1234"
-                maxLength={4}
-                required
-                className="h-11"
-              />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="limite" className="text-sm font-medium">Limite Total</Label>
-                <CurrencyInput
-                  id="limite"
-                  value={cartaoForm.limite}
-                  onChange={(value) => setCartaoForm({...cartaoForm, limite: value})}
-                  placeholder="Ex: 5000,00"
-                  required
-                  className="h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="limite_disponivel" className="text-sm font-medium">Disponível</Label>
-                <CurrencyInput
-                  id="limite_disponivel"
-                  value={cartaoForm.limite_disponivel}
-                  onChange={(value) => setCartaoForm({...cartaoForm, limite_disponivel: value})}
-                  placeholder="Ex: 1500,00"
-                  required
-                  className="h-11"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="dia_vencimento" className="text-sm font-medium">Dia do Vencimento</Label>
-              <Select value={cartaoForm.dia_vencimento} onValueChange={(value) => setCartaoForm({...cartaoForm, dia_vencimento: value})}>
-                <SelectTrigger className="h-11">
-                  <SelectValue placeholder="Selecione o dia" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({length: 31}, (_, i) => i + 1).map(dia => (
-                    <SelectItem key={dia} value={dia.toString()}>{dia}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center space-x-3 py-2">
-              <Switch
-                id="ativo"
-                checked={cartaoForm.ativo}
-                onCheckedChange={(checked) => setCartaoForm({...cartaoForm, ativo: checked})}
-              />
-              <Label htmlFor="ativo" className="text-sm">Cartão ativo</Label>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2 sm:justify-end pt-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => {
-                  setShowCartaoModal(false);
-                  setEditingCartao(null);
-                  resetCartaoForm();
-                }}
-                className="w-full sm:w-auto order-2 sm:order-1"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit" 
-                className="w-full sm:w-auto order-1 sm:order-2"
-              >
-                {editingCartao ? 'Atualizar' : 'Adicionar'}
               </Button>
             </div>
           </form>

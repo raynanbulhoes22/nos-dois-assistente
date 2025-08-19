@@ -3,14 +3,12 @@ import { MobileSection } from "./MobileSection";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Edit3, Trash2, TrendingUp, CreditCard, Building2, Home, CheckCircle, Clock, RotateCw } from "lucide-react";
+import { Edit3, Trash2, TrendingUp, Building2, Home, CheckCircle, Clock, RotateCw } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { LimiteCartaoDisplay } from "@/components/cartoes/LimiteCartaoDisplay";
 import { cn } from "@/lib/utils";
 
 interface TabSectionProps {
   fontes: any[];
-  cartoes: any[];
   contas: any[];
   gastosFixos: any[];
   gastosFixosComStatus?: any[];
@@ -18,7 +16,6 @@ interface TabSectionProps {
   contasParceladasComStatus?: any[];
   formatCurrency: (value: number) => string;
   totalRendaAtiva: number;
-  totalLimiteCartoes: number;
   totalParcelasAtivas: number;
   totalGastosFixosAtivos: number;
   totalGastosPagos?: number;
@@ -29,14 +26,11 @@ interface TabSectionProps {
   totalParcelasPendentes?: number;
   onEditFonte: (fonte: any) => void;
   onDeleteFonte: (id: string) => void;
-  onEditCartao: (cartao: any) => void;
-  onDeleteCartao: (id: string) => void;
   onEditContaParcelada: (conta: any) => void;
   onDeleteContaParcelada: (id: string) => void;
   onEditGastoFixo: (gasto: any) => void;
   onDeleteGastoFixo: (id: string) => void;
   onAddFonte: () => void;
-  onAddCartao: () => void;
   onAddParcelamento: () => void;
   onAddGastoFixo: () => void;
   onToggleStatusRenda?: (id: string, novoStatus: 'recebido' | 'pendente') => void;
@@ -46,7 +40,6 @@ interface TabSectionProps {
 
 export const TabSection = ({
   fontes,
-  cartoes,
   contas,
   gastosFixos,
   gastosFixosComStatus,
@@ -54,7 +47,6 @@ export const TabSection = ({
   contasParceladasComStatus,
   formatCurrency,
   totalRendaAtiva,
-  totalLimiteCartoes,
   totalParcelasAtivas,
   totalGastosFixosAtivos,
   totalGastosPagos = 0,
@@ -65,14 +57,11 @@ export const TabSection = ({
   totalParcelasPendentes = 0,
   onEditFonte,
   onDeleteFonte,
-  onEditCartao,
-  onDeleteCartao,
   onEditContaParcelada,
   onDeleteContaParcelada,
   onEditGastoFixo,
   onDeleteGastoFixo,
   onAddFonte,
-  onAddCartao,
   onAddParcelamento,
   onAddGastoFixo,
   onToggleStatusRenda,
@@ -82,18 +71,14 @@ export const TabSection = ({
   const isMobile = useIsMobile();
   
   const activeFontes = fontesRendaComStatus || fontes.filter(fonte => fonte.ativa);
-  const activeCartoes = cartoes.filter(cartao => cartao.ativo);
   const activeContas = contasParceladasComStatus || contas.filter(conta => conta.ativa);
   const activeGastosFixos = gastosFixosComStatus || gastosFixos.filter(gasto => gasto.ativo);
 
   return (
     <Tabs defaultValue="renda" className="w-full">
-      <TabsList className={`grid w-full grid-cols-4 ${isMobile ? 'mb-3 h-9' : 'mb-4 h-10'}`}>
+      <TabsList className={`grid w-full grid-cols-3 ${isMobile ? 'mb-3 h-9' : 'mb-4 h-10'}`}>
         <TabsTrigger value="renda" className={`${isMobile ? 'text-xs px-1' : 'text-sm px-3'} min-w-0`}>
           {isMobile ? 'Renda' : 'Renda'}
-        </TabsTrigger>
-        <TabsTrigger value="cartoes" className={`${isMobile ? 'text-xs px-1' : 'text-sm px-3'} min-w-0`}>
-          {isMobile ? 'Cartões' : 'Cartões'}
         </TabsTrigger>
         <TabsTrigger value="parcelamentos" className={`${isMobile ? 'text-xs px-1' : 'text-sm px-3'} min-w-0`}>
           {isMobile ? 'Parcelas' : 'Parcelados'}
@@ -227,30 +212,6 @@ export const TabSection = ({
             ))}
             </div>
           </TooltipProvider>
-        </MobileSection>
-      </TabsContent>
-
-      <TabsContent value="cartoes" className="mt-0">
-        <MobileSection
-          title="Cartões de Crédito"
-          subtitle={`Limite Total: ${formatCurrency(totalLimiteCartoes)}`}
-          icon={CreditCard}
-          iconVariant="primary"
-          onAdd={onAddCartao}
-          addLabel="Adicionar Cartão"
-          isEmpty={activeCartoes.length === 0}
-          emptyMessage="Nenhum cartão cadastrado"
-        >
-          <div className="space-y-4">
-            {activeCartoes.map((cartao) => (
-              <LimiteCartaoDisplay
-                key={cartao.id}
-                cartao={cartao}
-                onEdit={() => onEditCartao(cartao)}
-                onDelete={() => onDeleteCartao(cartao.id)}
-              />
-            ))}
-          </div>
         </MobileSection>
       </TabsContent>
 

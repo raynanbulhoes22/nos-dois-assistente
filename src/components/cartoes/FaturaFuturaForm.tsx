@@ -26,8 +26,7 @@ export const FaturaFuturaForm = ({ onSuccess, cartoes }: FaturaFuturaFormProps) 
     cartao_id: '',
     valor: 0,
     data: new Date(),
-    descricao: '',
-    categoria: 'Cartão de Crédito'
+    descricao: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -67,7 +66,7 @@ export const FaturaFuturaForm = ({ onSuccess, cartoes }: FaturaFuturaFormProps) 
         mes: formData.data.getMonth() + 1,
         ano: formData.data.getFullYear(),
         descricao: formData.descricao,
-        categoria: formData.categoria,
+        categoria: 'Fatura de Cartão', // Categoria fixa
         apelido_cartao: cartaoSelecionado?.apelido,
         ultimos_digitos: cartaoSelecionado?.ultimos_digitos
       });
@@ -79,8 +78,7 @@ export const FaturaFuturaForm = ({ onSuccess, cartoes }: FaturaFuturaFormProps) 
           cartao_id: '',
           valor: 0,
           data: new Date(),
-          descricao: '',
-          categoria: 'Cartão de Crédito'
+          descricao: ''
         });
       }
     } catch (error) {
@@ -173,39 +171,15 @@ export const FaturaFuturaForm = ({ onSuccess, cartoes }: FaturaFuturaFormProps) 
 
       {/* Descrição */}
       <div className="space-y-2">
-        <Label htmlFor="descricao">Descrição *</Label>
+        <Label htmlFor="descricao">Descrição da Fatura *</Label>
         <Input
           value={formData.descricao}
           onChange={(e) => updateFormData("descricao", e.target.value)}
-          placeholder="Ex: Fatura do cartão - Compras do mês"
+          placeholder="Ex: Fatura Nubank - Janeiro/2024"
         />
         {errors.descricao && (
           <p className="text-sm text-destructive">{errors.descricao}</p>
         )}
-      </div>
-
-      {/* Categoria */}
-      <div className="space-y-2">
-        <Label htmlFor="categoria">Categoria</Label>
-        <Select 
-          value={formData.categoria} 
-          onValueChange={(value) => updateFormData("categoria", value)}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Cartão de Crédito">Cartão de Crédito</SelectItem>
-            <SelectItem value="Assinatura">Assinatura</SelectItem>
-            <SelectItem value="Supermercado">Supermercado</SelectItem>
-            <SelectItem value="Combustível">Combustível</SelectItem>
-            <SelectItem value="Alimentação">Alimentação</SelectItem>
-            <SelectItem value="Entretenimento">Entretenimento</SelectItem>
-            <SelectItem value="Saúde">Saúde</SelectItem>
-            <SelectItem value="Transporte">Transporte</SelectItem>
-            <SelectItem value="Outros">Outros</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">

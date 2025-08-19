@@ -107,7 +107,7 @@ export const useFaturasFuturas = () => {
           valor: fatura.valor,
           data: fatura.data,
           titulo: fatura.descricao,
-          categoria: fatura.categoria || 'Cartão de Crédito',
+          categoria: fatura.categoria || 'Fatura de Cartão',
           observacao: `Fatura futura programada - ${fatura.apelido_cartao}`,
           origem: 'fatura_futura',
           tipo_movimento: 'saida',

@@ -9,6 +9,7 @@ import { formatCurrency } from "@/lib/utils";
 import { 
   Calculator, 
   TrendingUp, 
+  TrendingDown,
   Calendar,
   DollarSign,
   Percent,

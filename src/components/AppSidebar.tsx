@@ -4,6 +4,7 @@ import {
   TrendingDown, 
   Crown, 
   Target, 
+  CreditCard,
   AlertTriangle, 
   FileText, 
   Settings,
@@ -30,6 +31,7 @@ const mainNavigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Movimentações", url: "/movimentacoes", icon: TrendingUp },
   { title: "Orçamento", url: "/orcamento", icon: Target },
+  { title: "Cartões", url: "/cartoes", icon: CreditCard },
   { title: "Dívidas", url: "/dividas", icon: TrendingDown },
   { title: "Relatórios", url: "/relatorios", icon: FileText },
 ];

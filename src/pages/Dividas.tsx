@@ -16,7 +16,7 @@ import {
   FileText
 } from "lucide-react";
 import { useContasParceladas } from "@/hooks/useContasParceladas";
-import { useCartoes } from "@/hooks/useCartoes";
+// Removemos o hook de cartões da página de dívidas
 import { formatCurrency } from "@/lib/utils";
 import { DividasOverview } from "@/components/dividas/DividasOverview";
 import { EstrategiaQuitacao } from "@/components/dividas/EstrategiaQuitacao";
@@ -26,13 +26,12 @@ import { RankingDividas } from "@/components/dividas/RankingDividas";
 export default function Dividas() {
   const [activeTab, setActiveTab] = useState("overview");
   const { contas, isLoading: loadingContas } = useContasParceladas();
-  const { cartoes, isLoading: loadingCartoes } = useCartoes();
+  // Removemos o hook de cartões da página de dívidas
 
-  const isLoading = loadingContas || loadingCartoes;
+  const isLoading = loadingContas;
 
-  // Calcular dados agregados das dívidas
+  // Calcular dados agregados das dívidas (apenas parcelamentos)
   const contasAtivas = contas.filter(conta => conta.ativa);
-  const cartoesAtivos = cartoes.filter(cartao => cartao.ativo);
 
   const totalDividas = contasAtivas.reduce((total, conta) => {
     const parcelasRestantes = conta.total_parcelas - conta.parcelas_pagas;
@@ -43,10 +42,7 @@ export default function Dividas() {
     return total + Number(conta.valor_parcela);
   }, 0);
 
-  const totalCartoes = cartoesAtivos.reduce((total, cartao) => {
-    const limiteUsado = Number(cartao.limite) - Number(cartao.limite_disponivel || cartao.limite);
-    return total + limiteUsado;
-  }, 0);
+  const totalDividasAtivas = contasAtivas.length;
 
   if (isLoading) {
     return (
@@ -89,10 +85,10 @@ export default function Dividas() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">
-              {formatCurrency(totalDividas + totalCartoes)}
+              {formatCurrency(totalDividas)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {contasAtivas.length} parcelamentos + {cartoesAtivos.length} cartões
+              {contasAtivas.length} parcelamentos e financiamentos
             </p>
           </CardContent>
         </Card>
@@ -123,10 +119,10 @@ export default function Dividas() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-500">
-              {contasAtivas.length + cartoesAtivos.length}
+              {totalDividasAtivas}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Contas em aberto
+              Parcelamentos e financiamentos
             </p>
           </CardContent>
         </Card>
@@ -156,14 +152,14 @@ export default function Dividas() {
         <TabsContent value="overview" className="space-y-4">
           <DividasOverview 
             contasParceladas={contasAtivas}
-            cartoes={cartoesAtivos}
+            cartoes={[]}
           />
         </TabsContent>
 
         <TabsContent value="estrategias" className="space-y-4">
           <EstrategiaQuitacao 
             contasParceladas={contasAtivas}
-            cartoes={cartoesAtivos}
+            cartoes={[]}
           />
         </TabsContent>
 
@@ -176,7 +172,7 @@ export default function Dividas() {
         <TabsContent value="ranking" className="space-y-4">
           <RankingDividas 
             contasParceladas={contasAtivas}
-            cartoes={cartoesAtivos}
+            cartoes={[]}
           />
         </TabsContent>
       </Tabs>

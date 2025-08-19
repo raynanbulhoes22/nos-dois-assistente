@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Clock
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface DividasOverviewProps {
   contasParceladas: any[];
@@ -144,63 +145,21 @@ export function DividasOverview({ contasParceladas, cartoes }: DividasOverviewPr
         </CardContent>
       </Card>
 
-      {/* Resumo dos Cartões */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Cartões de Crédito
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {cartoesComEstatisticas.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              Nenhum cartão ativo encontrado
+      {/* Informação sobre Cartões */}
+      {cartoes.length > 0 && (
+        <Card className="border-dashed">
+          <CardContent className="p-6 text-center">
+            <CreditCard className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="font-medium mb-2">Cartões de Crédito</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Os cartões de crédito agora têm uma seção dedicada para melhor gerenciamento.
             </p>
-          ) : (
-            <div className="space-y-4">
-              {cartoesComEstatisticas.map(cartao => (
-                <div key={cartao.id} className="border rounded-lg p-4 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h4 className="font-medium">{cartao.apelido}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Final {cartao.ultimos_digitos}
-                      </p>
-                    </div>
-                    <Badge variant={getStatusCor(cartao.percentualUso)}>
-                      {cartao.percentualUso.toFixed(1)}%
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Limite utilizado</span>
-                      <span>{formatCurrency(cartao.valorUsado)}</span>
-                    </div>
-                    <Progress value={cartao.percentualUso} className="h-2" />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Limite total:</span>
-                      <p className="font-medium">
-                        {formatCurrency(cartao.limite)}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Disponível:</span>
-                      <p className="font-medium text-success">
-                        {formatCurrency(cartao.limite - cartao.valorUsado)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            <Button variant="outline" asChild>
+              <a href="/cartoes">Gerenciar Cartões</a>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Alertas e Oportunidades */}
       {(proximasVencer.length > 0 || cartoesAltoUso.length > 0) && (

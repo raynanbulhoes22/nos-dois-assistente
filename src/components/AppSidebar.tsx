@@ -30,6 +30,7 @@ const mainNavigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Movimentações", url: "/movimentacoes", icon: TrendingUp },
   { title: "Orçamento", url: "/orcamento", icon: Target },
+  { title: "Dívidas", url: "/dividas", icon: TrendingDown },
   { title: "Relatórios", url: "/relatorios", icon: FileText },
 ];
 

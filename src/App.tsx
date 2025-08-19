@@ -17,6 +17,7 @@ import { Orcamento } from "./pages/Orcamento";
 
 import { Relatorios } from "./pages/Relatorios";
 import { Configuracoes } from "./pages/Configuracoes";
+import Dividas from "./pages/Dividas";
 import PrimeirosPasos from "./pages/PrimeirosPasos";
 import NotFound from "./pages/NotFound";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
@@ -81,6 +82,11 @@ const App = () => {
                       <Route path="/orcamento" element={
                         <ProtectedRoute>
                           <Orcamento />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/dividas" element={
+                        <ProtectedRoute>
+                          <Dividas />
                         </ProtectedRoute>
                       } />
                       <Route path="/relatorios" element={

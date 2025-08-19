@@ -326,9 +326,15 @@ export const Cartoes = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Disponível</p>
-                <p className="text-2xl font-bold text-success">{formatCurrency(totalDisponivel)}</p>
+                <p className={`text-2xl font-bold ${totalDisponivel >= 0 ? 'text-success' : 'text-destructive'}`}>
+                  {formatCurrency(totalDisponivel)}
+                </p>
               </div>
-              <TrendingUp className="h-8 w-8 text-success" />
+              {totalDisponivel >= 0 ? (
+                <TrendingUp className="h-8 w-8 text-success" />
+              ) : (
+                <TrendingDown className="h-8 w-8 text-destructive" />
+              )}
             </div>
           </CardContent>
         </Card>

@@ -146,32 +146,20 @@ export const useMovimentacoes = () => {
         registros = [...registrosPorUserId];
       }
 
-      // Estratégia 2: Buscar por numero_wpp usando TRIM() no SQL (dados do WhatsApp)
-      if (userWhatsapp) {
-        const normalizedWhatsapp = normalizePhoneNumber(userWhatsapp);
-        
-        // Criar diferentes formatos para busca
-        const searchFormats = [
-          normalizedWhatsapp, // 556992290572
-          `+${normalizedWhatsapp}`, // +556992290572
-          normalizedWhatsapp.substring(2), // 6992290572 (sem código do país)
-          normalizedWhatsapp.substring(4), // 92290572 (sem código país e DDD)
-        ].filter(num => num && num.length >= 8);
-        
-        // Buscar usando uma estratégia mais agressiva com ILIKE
-        const { data: registrosPorWhatsapp } = await supabase
-          .from('registros_financeiros')
-          .select('*')
-          .or(searchFormats.map(num => `numero_wpp.ilike.%${num}%`).join(','))
-          .neq('categoria', 'Saldo Inicial') // Filtrar registros de Saldo Inicial
-          .order('data', { ascending: false });
+      // Estratégia 2: Buscar por numero_wpp - todos os números associados a este user_id
+      const { data: registrosPorWhatsapp } = await supabase
+        .from('registros_financeiros')
+        .select('*')
+        .eq('user_id', user.id) // Buscar por user_id específico ao invés de número
+        .neq('categoria', 'Saldo Inicial')
+        .not('numero_wpp', 'is', null) // Apenas registros com número de WhatsApp
+        .order('data', { ascending: false });
 
-        if (registrosPorWhatsapp && registrosPorWhatsapp.length > 0) {
-          // Combinar com registros existentes e remover duplicatas
-          const idsExistentes = new Set(registros.map((r: any) => r.id));
-          const novosRegistros = registrosPorWhatsapp.filter((r: any) => !idsExistentes.has(r.id));
-          registros = [...registros, ...novosRegistros];
-        }
+      if (registrosPorWhatsapp && registrosPorWhatsapp.length > 0) {
+        // Combinar com registros existentes e remover duplicatas
+        const idsExistentes = new Set(registros.map((r: any) => r.id));
+        const novosRegistros = registrosPorWhatsapp.filter((r: any) => !idsExistentes.has(r.id));
+        registros = [...registros, ...novosRegistros];
       }
 
       if (!registros || registros.length === 0) {

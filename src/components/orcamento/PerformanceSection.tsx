@@ -10,6 +10,9 @@ interface PerformanceSectionProps {
 
 export const PerformanceSection = ({ mes, ano }: PerformanceSectionProps) => {
   const { comparativo, isLoading } = useComparativoFinanceiro(mes, ano);
+  
+  // Debug para investigar o bug do valor negativo em verde
+  console.log("DEBUG PerformanceSection - saldoRealizado:", comparativo?.saldoRealizado);
 
   const formatCurrency = (valor: number) => {
     return valor.toLocaleString('pt-BR', {
@@ -82,7 +85,8 @@ export const PerformanceSection = ({ mes, ano }: PerformanceSectionProps) => {
               <span className={`font-medium ${comparativo.saldoRealizado >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                 {formatCurrency(comparativo.saldoRealizado)}
               </span>
-              {comparativo.saldoRealizado >= comparativo.saldoProjetado ? (
+              {/* Corrigir: seta deve basear-se no sinal do valor, não na comparação */}
+              {comparativo.saldoRealizado >= 0 ? (
                 <TrendingUp className="h-3 w-3 text-green-500" />
               ) : (
                 <TrendingDown className="h-3 w-3 text-red-500" />

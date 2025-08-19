@@ -134,25 +134,38 @@ export const useMovimentacoes = () => {
 
       let registros: any[] = [];
 
-      // Estratégia 1: Buscar por user_id (dados inseridos manualmente)
+      // Obter o mês e ano atual
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth() + 1; // getMonth() retorna 0-11
+      const currentYear = currentDate.getFullYear();
+      
+      // Calcular primeira e última data do mês atual
+      const startOfMonth = new Date(currentYear, currentMonth - 1, 1).toISOString().split('T')[0];
+      const endOfMonth = new Date(currentYear, currentMonth, 0).toISOString().split('T')[0];
+
+      // Estratégia 1: Buscar por user_id (dados inseridos manualmente) - apenas do mês atual
       const { data: registrosPorUserId, error: errorUserId } = await supabase
         .from('registros_financeiros')
         .select('*')
         .eq('user_id', user.id)
         .neq('categoria', 'Saldo Inicial') // Filtrar registros de Saldo Inicial
+        .gte('data', startOfMonth) // Data maior ou igual ao início do mês
+        .lte('data', endOfMonth) // Data menor ou igual ao fim do mês
         .order('data', { ascending: false });
 
       if (registrosPorUserId && registrosPorUserId.length > 0) {
         registros = [...registrosPorUserId];
       }
 
-      // Estratégia 2: Buscar por numero_wpp - todos os números associados a este user_id
+      // Estratégia 2: Buscar por numero_wpp - todos os números associados a este user_id (apenas do mês atual)
       const { data: registrosPorWhatsapp } = await supabase
         .from('registros_financeiros')
         .select('*')
         .eq('user_id', user.id) // Buscar por user_id específico ao invés de número
         .neq('categoria', 'Saldo Inicial')
         .not('numero_wpp', 'is', null) // Apenas registros com número de WhatsApp
+        .gte('data', startOfMonth) // Data maior ou igual ao início do mês
+        .lte('data', endOfMonth) // Data menor ou igual ao fim do mês
         .order('data', { ascending: false });
 
       if (registrosPorWhatsapp && registrosPorWhatsapp.length > 0) {

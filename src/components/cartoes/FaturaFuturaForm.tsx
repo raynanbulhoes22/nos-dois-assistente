@@ -168,46 +168,61 @@ export const FaturaFuturaForm = ({ onSuccess, cartoes }: FaturaFuturaFormProps) 
         )}
       </div>
 
-      {/* Data */}
+      {/* Data - Somente exibição, preenchida automaticamente */}
       <div className="space-y-2">
         <Label>Data de Vencimento *</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !formData.data && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {formData.data ? format(formData.data, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione uma data"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={formData.data}
-              onSelect={(date) => date && updateFormData("data", date)}
-              initialFocus
-              locale={ptBR}
-              disabled={(date) => {
-                const hoje = new Date();
-                hoje.setHours(0, 0, 0, 0);
-                return date < hoje;
-              }}
-              className="pointer-events-auto"
-            />
-          </PopoverContent>
-        </Popover>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            className="flex-1 justify-start text-left font-normal"
+            disabled
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {formData.data ? format(formData.data, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : "Selecione um cartão primeiro"}
+          </Button>
+          
+          {/* Botão para editar data manualmente se necessário */}
+          {formData.cartao_id && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="px-3">
+                  <CalendarIcon className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={formData.data}
+                  onSelect={(date) => date && updateFormData("data", date)}
+                  initialFocus
+                  locale={ptBR}
+                  disabled={(date) => {
+                    const hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0);
+                    return date < hoje;
+                  }}
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
+        
         {formData.cartao_id && (() => {
           const cartaoSelecionado = cartoes.find(c => c.id === formData.cartao_id);
           return cartaoSelecionado?.dia_vencimento && (
-            <p className="text-xs text-muted-foreground">
-              💡 Data preenchida automaticamente baseada no vencimento do cartão (dia {cartaoSelecionado.dia_vencimento})
+            <p className="text-xs text-success flex items-center gap-1">
+              ✅ Data calculada automaticamente para o dia {cartaoSelecionado.dia_vencimento}
             </p>
           );
         })()}
+        
+        {!formData.cartao_id && (
+          <p className="text-xs text-muted-foreground">
+            A data será preenchida automaticamente após selecionar o cartão
+          </p>
+        )}
+        
         {errors.data && (
           <p className="text-sm text-destructive">{errors.data}</p>
         )}

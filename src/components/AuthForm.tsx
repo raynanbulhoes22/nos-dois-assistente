@@ -146,7 +146,7 @@ export const AuthForm = () => {
           logger.info('Login automático realizado após cadastro');
           toast({
             title: "Cadastro e login realizados! 🎉",
-            description: "Bem-vindo ao LucraAI!",
+            description: "Bem-vindo ao Lyvo | LucraAI!",
           });
           // Se já logou automaticamente, não precisamos da tela de confirmação
           setShowEmailConfirmation(false);
@@ -320,7 +320,7 @@ export const AuthForm = () => {
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary via-purple-600 to-accent bg-clip-text text-transparent">
-                  LucraAI
+                  Lyvo | LucraAI
                 </h1>
                 <div className="h-1 w-full bg-gradient-to-r from-primary via-purple-500 to-accent rounded-full mt-1"></div>
               </div>

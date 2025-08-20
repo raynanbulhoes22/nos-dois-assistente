@@ -92,7 +92,7 @@ export function AppSidebar() {
         {/* Main Navigation */}
         <SidebarGroup className="flex-1">
           <SidebarGroupLabel className={state === "collapsed" ? "sr-only" : "px-4 py-2"}>
-            LucraAI
+            Lyvo | LucraAI
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">

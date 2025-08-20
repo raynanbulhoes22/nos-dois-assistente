@@ -329,7 +329,7 @@ export const Assinaturas = () => {
 
         {/* Benefícios */}
         <div className="text-center mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-3xl font-bold mb-3 sm:mb-4 px-2">Por que escolher o LucraAI?</h2>
+          <h2 className="text-xl sm:text-3xl font-bold mb-3 sm:mb-4 px-2">Por que escolher o Lyvo | LucraAI?</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div className="text-center p-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-3 sm:mb-4">
@@ -365,7 +365,7 @@ export const Assinaturas = () => {
         {!status?.subscribed && <div className="text-center bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-4 sm:p-8">
             <h2 className="text-lg sm:text-2xl font-bold mb-2 px-2">Comece sua transformação financeira hoje!</h2>
             <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-2">
-              Junte-se a milhares de pessoas que já transformaram suas finanças com o LucraAI
+              Junte-se a milhares de pessoas que já transformaram suas finanças com o Lyvo | LucraAI
             </p>
             <div className="flex flex-col gap-3 sm:gap-4">
               <Button onClick={() => handleCheckout("solo")} disabled={busy || loadingPricing} size="lg" variant="outline" className="w-full">

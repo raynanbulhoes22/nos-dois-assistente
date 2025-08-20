@@ -31,7 +31,7 @@ export const WelcomeModal = ({
   const [isOpen, setIsOpen] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const whatsappNumber = "5569993140550";
-  const whatsappLink = `https://wa.me/${whatsappNumber}?text=Olá! Acabei de me cadastrar no LucraAI e quero começar a enviar meus registros financeiros para análise inteligente!`;
+  const whatsappLink = `https://wa.me/${whatsappNumber}?text=Olá! Acabei de me cadastrar no Lyvo | LucraAI e quero começar a enviar meus registros financeiros para análise inteligente!`;
   
   const features = [{
     icon: Sparkles,
@@ -69,7 +69,7 @@ export const WelcomeModal = ({
   return <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-sm w-[90vw] max-h-[90vh] p-0 gap-0 border-0 bg-transparent overflow-auto">
         <DialogHeader className="sr-only">
-          <DialogTitle>Bem-vindo ao LucraAI</DialogTitle>
+          <DialogTitle>Bem-vindo ao Lyvo | LucraAI</DialogTitle>
         </DialogHeader>
         {/* Background Image with Overlay */}
         <div 

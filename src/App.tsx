@@ -58,7 +58,7 @@ const App = () => {
             <header className="hidden sm:flex h-12 items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
               <SidebarTrigger className="p-2 touch-manipulation" />
               <div className="ml-4 flex-1 min-w-0">
-                <h1 className="text-lg font-semibold truncate">LucraAI - Gestão Financeira</h1>
+                <h1 className="text-lg font-semibold truncate">Lyvo | LucraAI - Gestão Financeira</h1>
               </div>
             </header>
             

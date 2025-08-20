@@ -130,6 +130,8 @@ export const useAuth = () => {
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         secureLog.error('Error getting session', error);
+        setLoading(false);
+        return;
       } else {
         secureLog.info('Got session', { sessionExists: !!session });
       }
@@ -142,6 +144,9 @@ export const useAuth = () => {
         verifySubscription(session.user.email, session.user.id);
       }
       
+      setLoading(false);
+    }).catch((error) => {
+      secureLog.error('Unexpected error getting session', error);
       setLoading(false);
     });
 

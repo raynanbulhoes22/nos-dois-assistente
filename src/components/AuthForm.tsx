@@ -166,7 +166,7 @@ export const AuthForm = () => {
     }
   };
 
-  const handleSignIn = async (data: z.infer<typeof signInSchema>) => {
+  const handleSignInWithRetry = async (data: z.infer<typeof signInSchema>, retryCount = 0) => {
     const rateLimitKey = `signin_${data.email}`;
     
     if (!authRateLimiter.canAttempt(rateLimitKey)) {
@@ -221,16 +221,44 @@ export const AuthForm = () => {
         });
         signInForm.reset();
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error('Erro durante login', error);
-      toast({
-        title: "Erro inesperado",
-        description: "Tente novamente mais tarde.",
-        variant: "destructive"
-      });
+      
+      // Check for network-related errors
+      if (error?.message?.includes('Failed to fetch') || error?.name === 'TypeError') {
+        if (retryCount < 2) {
+          // Retry after a short delay
+          setTimeout(() => {
+            handleSignInWithRetry(data, retryCount + 1);
+          }, 1000 * (retryCount + 1));
+          
+          toast({
+            title: "Problema de conexão",
+            description: `Tentando novamente... (${retryCount + 1}/3)`,
+            variant: "default"
+          });
+          return;
+        } else {
+          toast({
+            title: "Erro de conexão",
+            description: "Verifique sua conexão com a internet e tente novamente.",
+            variant: "destructive"
+          });
+        }
+      } else {
+        toast({
+          title: "Erro inesperado",
+          description: "Tente novamente mais tarde.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSignIn = async (data: z.infer<typeof signInSchema>) => {
+    await handleSignInWithRetry(data, 0);
   };
 
   const handleGoogleSignIn = async () => {

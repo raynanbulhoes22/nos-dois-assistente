@@ -78,7 +78,7 @@ export const AuthForm = () => {
     logger.info('Iniciando processo de cadastro');
 
     try {
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/dashboard`;
       
       const { data: signUpResult, error } = await supabase.auth.signUp({
         email: sanitizedEmail,
@@ -267,7 +267,7 @@ export const AuthForm = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`
+          redirectTo: `${window.location.origin}/dashboard`
         }
       });
 
@@ -301,7 +301,7 @@ export const AuthForm = () => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: `${window.location.origin}/dashboard`,
       });
 
       if (error) {
@@ -478,7 +478,7 @@ export const AuthForm = () => {
                           type: 'signup',
                           email: registeredEmail,
                           options: {
-                            emailRedirectTo: `${window.location.origin}/`
+                            emailRedirectTo: `${window.location.origin}/dashboard`
                           }
                         }).then(({ error }) => {
                           if (error) {

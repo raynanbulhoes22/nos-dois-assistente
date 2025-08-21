@@ -98,12 +98,13 @@ const App = () => {
                               <Relatorios />
                             </ProtectedRoute>
                           } />
-                          <Route path="/configuracoes" element={
-                            <ProtectedRoute>
-                              <Configuracoes />
-                            </ProtectedRoute>
-                          } />
-                          <Route path="*" element={<NotFound />} />
+                           <Route path="/configuracoes" element={
+                             <ProtectedRoute>
+                               <Configuracoes />
+                             </ProtectedRoute>
+                           } />
+                           <Route path="/auth" element={<Navigate to="/dashboard" replace />} />
+                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </SubscriptionRedirect>
                     </main>

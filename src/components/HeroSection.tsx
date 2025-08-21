@@ -84,27 +84,27 @@ export const HeroSection = () => {
               
               {/* Floating Financial Elements */}
               {/* Transaction Card - Top Left */}
-              <Card className="absolute -top-4 -left-16 hidden lg:block w-48 p-3 bg-white/90 backdrop-blur-sm shadow-lg animate-float z-20" style={{ animationDelay: '0.5s' }}>
+              <Card className="absolute -top-4 -left-16 hidden md:block w-48 p-3 bg-white/95 backdrop-blur-sm shadow-xl animate-float z-30" style={{ animationDelay: '0.5s' }}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">Transação</span>
-                  <Send className="w-4 h-4 text-[#E63827]" />
+                  <Send className="w-4 h-4 text-primary" />
                 </div>
-                <div className="font-semibold text-lg">R$ 450,00</div>
+                <div className="font-semibold text-lg text-foreground">R$ 450,00</div>
                 <div className="text-xs text-muted-foreground">Almoço - Restaurante</div>
               </Card>
 
               {/* Income Card - Top Right */}
-              <Card className="absolute -top-8 -right-20 hidden lg:block w-44 p-3 bg-white/90 backdrop-blur-sm shadow-lg animate-float z-20" style={{ animationDelay: '1.2s' }}>
+              <Card className="absolute -top-8 -right-20 hidden md:block w-44 p-3 bg-white/95 backdrop-blur-sm shadow-xl animate-float z-30" style={{ animationDelay: '1.2s' }}>
                 <div className="flex items-center gap-2 mb-1">
-                  <TrendingUp className="w-4 h-4 text-green-500" />
+                  <TrendingUp className="w-4 h-4 text-success" />
                   <span className="text-sm text-muted-foreground">Receita</span>
                 </div>
-                <div className="font-semibold text-lg text-green-600">+R$ 3.200</div>
+                <div className="font-semibold text-lg text-success">+R$ 3.200</div>
                 <div className="text-xs text-muted-foreground">Este mês</div>
               </Card>
 
               {/* Credit Card - Middle Left */}
-              <Card className="absolute top-20 -left-20 hidden lg:block w-40 p-3 bg-gradient-to-r from-[#E63827] to-[#E63827]/80 text-white shadow-lg animate-float z-20" style={{ animationDelay: '2s' }}>
+              <Card className="absolute top-20 -left-20 hidden md:block w-40 p-3 bg-gradient-to-r from-primary to-primary/80 text-white shadow-xl animate-float z-30" style={{ animationDelay: '2s' }}>
                 <div className="flex items-center justify-between mb-2">
                   <CreditCard className="w-5 h-5" />
                   <span className="text-xs opacity-80">****</span>
@@ -114,7 +114,7 @@ export const HeroSection = () => {
               </Card>
 
               {/* WhatsApp Notification - Middle Right */}
-              <Card className="absolute top-32 -right-16 hidden lg:block w-52 p-3 bg-green-500/90 text-white backdrop-blur-sm shadow-lg animate-float z-20" style={{ animationDelay: '0.8s' }}>
+              <Card className="absolute top-32 -right-16 hidden md:block w-52 p-3 bg-green-500/95 text-white backdrop-blur-sm shadow-xl animate-float z-30" style={{ animationDelay: '0.8s' }}>
                 <div className="flex items-center gap-2 mb-2">
                   <MessageCircle className="w-4 h-4" />
                   <span className="text-sm font-medium">WhatsApp Bot</span>
@@ -123,36 +123,36 @@ export const HeroSection = () => {
               </Card>
 
               {/* Financial Goal - Bottom Left */}
-              <Card className="absolute bottom-16 -left-12 hidden lg:block w-44 p-3 bg-white/90 backdrop-blur-sm shadow-lg animate-float z-20" style={{ animationDelay: '1.8s' }}>
+              <Card className="absolute bottom-16 -left-12 hidden md:block w-44 p-3 bg-white/95 backdrop-blur-sm shadow-xl animate-float z-30" style={{ animationDelay: '1.8s' }}>
                 <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-4 h-4 text-blue-500" />
+                  <Target className="w-4 h-4 text-info" />
                   <span className="text-sm text-muted-foreground">Meta</span>
                 </div>
-                <div className="font-semibold">Emergência</div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                  <div className="bg-blue-500 h-2 rounded-full w-3/4"></div>
+                <div className="font-semibold text-foreground">Emergência</div>
+                <div className="w-full bg-muted rounded-full h-2 mt-2">
+                  <div className="bg-info h-2 rounded-full w-3/4"></div>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">75% de R$ 5.000</div>
               </Card>
 
               {/* Expense Alert - Bottom Right */}
-              <Card className="absolute bottom-8 -right-24 hidden lg:block w-48 p-3 bg-orange-100 border border-orange-200 shadow-lg animate-float z-20" style={{ animationDelay: '1.5s' }}>
+              <Card className="absolute bottom-8 -right-24 hidden md:block w-48 p-3 bg-warning/10 border border-warning/30 shadow-xl animate-float z-30" style={{ animationDelay: '1.5s' }}>
                 <div className="flex items-center gap-2 mb-2">
-                  <Bell className="w-4 h-4 text-orange-500" />
-                  <span className="text-sm text-orange-700">Alerta</span>
+                  <Bell className="w-4 h-4 text-warning" />
+                  <span className="text-sm text-warning">Alerta</span>
                 </div>
-                <div className="text-sm text-orange-800 font-medium">Gastos acima do orçado</div>
-                <div className="text-xs text-orange-600">Categoria: Alimentação</div>
+                <div className="text-sm text-warning font-medium">Gastos acima do orçado</div>
+                <div className="text-xs text-warning/80">Categoria: Alimentação</div>
               </Card>
 
               {/* Monthly Summary - Far Right */}
-              <Card className="absolute top-48 -right-8 hidden xl:block w-36 p-3 bg-white/90 backdrop-blur-sm shadow-lg animate-float z-20" style={{ animationDelay: '2.5s' }}>
+              <Card className="absolute top-48 -right-8 hidden lg:block w-36 p-3 bg-white/95 backdrop-blur-sm shadow-xl animate-float z-30" style={{ animationDelay: '2.5s' }}>
                 <div className="flex items-center justify-between mb-2">
-                  <DollarSign className="w-4 h-4 text-[#E63827]" />
-                  <TrendingDown className="w-4 h-4 text-red-500" />
+                  <DollarSign className="w-4 h-4 text-primary" />
+                  <TrendingDown className="w-4 h-4 text-destructive" />
                 </div>
-                <div className="text-sm font-medium">Saldo</div>
-                <div className="font-semibold text-lg">R$ 1.847</div>
+                <div className="text-sm font-medium text-foreground">Saldo</div>
+                <div className="font-semibold text-lg text-foreground">R$ 1.847</div>
               </Card>
             </div>
           </div>

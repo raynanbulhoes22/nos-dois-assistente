@@ -8,12 +8,14 @@ import {
   AlertTriangle, 
   FileText, 
   Settings,
-  LogOut 
+  LogOut,
+  Clock 
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 import {
   Sidebar,
@@ -32,7 +34,7 @@ const mainNavigationItems = [
   { title: "Movimentações", url: "/movimentacoes", icon: TrendingUp },
   { title: "Orçamento", url: "/orcamento", icon: Target },
   { title: "Cartões", url: "/cartoes", icon: CreditCard },
-  { title: "Dívidas", url: "/dividas", icon: TrendingDown },
+  { title: "Dívidas", url: "/dividas", icon: TrendingDown, disabled: true, comingSoon: true },
   { title: "Relatórios", url: "/relatorios", icon: FileText },
 ];
 
@@ -56,6 +58,13 @@ export function AppSidebar() {
   const availableMainItems = mainNavigationItems;
   
   const availableBottomItems = bottomNavigationItems;
+
+  const handleDisabledItemClick = (itemTitle: string) => {
+    toast({
+      title: "Funcionalidade em breve!",
+      description: `${itemTitle} estará disponível em breve.`,
+    });
+  };
 
   const handleLogout = async () => {
     try {
@@ -96,20 +105,43 @@ export function AppSidebar() {
             <SidebarMenu className="space-y-1">
               {availableMainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className={({ isActive }) => `${getNavCls({ isActive })} 
-                        flex items-center gap-3 rounded-lg px-3 py-3 sm:py-2 
-                        text-sm font-medium transition-all duration-200 
-                        touch-manipulation min-h-[44px] sm:min-h-[36px]
-                        hover:bg-accent/80 active:bg-accent/90`}
-                    >
-                      <item.icon className="h-5 w-5 sm:h-4 sm:w-4 flex-shrink-0" />
-                      {state !== "collapsed" && (
-                        <span className="truncate">{item.title}</span>
-                      )}
-                    </NavLink>
+                  <SidebarMenuButton asChild={!item.disabled}>
+                    {item.disabled ? (
+                      <div
+                        onClick={() => handleDisabledItemClick(item.title)}
+                        className="flex items-center gap-3 rounded-lg px-3 py-3 sm:py-2 
+                          text-sm font-medium transition-all duration-200 
+                          touch-manipulation min-h-[44px] sm:min-h-[36px]
+                          opacity-50 cursor-not-allowed hover:bg-accent/20"
+                      >
+                        <item.icon className="h-5 w-5 sm:h-4 sm:w-4 flex-shrink-0" />
+                        {state !== "collapsed" && (
+                          <div className="flex items-center gap-2 truncate">
+                            <span className="truncate">{item.title}</span>
+                            {item.comingSoon && (
+                              <Badge variant="secondary" className="text-xs px-1.5 py-0.5 flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                Em Breve
+                              </Badge>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <NavLink
+                        to={item.url}
+                        className={({ isActive }) => `${getNavCls({ isActive })} 
+                          flex items-center gap-3 rounded-lg px-3 py-3 sm:py-2 
+                          text-sm font-medium transition-all duration-200 
+                          touch-manipulation min-h-[44px] sm:min-h-[36px]
+                          hover:bg-accent/80 active:bg-accent/90`}
+                      >
+                        <item.icon className="h-5 w-5 sm:h-4 sm:w-4 flex-shrink-0" />
+                        {state !== "collapsed" && (
+                          <span className="truncate">{item.title}</span>
+                        )}
+                      </NavLink>
+                    )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

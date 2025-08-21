@@ -25,7 +25,15 @@ export const LandingHeader = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <img src="/lovable-uploads/5851c6be-e288-4d05-ba44-16bf3ad53566.png" alt="Lyvo Logo" className="h-8 w-8" />
+            <img 
+              src="/lovable-uploads/5851c6be-e288-4d05-ba44-16bf3ad53566.png" 
+              alt="Lyvo Logo" 
+              className="h-8 w-8 object-contain"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                console.warn('Logo failed to load');
+              }}
+            />
             <span className="text-xl font-bold text-foreground font-display">
               Lyvo | LucraAI
             </span>

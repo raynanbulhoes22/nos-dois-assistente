@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Users, User, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 interface PricingData {
@@ -25,6 +26,7 @@ export const PricingSection = () => {
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const formatPrice = (price: number): string => {
     return new Intl.NumberFormat('pt-BR', {
@@ -48,7 +50,7 @@ export const PricingSection = () => {
 
   const handleCheckout = async (plan: "solo" | "casal") => {
     if (!user) {
-      toast.error('Faça login para assinar um plano');
+      navigate('/auth?mode=signup');
       return;
     }
 

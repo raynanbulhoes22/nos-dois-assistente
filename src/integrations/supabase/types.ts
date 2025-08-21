@@ -582,11 +582,50 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      registros_financeiros_resumo: {
+        Row: {
+          cartao_mascarado: string | null
+          categoria: string | null
+          data: string | null
+          id: string | null
+          mes_referencia: string | null
+          tipo: string | null
+          tipo_movimento: string | null
+          user_id: string | null
+          valor: number | null
+        }
+        Insert: {
+          cartao_mascarado?: never
+          categoria?: string | null
+          data?: string | null
+          id?: string | null
+          mes_referencia?: never
+          tipo?: string | null
+          tipo_movimento?: string | null
+          user_id?: string | null
+          valor?: number | null
+        }
+        Update: {
+          cartao_mascarado?: never
+          categoria?: string | null
+          data?: string | null
+          id?: string | null
+          mes_referencia?: never
+          tipo?: string | null
+          tipo_movimento?: string | null
+          user_id?: string | null
+          valor?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       encrypt_cpf: {
         Args: { cpf_input: string }
+        Returns: string
+      }
+      encrypt_sensitive_data: {
+        Args: { data_input: string }
         Returns: string
       }
       normalize_phone_number: {

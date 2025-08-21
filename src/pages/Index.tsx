@@ -1,5 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
-import { AuthForm } from "@/components/AuthForm";
+import { LandingPage } from "@/components/LandingPage";
 import { Dashboard } from "@/components/Dashboard";
 import { Heart } from "lucide-react";
 
@@ -19,7 +19,7 @@ const Index = () => {
   }
 
   if (!user) {
-    return <AuthForm />;
+    return <LandingPage />;
   }
 
   return <Dashboard user={user} />;

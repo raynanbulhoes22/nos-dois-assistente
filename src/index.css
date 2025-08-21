@@ -8,21 +8,21 @@
 
 @layer base {
   :root {
-    /* Lyvo Brand Colors */
-    --background: 0 0% 98%;
-    --foreground: 0 0% 9%;
+    /* Enhanced Core Brand Colors - FIXED TO HSL */
+    --background: 0 0% 100%;
+    --foreground: 222 84% 5%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
+    --card-foreground: 222 84% 5%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover-foreground: 222 84% 5%;
 
-    /* Primary: Lyvo Orange #E63827 */
-    --primary: 8 83% 53%;
+    /* Primary: Modern Blue */
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 8 83% 63%;
-    --primary-dark: 8 83% 43%;
+    --primary-glow: 221 83% 53%;
+    --primary-dark: 221 83% 53%;
 
     /* Secondary: Elegant Purple */
     --secondary: 262 83% 58%;
@@ -415,10 +415,6 @@
     animation: scaleIn 0.2s ease-out;
   }
 
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-  }
-
   /* Accessibility Improvements */
   .focus-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
@@ -469,15 +465,6 @@
   to {
     opacity: 1;
     transform: scale(1);
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
   }
 }
 

@@ -98,7 +98,7 @@ export const HeroSection = () => {
               <img 
                 src="/lovable-uploads/6a305627-906c-42af-ba49-ed8f5520bbfd.png"
                 alt="WhatsApp conversation showing LucraAI managing financial transactions"
-                className="max-w-sm lg:max-w-md xl:max-w-lg w-full h-auto"
+                className="max-w-md lg:max-w-lg xl:max-w-xl w-full h-auto"
               />
             </div>
           </div>

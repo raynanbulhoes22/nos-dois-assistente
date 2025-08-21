@@ -8,7 +8,7 @@ export const HeroSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
+    <section id="hero" className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/30 to-accent/20"></div>
       

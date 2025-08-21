@@ -121,7 +121,7 @@ export const PricingSection = () => {
   }
 
   return (
-    <section className="py-16 px-4 bg-gradient-to-br from-background to-muted/20">
+    <section id="pricing" className="py-16 px-4 bg-gradient-to-br from-background to-muted/20">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">

@@ -42,77 +42,88 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <FinancialDataProvider user={user}>
-        <BrowserRouter>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background">
-          {/* Desktop Sidebar - Hidden on mobile */}
-          <div className="hidden sm:block">
-            <AppSidebar />
-          </div>
-          
-          <div className="flex-1 flex flex-col w-full">
-            {/* Header - Mobile optimized */}
-            <header className="hidden sm:flex h-12 items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
-              <SidebarTrigger className="p-2 touch-manipulation" />
-              <div className="ml-4 flex-1 min-w-0">
-                <h1 className="text-lg font-semibold truncate">Lyvo | LucraAI - Gestão Financeira</h1>
+          <BrowserRouter>
+            {user ? (
+              // Layout com sidebar para usuários logados
+              <SidebarProvider>
+                <div className="min-h-screen flex w-full bg-background">
+                  {/* Desktop Sidebar - Hidden on mobile */}
+                  <div className="hidden sm:block">
+                    <AppSidebar />
+                  </div>
+                  
+                  <div className="flex-1 flex flex-col w-full">
+                    {/* Header - Mobile optimized */}
+                    <header className="hidden sm:flex h-12 items-center border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
+                      <SidebarTrigger className="p-2 touch-manipulation" />
+                      <div className="ml-4 flex-1 min-w-0">
+                        <h1 className="text-lg font-semibold truncate">Lyvo | LucraAI - Gestão Financeira</h1>
+                      </div>
+                    </header>
+                    
+                    {/* Mobile-first main content */}
+                    <main className="flex-1 overflow-y-auto scroll-touch touch-pan-y pb-20 sm:pb-0 bg-background">
+                      <SubscriptionRedirect>
+                        <Routes>
+                          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                          <Route path="/dashboard" element={
+                            <ProtectedRoute>
+                              <Index />
+                            </ProtectedRoute>
+                          } />
+                          <Route path="/movimentacoes" element={
+                            <ProtectedRoute>
+                              <Movimentacoes />
+                            </ProtectedRoute>
+                          } />
+                          <Route path="/assinaturas" element={<Assinaturas />} />
+                          <Route path="/primeiros-passos" element={<PrimeirosPasos />} />
+                          <Route path="/orcamento" element={
+                            <ProtectedRoute>
+                              <Orcamento />
+                            </ProtectedRoute>
+                          } />
+                          <Route path="/cartoes" element={
+                            <ProtectedRoute>
+                              <Cartoes />
+                            </ProtectedRoute>
+                          } />
+                          <Route path="/dividas" element={
+                            <ProtectedRoute>
+                              <Dividas />
+                            </ProtectedRoute>
+                          } />
+                          <Route path="/relatorios" element={
+                            <ProtectedRoute>
+                              <Relatorios />
+                            </ProtectedRoute>
+                          } />
+                          <Route path="/configuracoes" element={
+                            <ProtectedRoute>
+                              <Configuracoes />
+                            </ProtectedRoute>
+                          } />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </SubscriptionRedirect>
+                    </main>
+                  </div>
+                  <MobileBottomNav />
+                </div>
+              </SidebarProvider>
+            ) : (
+              // Layout simples sem sidebar para usuários não logados
+              <div className="min-h-screen bg-background">
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<AuthForm />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
               </div>
-            </header>
-            
-            {/* Mobile-first main content */}
-            <main className="flex-1 overflow-y-auto scroll-touch touch-pan-y pb-20 sm:pb-0 bg-background">
-              <SubscriptionRedirect>
-                     <Routes>
-                       <Route path="/" element={<Index />} />
-                       <Route path="/auth" element={<AuthForm />} />
-                       <Route path="/dashboard" element={
-                         <ProtectedRoute>
-                           <Index />
-                         </ProtectedRoute>
-                       } />
-                      <Route path="/movimentacoes" element={
-                        <ProtectedRoute>
-                          <Movimentacoes />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/assinaturas" element={<Assinaturas />} />
-                      <Route path="/primeiros-passos" element={<PrimeirosPasos />} />
-                      <Route path="/orcamento" element={
-                        <ProtectedRoute>
-                          <Orcamento />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/cartoes" element={
-                        <ProtectedRoute>
-                          <Cartoes />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/dividas" element={
-                        <ProtectedRoute>
-                          <Dividas />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/relatorios" element={
-                        <ProtectedRoute>
-                          <Relatorios />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/configuracoes" element={
-                        <ProtectedRoute>
-                          <Configuracoes />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </SubscriptionRedirect>
-                </main>
-              </div>
-            </div>
-            <MobileBottomNav />
+            )}
             <Toaster />
             <Sonner />
-          </SidebarProvider>
-        </BrowserRouter>
+          </BrowserRouter>
         </FinancialDataProvider>
       </TooltipProvider>
     </QueryClientProvider>

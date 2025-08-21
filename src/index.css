@@ -18,11 +18,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 84% 5%;
 
-    /* Primary: Modern Blue */
-    --primary: 221 83% 53%;
+    /* Primary: Brand Red */
+    --primary: 4 85% 58%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 221 83% 53%;
-    --primary-dark: 221 83% 53%;
+    --primary-glow: 4 85% 65%;
+    --primary-dark: 4 85% 50%;
 
     /* Secondary: Elegant Purple */
     --secondary: 262 83% 58%;
@@ -64,10 +64,10 @@
     --neutral: 215 16% 47%;
 
     /* Enhanced Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(262 83% 58%));
+    --gradient-primary: linear-gradient(135deg, hsl(4 85% 58%), hsl(4 85% 50%));
     --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(188 100% 42%));
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsla(210, 40%, 98%, 0.8));
-    --gradient-hero: linear-gradient(135deg, hsla(221, 83%, 53%, 0.05), hsla(262, 83%, 58%, 0.05));
+    --gradient-hero: linear-gradient(135deg, hsla(4, 85%, 58%, 0.05), hsla(4, 85%, 50%, 0.05));
     --gradient-accent: linear-gradient(135deg, hsl(142 76% 36%), hsl(188 100% 42%));
 
     /* Enhanced Shadows System */
@@ -77,7 +77,7 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
+    --shadow-glow: 0 0 20px rgba(230, 56, 39, 0.3);
     --shadow-glow-accent: 0 0 20px rgba(34, 197, 94, 0.3);
 
     /* Advanced Animation System */
@@ -129,9 +129,9 @@
     --popover: 224 71% 4%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 221 83% 53%;
-    --primary-foreground: 224 71% 4%;
-    --primary-glow: 221 83% 53%;
+    --primary: 4 85% 58%;
+    --primary-foreground: 0 0% 98%;
+    --primary-glow: 4 85% 65%;
 
     --secondary: 215 27% 17%;
     --secondary-foreground: 0 0% 98%;
@@ -150,9 +150,9 @@
     --ring: 221 83% 53%;
 
     /* Dark Mode Enhanced Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(262 83% 58%));
+    --gradient-primary: linear-gradient(135deg, hsl(4 85% 58%), hsl(4 85% 50%));
     --gradient-card: linear-gradient(145deg, hsl(224 71% 4%), hsla(215, 27%, 17%, 0.8));
-    --gradient-hero: linear-gradient(135deg, hsla(221, 83%, 53%, 0.1), hsla(262, 83%, 58%, 0.1));
+    --gradient-hero: linear-gradient(135deg, hsla(4, 85%, 58%, 0.1), hsla(4, 85%, 50%, 0.1));
 
     /* Dark Mode Shadows */
     --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
@@ -161,7 +161,7 @@
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
     --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-    --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.5);
+    --shadow-glow: 0 0 20px rgba(230, 56, 39, 0.5);
 
     --sidebar-background: 224 71% 4%;
     --sidebar-foreground: 0 0% 98%;

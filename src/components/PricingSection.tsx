@@ -136,7 +136,7 @@ export const PricingSection = () => {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Plano Individual */}
-          <Card className="p-8 relative border-2 hover:border-primary/50 transition-all duration-300">
+          <Card className="p-8 relative border-2 hover:border-primary/30 hover:shadow-lg transition-all duration-300">
             <div className="text-center mb-6">
               <div className="inline-flex items-center gap-2 mb-4">
                 <User className="h-5 w-5 text-primary" />
@@ -163,7 +163,7 @@ export const PricingSection = () => {
             </ul>
 
             <Button 
-              className="w-full"
+              className="w-full bg-primary hover:bg-primary-dark text-primary-foreground shadow-lg hover:shadow-xl transition-all"
               size="lg"
               onClick={() => handleCheckout("solo")}
               disabled={checkoutLoading === "solo"}
@@ -180,7 +180,7 @@ export const PricingSection = () => {
           </Card>
 
           {/* Plano Casal */}
-          <Card className="p-8 relative border-2 border-primary shadow-lg transform md:scale-105">
+          <Card className="p-8 relative border-2 border-primary shadow-xl transform md:scale-105 bg-gradient-to-br from-background to-primary/5">
             <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
               Mais Popular
             </Badge>
@@ -211,7 +211,7 @@ export const PricingSection = () => {
             </ul>
 
             <Button 
-              className="w-full"
+              className="w-full bg-primary hover:bg-primary-dark text-primary-foreground shadow-lg hover:shadow-xl transition-all"
               size="lg"
               onClick={() => handleCheckout("casal")}
               disabled={checkoutLoading === "casal"}

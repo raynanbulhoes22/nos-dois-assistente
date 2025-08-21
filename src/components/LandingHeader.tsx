@@ -71,7 +71,7 @@ export const LandingHeader = () => {
             <Button
               size="sm"
               onClick={() => handleAuth('signup')}
-              className="bg-gradient-to-r from-primary to-secondary hover:from-primary-dark hover:to-secondary text-primary-foreground"
+              className="bg-primary hover:bg-primary-dark text-primary-foreground shadow-lg hover:shadow-xl transition-all"
             >
               Começar Grátis
             </Button>
@@ -131,7 +131,7 @@ export const LandingHeader = () => {
                 </Button>
                 <Button
                   size="sm"
-                  className="w-full bg-gradient-to-r from-primary to-secondary hover:from-primary-dark hover:to-secondary text-primary-foreground"
+                  className="w-full bg-primary hover:bg-primary-dark text-primary-foreground shadow-lg hover:shadow-xl transition-all"
                   onClick={() => handleAuth('signup')}
                 >
                   Começar Grátis

@@ -233,7 +233,7 @@ export const PricingSection = () => {
             ✨ 7 dias grátis • 🔒 100% seguro • 📞 Suporte especializado
           </p>
           <p className="text-xs text-muted-foreground">
-            Cancele a qualquer momento. Sem taxas de cancelamento.
+            Cartão obrigatório para teste grátis. Cancele a qualquer momento sem taxas.
           </p>
         </div>
       </div>

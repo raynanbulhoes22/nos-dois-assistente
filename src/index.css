@@ -18,11 +18,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 9%;
 
-    /* Primary: Lyvo Orange */
-    --primary: 5 81% 53%;
+    /* Primary: Lyvo Orange #E63827 */
+    --primary: 8 83% 53%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 5 81% 63%;
-    --primary-dark: 5 81% 43%;
+    --primary-glow: 8 83% 63%;
+    --primary-dark: 8 83% 43%;
 
     /* Secondary: Elegant Purple */
     --secondary: 262 83% 58%;

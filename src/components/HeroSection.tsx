@@ -96,7 +96,7 @@ export const HeroSection = () => {
           <div className="flex justify-center lg:justify-end">
             <div className="relative">
               <img 
-                src="/lovable-uploads/6a305627-906c-42af-ba49-ed8f5520bbfd.png"
+                src="/lovable-uploads/92038e53-d2c7-4533-8f9d-dd1affbb9ee7.png"
                 alt="WhatsApp conversation showing LucraAI managing financial transactions"
                 className="max-w-md lg:max-w-lg xl:max-w-xl w-full h-auto"
               />

@@ -26,14 +26,6 @@ export const HeroSection = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Content */}
           <div className="text-left">
-            {/* Badge */}
-            <Badge 
-              variant="outline" 
-              className="mb-6 border-[#E63827]/30 text-[#E63827] bg-[#E63827]/5 hover:bg-[#E63827]/10 px-4 py-2"
-            >
-              <Zap className="w-4 h-4 mr-2" />
-              Gestão Financeira Inteligente
-            </Badge>
 
             {/* Main heading */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
@@ -55,27 +47,6 @@ export const HeroSection = () => {
               através do WhatsApp.
             </p>
 
-            {/* Benefits list */}
-            <div className="grid gap-4 mb-10">
-              <div className="flex items-center gap-3 text-lg">
-                <div className="w-8 h-8 rounded-full bg-[#E63827]/10 flex items-center justify-center">
-                  <MessageCircle className="w-4 h-4 text-[#E63827]" />
-                </div>
-                <span>Via WhatsApp</span>
-              </div>
-              <div className="flex items-center gap-3 text-lg">
-                <div className="w-8 h-8 rounded-full bg-[#E63827]/10 flex items-center justify-center">
-                  <Zap className="w-4 h-4 text-[#E63827]" />
-                </div>
-                <span>Powered by IA</span>
-              </div>
-              <div className="flex items-center gap-3 text-lg">
-                <div className="w-8 h-8 rounded-full bg-[#E63827]/10 flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4 text-[#E63827]" />
-                </div>
-                <span>Insights Inteligentes</span>
-              </div>
-            </div>
 
             {/* CTA Button */}
             <Button 

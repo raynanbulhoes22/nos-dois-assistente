@@ -1,158 +1,144 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { MessageCircle, Zap, TrendingUp, ArrowRight, CreditCard, DollarSign, Bell, Target, Send, TrendingDown } from "lucide-react";
+import { MessageCircle, Zap, TrendingUp, ArrowRight, CreditCard, DollarSign, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export const HeroSection = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/30 to-accent/20"></div>
+    <section className="relative min-h-[90vh] flex items-center justify-center px-4 py-16 overflow-hidden">
+      {/* Background gradient using design system */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/20 to-primary/5"></div>
       
-      {/* Floating elements */}
-      <div className="absolute top-20 left-10 opacity-20">
-        <MessageCircle className="w-8 h-8 text-[#E63827] animate-float" />
+      {/* Subtle floating elements - reduced and better positioned */}
+      <div className="absolute top-20 left-10 opacity-10" aria-hidden="true">
+        <MessageCircle className="w-6 h-6 text-primary animate-float" />
       </div>
-      <div className="absolute bottom-32 right-16 opacity-20">
-        <TrendingUp className="w-6 h-6 text-[#E63827] animate-float" style={{ animationDelay: '1s' }} />
+      <div className="absolute bottom-32 right-16 opacity-10" aria-hidden="true">
+        <TrendingUp className="w-5 h-5 text-success animate-float" style={{ animationDelay: '2s' }} />
       </div>
-      <div className="absolute top-40 right-20 opacity-20">
-        <Zap className="w-7 h-7 text-[#E63827] animate-float" style={{ animationDelay: '2s' }} />
+      <div className="absolute top-40 right-20 opacity-10" aria-hidden="true">
+        <Zap className="w-6 h-6 text-accent animate-float" style={{ animationDelay: '4s' }} />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left Column - Content */}
-          <div className="text-left">
-            {/* Badge */}
+          <div className="text-center lg:text-left space-y-6">
+            {/* Badge - more prominent */}
             <Badge 
               variant="outline" 
-              className="mb-6 border-[#E63827]/30 text-[#E63827] bg-[#E63827]/5 hover:bg-[#E63827]/10 px-4 py-2"
+              className="inline-flex items-center gap-2 border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 px-4 py-2 text-sm font-medium"
             >
-              <Zap className="w-4 h-4 mr-2" />
+              <Zap className="w-4 h-4" />
               7 DIAS GRÁTIS
             </Badge>
 
-            {/* Main heading */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            {/* Main heading - improved typography */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
               Controle suas finanças pelo{" "}
-              <span className="text-[#E63827] relative">
+              <span className="relative text-success">
                 WhatsApp
-                <div className="absolute -bottom-2 left-0 right-0 h-3 bg-[#E63827]/20 -skew-x-12"></div>
+                <div className="absolute -bottom-1 left-0 right-0 h-2 bg-success/20 -skew-x-12"></div>
               </span>
               {" "}com{" "}
-              <span className="bg-gradient-to-r from-[#E63827] to-[#E63827]/80 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 IA
               </span>
             </h1>
 
-            {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
-              Transforme sua gestão financeira com nossa plataforma inteligente. 
-              Controle gastos, organize receitas e tome decisões mais inteligentes 
-              através do WhatsApp. Experimente 7 dias grátis e veja a diferença.
+            {/* Subtitle - simplified and more focused */}
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-lg mx-auto lg:mx-0">
+              IA que aprende seus padrões financeiros e te ajuda a tomar decisões inteligentes pelo WhatsApp.
             </p>
 
-
-            {/* CTA Button */}
-            <Button 
-              size="xl"
-              onClick={() => navigate("/auth")}
-              className="bg-[#E63827] hover:bg-[#E63827]/90 text-white font-semibold px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 group mb-4"
-            >
-              Testar 7 dias Grátis
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            
-            <p className="text-sm text-muted-foreground">
-              7 dias grátis • Sem cartão de crédito • Cancele quando quiser
-            </p>
+            {/* CTA Section - enhanced hierarchy */}
+            <div className="space-y-4">
+              <Button 
+                size="lg"
+                onClick={() => navigate("/auth")}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300 group"
+              >
+                Começar Agora - 7 Dias Grátis
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              
+              <p className="text-sm text-muted-foreground">
+                ✓ 7 dias grátis • ✓ Sem cartão de crédito • ✓ Cancele quando quiser
+              </p>
+            </div>
           </div>
 
-          {/* Right Column - Image with Floating Elements */}
-          <div className="flex justify-center lg:justify-end">
-            <div className="relative">
+          {/* Right Column - Image with Strategic Floating Elements */}
+          <div className="flex justify-center lg:justify-end mt-8 lg:mt-0">
+            <div className="relative max-w-sm lg:max-w-md xl:max-w-lg">
               {/* Main Phone Image */}
               <img 
                 src="/lovable-uploads/92038e53-d2c7-4533-8f9d-dd1affbb9ee7.png"
-                alt="WhatsApp conversation showing LucraAI managing financial transactions"
-                className="max-w-md lg:max-w-lg xl:max-w-xl w-full h-auto relative z-10"
+                alt="WhatsApp interface showing LucraAI financial assistant managing transactions and budgets"
+                className="w-full h-auto relative z-10 rounded-2xl shadow-2xl"
+                loading="eager"
               />
               
-              {/* Floating Financial Elements */}
-              {/* Transaction Card - Top Left */}
-              <Card className="absolute -top-4 -left-16 hidden md:block w-48 p-3 bg-white/95 backdrop-blur-sm shadow-xl animate-float z-30" style={{ animationDelay: '0.5s' }}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Transação</span>
-                  <Send className="w-4 h-4 text-primary" />
-                </div>
-                <div className="font-semibold text-lg text-foreground">R$ 450,00</div>
-                <div className="text-xs text-muted-foreground">Almoço - Restaurante</div>
-              </Card>
-
-              {/* Income Card - Top Right */}
-              <Card className="absolute -top-8 -right-20 hidden md:block w-44 p-3 bg-white/95 backdrop-blur-sm shadow-xl animate-float z-30" style={{ animationDelay: '1.2s' }}>
+              {/* Reduced, Strategic Floating Elements */}
+              {/* WhatsApp Success Notification - Top */}
+              <Card 
+                className="absolute -top-6 -right-4 hidden lg:block w-56 p-3 bg-success/95 text-white backdrop-blur-sm shadow-xl animate-float z-30" 
+                style={{ animationDelay: '1s' }}
+                aria-hidden="true"
+              >
                 <div className="flex items-center gap-2 mb-1">
-                  <TrendingUp className="w-4 h-4 text-success" />
-                  <span className="text-sm text-muted-foreground">Receita</span>
-                </div>
-                <div className="font-semibold text-lg text-success">+R$ 3.200</div>
-                <div className="text-xs text-muted-foreground">Este mês</div>
-              </Card>
-
-              {/* Credit Card - Middle Left */}
-              <Card className="absolute top-20 -left-20 hidden md:block w-40 p-3 bg-gradient-to-r from-primary to-primary/80 text-white shadow-xl animate-float z-30" style={{ animationDelay: '2s' }}>
-                <div className="flex items-center justify-between mb-2">
-                  <CreditCard className="w-5 h-5" />
-                  <span className="text-xs opacity-80">****</span>
-                </div>
-                <div className="text-sm font-medium">Cartão Nubank</div>
-                <div className="text-xs opacity-80">Limite: R$ 2.500</div>
-              </Card>
-
-              {/* WhatsApp Notification - Middle Right */}
-              <Card className="absolute top-32 -right-16 hidden md:block w-52 p-3 bg-green-500/95 text-white backdrop-blur-sm shadow-xl animate-float z-30" style={{ animationDelay: '0.8s' }}>
-                <div className="flex items-center gap-2 mb-2">
                   <MessageCircle className="w-4 h-4" />
-                  <span className="text-sm font-medium">WhatsApp Bot</span>
+                  <span className="text-sm font-medium">LucraAI</span>
                 </div>
-                <div className="text-xs">💰 Gasto registrado: R$ 89,90 - Supermercado Extra</div>
+                <div className="text-xs">✅ Transação categorizada automaticamente!</div>
               </Card>
 
-              {/* Financial Goal - Bottom Left */}
-              <Card className="absolute bottom-16 -left-12 hidden md:block w-44 p-3 bg-white/95 backdrop-blur-sm shadow-xl animate-float z-30" style={{ animationDelay: '1.8s' }}>
+              {/* Financial Goal Progress - Left */}
+              <Card 
+                className="absolute top-16 -left-8 hidden md:block w-44 p-3 bg-card/95 backdrop-blur-sm border shadow-lg animate-float z-30" 
+                style={{ animationDelay: '2.5s' }}
+                aria-hidden="true"
+              >
                 <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-4 h-4 text-info" />
+                  <Target className="w-4 h-4 text-primary" />
                   <span className="text-sm text-muted-foreground">Meta</span>
                 </div>
-                <div className="font-semibold text-foreground">Emergência</div>
+                <div className="font-medium text-sm">Emergência</div>
                 <div className="w-full bg-muted rounded-full h-2 mt-2">
-                  <div className="bg-info h-2 rounded-full w-3/4"></div>
+                  <div className="bg-primary h-2 rounded-full w-3/4"></div>
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">75% de R$ 5.000</div>
+                <div className="text-xs text-muted-foreground mt-1">R$ 3.750 de R$ 5.000</div>
               </Card>
 
-              {/* Expense Alert - Bottom Right */}
-              <Card className="absolute bottom-8 -right-24 hidden md:block w-48 p-3 bg-warning/10 border border-warning/30 shadow-xl animate-float z-30" style={{ animationDelay: '1.5s' }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <Bell className="w-4 h-4 text-warning" />
-                  <span className="text-sm text-warning">Alerta</span>
-                </div>
-                <div className="text-sm text-warning font-medium">Gastos acima do orçado</div>
-                <div className="text-xs text-warning/80">Categoria: Alimentação</div>
-              </Card>
-
-              {/* Monthly Summary - Far Right */}
-              <Card className="absolute top-48 -right-8 hidden lg:block w-36 p-3 bg-white/95 backdrop-blur-sm shadow-xl animate-float z-30" style={{ animationDelay: '2.5s' }}>
+              {/* Credit Card Limit - Right */}
+              <Card 
+                className="absolute bottom-8 -right-8 hidden lg:block w-40 p-3 gradient-primary text-white shadow-lg animate-float z-30" 
+                style={{ animationDelay: '4s' }}
+                aria-hidden="true"
+              >
                 <div className="flex items-center justify-between mb-2">
-                  <DollarSign className="w-4 h-4 text-primary" />
-                  <TrendingDown className="w-4 h-4 text-destructive" />
+                  <CreditCard className="w-4 h-4" />
+                  <span className="text-xs opacity-90">***6789</span>
                 </div>
-                <div className="text-sm font-medium text-foreground">Saldo</div>
-                <div className="font-semibold text-lg text-foreground">R$ 1.847</div>
+                <div className="text-sm font-medium">Nubank</div>
+                <div className="text-xs opacity-90">Disponível: R$ 1.200</div>
+              </Card>
+
+              {/* Income Indicator - Bottom Left */}
+              <Card 
+                className="absolute bottom-0 -left-6 hidden md:block w-36 p-3 bg-card/95 backdrop-blur-sm border shadow-lg animate-float z-30" 
+                style={{ animationDelay: '3s' }}
+                aria-hidden="true"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <TrendingUp className="w-4 h-4 text-success" />
+                  <span className="text-xs text-muted-foreground">Receita</span>
+                </div>
+                <div className="font-semibold text-success">+R$ 2.150</div>
+                <div className="text-xs text-muted-foreground">Esta semana</div>
               </Card>
             </div>
           </div>

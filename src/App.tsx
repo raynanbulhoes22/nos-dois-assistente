@@ -37,9 +37,6 @@ const App = () => {
     );
   }
 
-  if (!user) {
-    return <AuthForm />;
-  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -65,13 +62,14 @@ const App = () => {
             {/* Mobile-first main content */}
             <main className="flex-1 overflow-y-auto scroll-touch touch-pan-y pb-20 sm:pb-0 bg-background">
               <SubscriptionRedirect>
-                    <Routes>
-                      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                      <Route path="/dashboard" element={
-                        <ProtectedRoute>
-                          <Index />
-                        </ProtectedRoute>
-                      } />
+                     <Routes>
+                       <Route path="/" element={<Index />} />
+                       <Route path="/auth" element={<AuthForm />} />
+                       <Route path="/dashboard" element={
+                         <ProtectedRoute>
+                           <Index />
+                         </ProtectedRoute>
+                       } />
                       <Route path="/movimentacoes" element={
                         <ProtectedRoute>
                           <Movimentacoes />

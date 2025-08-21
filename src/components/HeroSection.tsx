@@ -1,15 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Zap, TrendingUp, ArrowRight } from "lucide-react";
-import { useState } from "react";
-import { AuthForm } from "./AuthForm";
+import { useNavigate } from "react-router-dom";
 
 export const HeroSection = () => {
-  const [showAuth, setShowAuth] = useState(false);
-
-  if (showAuth) {
-    return <AuthForm />;
-  }
+  const navigate = useNavigate();
 
   return (
     <section className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
@@ -82,7 +77,7 @@ export const HeroSection = () => {
         {/* CTA Button */}
         <Button 
           size="xl"
-          onClick={() => setShowAuth(true)}
+          onClick={() => navigate("/auth")}
           className="bg-[#E63827] hover:bg-[#E63827]/90 text-white font-semibold px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 group"
         >
           Começar Grátis

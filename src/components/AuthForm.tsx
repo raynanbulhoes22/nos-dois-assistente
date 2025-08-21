@@ -347,10 +347,10 @@ export const AuthForm = () => {
                 <div className="absolute inset-0 h-8 w-8 sm:h-10 sm:w-10 text-primary/20 animate-ping"></div>
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary via-purple-600 to-accent bg-clip-text text-transparent">
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                   Lyvo | LucraAI
                 </h1>
-                <div className="h-1 w-full bg-gradient-to-r from-primary via-purple-500 to-accent rounded-full mt-1"></div>
+                <div className="h-1 w-full bg-gradient-to-r from-primary to-secondary rounded-full mt-1"></div>
               </div>
             </div>
             <p className="text-center text-sm sm:text-base text-muted-foreground max-w-sm">
@@ -588,7 +588,7 @@ export const AuthForm = () => {
                         
                         <Button 
                           type="submit" 
-                          className="w-full h-12 text-base font-medium bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90"
+                          className="w-full h-12 text-base font-medium bg-gradient-to-r from-primary to-secondary hover:from-primary-dark hover:to-secondary/90"
                           disabled={isLoading}
                         >
                           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -759,7 +759,7 @@ export const AuthForm = () => {
                         />
                         <Button 
                           type="submit" 
-                          className="w-full h-12 text-base font-medium bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90"
+                          className="w-full h-12 text-base font-medium bg-gradient-to-r from-secondary to-primary hover:from-secondary/90 hover:to-primary-dark"
                           disabled={isLoading || !passwordStrength.isStrong}
                         >
                           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

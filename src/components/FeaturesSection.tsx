@@ -61,43 +61,43 @@ export const FeaturesSection = () => {
   ];
 
   return (
-    <section id="features" className="py-20 px-4 bg-gradient-to-br from-muted/20 to-background">
+    <section id="features" className="py-12 md:py-20 px-4 bg-gradient-to-br from-muted/20 to-background">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+        {/* Header - Mobile First */}
+        <div className="text-center mb-12 md:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
             Recursos que transformam
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Descubra como nossa plataforma revoluciona o controle financeiro com tecnologia de ponta e facilidade de uso
           </p>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* Features Grid - Mobile First */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {features.map((feature, index) => (
             <Card 
               key={index}
-              className="p-6 text-center hover:shadow-xl transition-all duration-300 hover:scale-105 border-0 bg-card/80 backdrop-blur-sm"
+              className="p-4 md:p-6 text-center hover:shadow-xl transition-all duration-300 hover:scale-105 border-0 bg-card/80 backdrop-blur-sm"
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-primary/10 mb-3 md:mb-4">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-foreground">
+              <h3 className="text-lg md:text-xl font-semibold mb-2 md:mb-3 text-foreground">
                 {feature.title}
               </h3>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed">
                 {feature.description}
               </p>
             </Card>
           ))}
         </div>
 
-        {/* Bottom CTA */}
-        <div className="text-center mt-16">
-          <div className="inline-flex items-center gap-2 px-6 py-3 bg-primary/10 rounded-full">
-            <Brain className="w-5 h-5 text-primary" />
-            <span className="text-sm font-medium text-primary">
+        {/* Bottom CTA - Mobile Optimized */}
+        <div className="text-center mt-12 md:mt-16">
+          <div className="inline-flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-primary/10 rounded-full">
+            <Brain className="w-4 h-4 md:w-5 md:h-5 text-primary" />
+            <span className="text-xs sm:text-sm font-medium text-primary">
               Mais de 50 funcionalidades inteligentes para otimizar suas finanças
             </span>
           </div>

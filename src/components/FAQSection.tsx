@@ -50,30 +50,30 @@ export const FAQSection = () => {
   ];
 
   return (
-    <section id="faq" className="py-20 px-4 bg-gradient-to-br from-muted/10 to-background">
+    <section id="faq" className="py-12 md:py-20 px-4 bg-gradient-to-br from-muted/10 to-background">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-6 mx-auto">
-            <HelpCircle className="w-8 h-8 text-primary" />
+        {/* Header - Mobile First */}
+        <div className="text-center mb-12 md:mb-16">
+          <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-primary/10 mb-4 md:mb-6 mx-auto">
+            <HelpCircle className="w-6 h-6 md:w-8 md:h-8 text-primary" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
             Perguntas Frequentes
           </h2>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-base md:text-xl text-muted-foreground">
             Tire suas dúvidas sobre como revolucionar seu controle financeiro
           </p>
         </div>
 
-        {/* FAQ Accordion */}
-        <Card className="p-8 border-0 bg-card/60 backdrop-blur-sm">
+        {/* FAQ Accordion - Mobile Optimized */}
+        <Card className="p-4 md:p-8 border-0 bg-card/60 backdrop-blur-sm">
           <Accordion type="single" collapsible className="w-full">
             {faqs.map((faq, index) => (
               <AccordionItem key={index} value={`item-${index}`} className="border-border/50">
-                <AccordionTrigger className="text-left font-semibold text-foreground hover:text-primary transition-colors py-6">
+                <AccordionTrigger className="text-left font-semibold text-foreground hover:text-primary transition-colors py-4 md:py-6 text-sm md:text-base">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed pb-6">
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-4 md:pb-6 text-sm md:text-base">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -81,23 +81,23 @@ export const FAQSection = () => {
           </Accordion>
         </Card>
 
-        {/* Bottom CTA */}
-        <div className="text-center mt-16">
-          <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl p-8">
-            <h3 className="text-2xl font-bold mb-4 text-foreground">
+        {/* Bottom CTA - Mobile First */}
+        <div className="text-center mt-12 md:mt-16">
+          <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-2xl p-6 md:p-8">
+            <h3 className="text-xl md:text-2xl font-bold mb-3 md:mb-4 text-foreground">
               Ainda tem dúvidas?
             </h3>
-            <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+            <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6 max-w-2xl mx-auto">
               Nossa equipe de especialistas está pronta para ajudar você a transformar sua vida financeira. 
               Entre em contato conosco pelo WhatsApp e tire todas as suas dúvidas.
             </p>
             <Button 
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground group"
+              size="default"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground group w-full sm:w-auto"
             >
-              <MessageCircle className="w-5 h-5 mr-2" />
-              Falar com Especialista
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              <MessageCircle className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+              <span className="text-sm md:text-base">Falar com Especialista</span>
+              <ArrowRight className="w-4 h-4 md:w-5 md:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
         </div>

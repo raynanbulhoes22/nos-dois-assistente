@@ -78,73 +78,73 @@ export const SocialProofSection = () => {
   ];
 
   return (
-    <section id="social-proof" className="py-20 px-4 bg-gradient-to-br from-background to-primary/5">
+    <section id="social-proof" className="py-12 md:py-20 px-4 bg-gradient-to-br from-background to-primary/5">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <Badge variant="outline" className="mb-4 border-primary/30 text-primary bg-primary/5">
-            <Star className="w-4 h-4 mr-2" />
+        {/* Header - Mobile First */}
+        <div className="text-center mb-12 md:mb-16">
+          <Badge variant="outline" className="mb-3 md:mb-4 border-primary/30 text-primary bg-primary/5 text-xs md:text-sm">
+            <Star className="w-3 h-3 md:w-4 md:h-4 mr-2" />
             Avaliação 4.9/5 estrelas
           </Badge>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
             Mais de 15.000 pessoas já transformaram suas finanças
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
             Veja o que nossos usuários estão dizendo sobre os resultados reais que conseguiram
           </p>
         </div>
 
-        {/* Metrics */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+        {/* Metrics - Mobile Optimized */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12 md:mb-16">
           {metrics.map((metric, index) => (
-            <Card key={index} className="p-6 text-center border-0 bg-card/60 backdrop-blur-sm hover:bg-card/80 transition-all duration-300">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4 mx-auto">
+            <Card key={index} className="p-4 md:p-6 text-center border-0 bg-card/60 backdrop-blur-sm hover:bg-card/80 transition-all duration-300">
+              <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-primary/10 mb-3 md:mb-4 mx-auto">
                 {metric.icon}
               </div>
-              <div className="text-3xl font-bold text-foreground mb-2">
+              <div className="text-xl md:text-3xl font-bold text-foreground mb-1 md:mb-2">
                 {metric.value}
               </div>
-              <div className="text-sm font-semibold text-foreground mb-1">
+              <div className="text-xs md:text-sm font-semibold text-foreground mb-1">
                 {metric.label}
               </div>
-              <div className="text-xs text-muted-foreground">
+              <div className="text-xs text-muted-foreground hidden sm:block">
                 {metric.description}
               </div>
             </Card>
           ))}
         </div>
 
-        {/* Testimonials */}
-        <div className="grid md:grid-cols-3 gap-8">
+        {/* Testimonials - Mobile First */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {testimonials.map((testimonial, index) => (
-            <Card key={index} className="p-6 border-0 bg-card/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 relative">
-              <Quote className="absolute top-4 right-4 w-6 h-6 text-primary/20" />
+            <Card key={index} className="p-4 md:p-6 border-0 bg-card/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 relative">
+              <Quote className="absolute top-3 right-3 md:top-4 md:right-4 w-5 h-5 md:w-6 md:h-6 text-primary/20" />
               
               {/* Rating */}
-              <div className="flex gap-1 mb-4">
+              <div className="flex gap-1 mb-3 md:mb-4">
                 {Array.from({ length: testimonial.rating }).map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                  <Star key={i} className="w-3 h-3 md:w-4 md:h-4 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
 
               {/* Content */}
-              <p className="text-muted-foreground mb-6 leading-relaxed">
+              <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6 leading-relaxed">
                 "{testimonial.content}"
               </p>
 
               {/* Author */}
               <div className="flex items-center gap-3">
-                <Avatar>
+                <Avatar className="w-8 h-8 md:w-10 md:h-10">
                   <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                  <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                  <AvatarFallback className="bg-primary text-primary-foreground font-semibold text-xs md:text-sm">
                     {testimonial.avatar}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <div className="font-semibold text-foreground">
+                  <div className="text-sm md:text-base font-semibold text-foreground">
                     {testimonial.name}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-xs md:text-sm text-muted-foreground">
                     {testimonial.role}
                   </div>
                 </div>
@@ -153,24 +153,24 @@ export const SocialProofSection = () => {
           ))}
         </div>
 
-        {/* Trust Indicators */}
-        <div className="mt-16 text-center">
-          <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
+        {/* Trust Indicators - Mobile Responsive */}
+        <div className="mt-12 md:mt-16 text-center">
+          <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center items-center gap-4 md:gap-8 opacity-60">
             <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              <span className="text-sm font-medium">LGPD Compliant</span>
+              <Shield className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="text-xs md:text-sm font-medium">LGPD Compliant</span>
             </div>
             <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5" />
-              <span className="text-sm font-medium">SSL Criptografado</span>
+              <Shield className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="text-xs md:text-sm font-medium">SSL Criptografado</span>
             </div>
             <div className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              <span className="text-sm font-medium">Suporte 24/7</span>
+              <Users className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="text-xs md:text-sm font-medium">Suporte 24/7</span>
             </div>
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              <span className="text-sm font-medium">99.9% Uptime</span>
+              <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
+              <span className="text-xs md:text-sm font-medium">99.9% Uptime</span>
             </div>
           </div>
         </div>

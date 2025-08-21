@@ -26,6 +26,14 @@ export const HeroSection = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Column - Content */}
           <div className="text-left">
+            {/* Badge */}
+            <Badge 
+              variant="outline" 
+              className="mb-6 border-[#E63827]/30 text-[#E63827] bg-[#E63827]/5 hover:bg-[#E63827]/10 px-4 py-2"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              7 DIAS GRÁTIS
+            </Badge>
 
             {/* Main heading */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
@@ -44,7 +52,7 @@ export const HeroSection = () => {
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
               Transforme sua gestão financeira com nossa plataforma inteligente. 
               Controle gastos, organize receitas e tome decisões mais inteligentes 
-              através do WhatsApp.
+              através do WhatsApp. Experimente 7 dias grátis e veja a diferença.
             </p>
 
 
@@ -54,12 +62,12 @@ export const HeroSection = () => {
               onClick={() => navigate("/auth")}
               className="bg-[#E63827] hover:bg-[#E63827]/90 text-white font-semibold px-8 py-4 text-lg shadow-lg hover:shadow-xl transition-all duration-300 group mb-4"
             >
-              Começar Grátis
+              Testar 7 dias Grátis
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             
             <p className="text-sm text-muted-foreground">
-              Sem cartão de crédito • Setup em 2 minutos • Grátis para sempre
+              7 dias grátis • Sem cartão de crédito • Cancele quando quiser
             </p>
           </div>
 

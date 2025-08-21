@@ -398,7 +398,7 @@ export const AuthForm = () => {
                     <div className="space-y-3 pt-2">
                       <Button
                         type="submit"
-                        className="w-full h-12 text-base font-medium"
+                        className="w-full h-12 text-base font-medium bg-gradient-to-r from-primary to-secondary hover:from-primary-dark hover:to-secondary/90"
                         disabled={isLoading}
                       >
                         {isLoading ? (
@@ -414,7 +414,7 @@ export const AuthForm = () => {
                       <Button
                         type="button"
                         variant="outline"
-                        className="w-full h-12 text-base"
+                        className="w-full h-12 text-base border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                         onClick={() => setShowForgotPassword(false)}
                       >
                         Voltar para o login
@@ -466,7 +466,7 @@ export const AuthForm = () => {
                     <Button
                       onClick={() => setShowEmailConfirmation(false)}
                       variant="outline"
-                      className="w-full h-12"
+                      className="w-full h-12 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                     >
                       Voltar para o login
                     </Button>
@@ -496,7 +496,7 @@ export const AuthForm = () => {
                         });
                       }}
                       variant="default"
-                      className="w-full h-12"
+                      className="w-full h-12 bg-gradient-to-r from-secondary to-primary hover:from-secondary/90 hover:to-primary-dark"
                     >
                       Reenviar email de confirmação
                     </Button>
@@ -607,7 +607,7 @@ export const AuthForm = () => {
                         <Button
                           type="button"
                           variant="outline"
-                          className="w-full h-12 text-base"
+                          className="w-full h-12 text-base border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                           onClick={handleGoogleSignIn}
                           disabled={isLoading}
                         >

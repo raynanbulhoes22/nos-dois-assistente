@@ -18,7 +18,7 @@ export const HeroSection = () => {
           {/* Left Column */}
           <div className="space-y-8 z-10">
             {/* Badge */}
-            <div className="inline-flex items-center px-6 py-3 bg-blue-50 border border-blue-200 rounded-full text-blue-600 font-medium text-sm">
+            <div className="inline-flex items-center px-6 py-3 bg-orange-50 border border-orange-200 rounded-full text-[#E63827] font-medium text-sm">
               ⚡ 7 DIAS GRÁTIS • SEM CARTÃO • SEM COMPROMISSO
             </div>
 
@@ -28,7 +28,7 @@ export const HeroSection = () => {
                 Suas finanças
                 <br />
                 pelo{" "}
-                <span className="text-blue-600">WhatsApp</span>
+                <span className="text-[#E63827]">WhatsApp</span>
               </h1>
               
               <p className="text-xl text-gray-600 max-w-2xl leading-relaxed">
@@ -62,7 +62,7 @@ export const HeroSection = () => {
             <div className="space-y-4">
               <Button 
                 size="lg" 
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all" 
+                className="bg-[#E63827] hover:bg-[#d32f1f] text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all" 
                 asChild
               >
                 <Link to="/auth?mode=register" className="flex items-center gap-2">

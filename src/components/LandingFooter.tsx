@@ -27,15 +27,15 @@ export const LandingFooter = () => {
             <div className="flex flex-col space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-primary" />
-                <span>contato@lyvo.com.br</span>
+                <span>lyvomkt@gmail.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-primary" />
-                <span>(11) 99999-9999</span>
+                <span>(69) 9.9229-0572</span>
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-primary" />
-                <span>São Paulo, SP - Brasil</span>
+                <span>Ji-Paraná, RO - Brasil</span>
               </div>
             </div>
           </div>

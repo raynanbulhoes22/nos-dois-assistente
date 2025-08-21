@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from "@/hooks/use-toast";
-import { Heart, Loader2 } from "lucide-react";
+import { Heart, Loader2, Eye, EyeOff } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { authSchema, type AuthFormData } from '@/lib/validations';
 import { sanitizeInput, authRateLimiter, checkPasswordStrength } from '@/lib/security';
@@ -36,6 +36,9 @@ export const AuthForm = () => {
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [passwordStrength, setPasswordStrength] = useState({ isStrong: false, score: 0, feedback: [] as string[] });
   const [rememberMe, setRememberMe] = useState(false);
+  const [showSignInPassword, setShowSignInPassword] = useState(false);
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
 
   const signInForm = useForm<z.infer<typeof signInSchema>>({
@@ -539,25 +542,38 @@ export const AuthForm = () => {
                             </FormItem>
                           )}
                         />
-                        <FormField
-                          control={signInForm.control}
-                          name="password"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Senha</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="password"
-                                  placeholder="••••••••"
-                                  disabled={isLoading}
-                                  className="h-12 text-base"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                         <FormField
+                           control={signInForm.control}
+                           name="password"
+                           render={({ field }) => (
+                             <FormItem>
+                               <FormLabel className="text-sm font-medium">Senha</FormLabel>
+                               <FormControl>
+                                 <div className="relative">
+                                   <Input
+                                     type={showSignInPassword ? "text" : "password"}
+                                     placeholder="••••••••"
+                                     disabled={isLoading}
+                                     className="h-12 text-base pr-12"
+                                     {...field}
+                                   />
+                                   <button
+                                     type="button"
+                                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                     onClick={() => setShowSignInPassword(!showSignInPassword)}
+                                   >
+                                     {showSignInPassword ? (
+                                       <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                     ) : (
+                                       <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                     )}
+                                   </button>
+                                 </div>
+                               </FormControl>
+                               <FormMessage />
+                             </FormItem>
+                           )}
+                         />
                         
                         {/* Mobile-optimized checkbox and forgot password */}
                         <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -698,65 +714,91 @@ export const AuthForm = () => {
                             </FormItem>
                           )}
                         />
-                        <FormField
-                          control={signUpForm.control}
-                          name="password"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Senha</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="password"
-                                  placeholder="••••••••"
-                                  disabled={isLoading}
-                                  className="h-12 text-base"
-                                  {...field}
-                                  onChange={(e) => {
-                                    field.onChange(e);
-                                    handlePasswordChange(e.target.value);
-                                  }}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                              {field.value && (
-                                <div className="text-xs space-y-1 mt-2">
-                                  <div className={`font-medium ${passwordStrength.isStrong ? 'text-green-600' : 'text-red-600'}`}>
-                                    Força da senha: {passwordStrength.score}/5
-                                  </div>
-                                  {passwordStrength.feedback.length > 0 && (
-                                    <ul className="text-red-600 space-y-1">
-                                      {passwordStrength.feedback.map((tip, index) => (
-                                        <li key={index} className="flex items-start gap-1">
-                                          <span className="text-xs">•</span>
-                                          <span>{tip}</span>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  )}
-                                </div>
-                              )}
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={signUpForm.control}
-                          name="confirmPassword"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium">Confirmar Senha</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="password"
-                                  placeholder="••••••••"
-                                  disabled={isLoading}
-                                  className="h-12 text-base"
-                                  {...field}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                         <FormField
+                           control={signUpForm.control}
+                           name="password"
+                           render={({ field }) => (
+                             <FormItem>
+                               <FormLabel className="text-sm font-medium">Senha</FormLabel>
+                               <FormControl>
+                                 <div className="relative">
+                                   <Input
+                                     type={showSignUpPassword ? "text" : "password"}
+                                     placeholder="••••••••"
+                                     disabled={isLoading}
+                                     className="h-12 text-base pr-12"
+                                     {...field}
+                                     onChange={(e) => {
+                                       field.onChange(e);
+                                       handlePasswordChange(e.target.value);
+                                     }}
+                                   />
+                                   <button
+                                     type="button"
+                                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                     onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                                   >
+                                     {showSignUpPassword ? (
+                                       <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                     ) : (
+                                       <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                     )}
+                                   </button>
+                                 </div>
+                               </FormControl>
+                               <FormMessage />
+                               {field.value && (
+                                 <div className="text-xs space-y-1 mt-2">
+                                   <div className={`font-medium ${passwordStrength.isStrong ? 'text-green-600' : 'text-red-600'}`}>
+                                     Força da senha: {passwordStrength.score}/5
+                                   </div>
+                                   {passwordStrength.feedback.length > 0 && (
+                                     <ul className="text-red-600 space-y-1">
+                                       {passwordStrength.feedback.map((tip, index) => (
+                                         <li key={index} className="flex items-start gap-1">
+                                           <span className="text-xs">•</span>
+                                           <span>{tip}</span>
+                                         </li>
+                                       ))}
+                                     </ul>
+                                   )}
+                                 </div>
+                               )}
+                             </FormItem>
+                           )}
+                         />
+                         <FormField
+                           control={signUpForm.control}
+                           name="confirmPassword"
+                           render={({ field }) => (
+                             <FormItem>
+                               <FormLabel className="text-sm font-medium">Confirmar Senha</FormLabel>
+                               <FormControl>
+                                 <div className="relative">
+                                   <Input
+                                     type={showConfirmPassword ? "text" : "password"}
+                                     placeholder="••••••••"
+                                     disabled={isLoading}
+                                     className="h-12 text-base pr-12"
+                                     {...field}
+                                   />
+                                   <button
+                                     type="button"
+                                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                   >
+                                     {showConfirmPassword ? (
+                                       <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                     ) : (
+                                       <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                     )}
+                                   </button>
+                                 </div>
+                               </FormControl>
+                               <FormMessage />
+                             </FormItem>
+                           )}
+                         />
                         <Button 
                           type="submit" 
                           className="w-full h-12 text-base font-medium bg-gradient-to-r from-secondary to-primary hover:from-secondary/90 hover:to-primary-dark"

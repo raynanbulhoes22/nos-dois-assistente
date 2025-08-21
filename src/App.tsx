@@ -6,11 +6,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { FinancialDataProvider } from "@/contexts/FinancialDataContext";
-import { AuthForm } from "@/components/AuthForm";
+import { LandingPage } from "@/components/LandingPage";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SubscriptionRedirect } from "@/components/SubscriptionRedirect";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import Planos from "./pages/Planos";
+import FAQ from "./pages/FAQ";
+import Sobre from "./pages/Sobre";
 import { Movimentacoes } from "./pages/Movimentacoes";
 import { Assinaturas } from "./pages/Assinaturas";
 import { Orcamento } from "./pages/Orcamento";
@@ -38,7 +42,24 @@ const App = () => {
   }
 
   if (!user) {
-    return <AuthForm />;
+    return (
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/planos" element={<Planos />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/sobre" element={<Sobre />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+            <Toaster />
+            <Sonner />
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    );
   }
 
   return (

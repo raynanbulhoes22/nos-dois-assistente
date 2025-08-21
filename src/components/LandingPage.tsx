@@ -1,6 +1,7 @@
 import { HeroSection } from "./HeroSection";
 import { PricingSection } from "./PricingSection";
 import { LandingHeader } from "./LandingHeader";
+import { LandingFooter } from "./LandingFooter";
 
 export const LandingPage = () => {
   return (
@@ -10,6 +11,7 @@ export const LandingPage = () => {
         <HeroSection />
         <PricingSection />
       </div>
+      <LandingFooter />
     </div>
   );
 };

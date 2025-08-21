@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, TrendingUp, DollarSign, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import heroPerson from "@/assets/hero-person.jpg";
+const heroPerson = "/lovable-uploads/f0857788-1855-417d-94c7-7bad731d095c.png";
 
 export const HeroSection = () => {
   return (

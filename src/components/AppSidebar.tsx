@@ -52,10 +52,8 @@ export function AppSidebar() {
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-accent text-accent-foreground" : "hover:bg-accent/50";
 
-  // Filter navigation items based on subscription status
-  const availableMainItems = subscriptionStatus?.subscribed 
-    ? mainNavigationItems 
-    : [];
+  // Show all main navigation items - subscription check is handled by ProtectedRoute
+  const availableMainItems = mainNavigationItems;
   
   const availableBottomItems = bottomNavigationItems;
 

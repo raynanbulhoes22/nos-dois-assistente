@@ -38,12 +38,12 @@ serve(async (req) => {
 
     const pricing = {
       solo: {
-        price: soloPrice.data[0]?.unit_amount ? (soloPrice.data[0].unit_amount / 100) : 16.97,
+        price: soloPrice.data[0]?.unit_amount ? (soloPrice.data[0].unit_amount / 100) : 11.97,
         currency: soloPrice.data[0]?.currency || "brl",
         interval: soloPrice.data[0]?.recurring?.interval || "month"
       },
       casal: {
-        price: casalPrice.data[0]?.unit_amount ? (casalPrice.data[0].unit_amount / 100) : 21.97,
+        price: casalPrice.data[0]?.unit_amount ? (casalPrice.data[0].unit_amount / 100) : 14.97,
         currency: casalPrice.data[0]?.currency || "brl", 
         interval: casalPrice.data[0]?.recurring?.interval || "month"
       }

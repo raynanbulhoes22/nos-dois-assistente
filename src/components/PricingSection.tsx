@@ -1,80 +1,24 @@
-import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Users, User, CreditCard } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useStripe } from "@/hooks/useStripe";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
-interface PricingData {
-  solo: {
-    price: number;
-    currency: string;
-    interval: string;
-  };
-  casal: {
-    price: number;
-    currency: string;
-    interval: string;
-  };
-}
 
 export const PricingSection = () => {
-  const [pricing, setPricing] = useState<PricingData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
+  const { pricing, loadingPricing, checkoutLoading, formatPrice, handleCheckout } = useStripe();
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const formatPrice = (price: number): string => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(price);
-  };
-
-  const fetchPricing = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('get-pricing');
-      if (error) throw error;
-      setPricing(data);
-    } catch (error) {
-      console.error('Erro ao buscar preços:', error);
-      toast.error('Erro ao carregar preços');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCheckout = async (plan: "solo" | "casal") => {
+  const onCheckout = async (plan: "solo" | "casal") => {
     if (!user) {
       navigate('/auth?mode=signup');
       return;
     }
-
-    setCheckoutLoading(plan);
-    try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { plan }
-      });
-
-      if (error) throw error;
-
-      // Open Stripe checkout in a new tab
-      window.open(data.url, '_blank');
-    } catch (error) {
-      console.error('Erro no checkout:', error);
-      toast.error('Erro ao iniciar checkout');
-    } finally {
-      setCheckoutLoading(null);
-    }
+    
+    await handleCheckout(plan);
   };
-
-  useEffect(() => {
-    fetchPricing();
-  }, []);
 
   const individualFeatures = [
     "Controle completo das finanças",
@@ -92,7 +36,7 @@ export const PricingSection = () => {
     "Gestão financeira compartilhada"
   ];
 
-  if (loading) {
+  if (loadingPricing) {
     return (
       <section className="py-12 md:py-16 px-4">
         <div className="max-w-6xl mx-auto">
@@ -165,7 +109,7 @@ export const PricingSection = () => {
             <Button 
               className="w-full bg-primary hover:bg-primary-dark text-primary-foreground shadow-lg hover:shadow-xl transition-all"
               size="default"
-              onClick={() => handleCheckout("solo")}
+              onClick={() => onCheckout("solo")}
               disabled={checkoutLoading === "solo"}
             >
               {checkoutLoading === "solo" ? (
@@ -213,7 +157,7 @@ export const PricingSection = () => {
             <Button 
               className="w-full bg-primary hover:bg-primary-dark text-primary-foreground shadow-lg hover:shadow-xl transition-all"
               size="default"
-              onClick={() => handleCheckout("casal")}
+              onClick={() => onCheckout("casal")}
               disabled={checkoutLoading === "casal"}
             >
               {checkoutLoading === "casal" ? (

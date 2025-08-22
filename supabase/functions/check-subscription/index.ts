@@ -121,10 +121,10 @@ serve(async (req) => {
         currency: price.currency 
       });
       
-      // Determine tier by price amount (more reliable than product ID)
-      if (amount <= 1200) { // R$ 12,00 or less = Solo
+      // Determine tier by price amount (mais preciso)
+      if (amount <= 1300) { // R$ 13,00 ou menos = Solo (inclui 11.97)
         tier = "Solo";
-      } else {
+      } else { // R$ 13,00+ = Casal (inclui 14.97)
         tier = "Casal";
       }
       

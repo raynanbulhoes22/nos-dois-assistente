@@ -40,13 +40,23 @@ export const useStripe = () => {
   const fetchPricing = useCallback(async () => {
     try {
       setLoadingPricing(true);
+      console.log('🏷️ useStripe: Buscando preços...');
+      
       const { data, error } = await supabase.functions.invoke('get-pricing');
       
-      if (error) throw error;
+      console.log('🏷️ useStripe: Resposta da função get-pricing:', { data, error });
+      
+      if (error) {
+        console.error('🏷️ useStripe: Erro ao buscar preços:', error);
+        throw error;
+      }
+      
+      console.log('🏷️ useStripe: Preços recebidos:', data);
       setPricing(data);
     } catch (error) {
-      console.error('Erro ao buscar preços:', error);
+      console.error('🏷️ useStripe: Erro geral ao buscar preços:', error);
       // Fallback para preços padrão (mesmos da função get-pricing)
+      console.log('🏷️ useStripe: Usando preços de fallback');
       setPricing({
         solo: {
           price: 11.97,
@@ -69,22 +79,24 @@ export const useStripe = () => {
 
     try {
       setLoadingSubscription(true);
-      console.log('🔄 Verificando status da assinatura...');
+      console.log('🔄 useStripe: Verificando status da assinatura...');
       
       const { data, error } = await supabase.functions.invoke("check-subscription");
       
+      console.log('🔄 useStripe: Resposta da função check-subscription:', { data, error });
+      
       if (error) {
-        console.error('❌ Erro ao verificar assinatura:', error);
+        console.error('❌ useStripe: Erro ao verificar assinatura:', error);
         toast.error(error.message || "Erro ao verificar assinatura. Tente novamente.");
         return;
       }
 
-      console.log('✅ Status atualizado:', data);
+      console.log('✅ useStripe: Status atualizado:', data);
       setSubscriptionStatus(data as SubscriptionStatus);
       
       return data as SubscriptionStatus;
     } catch (e: any) {
-      console.error('❌ Erro inesperado:', e);
+      console.error('❌ useStripe: Erro inesperado:', e);
       toast.error(e.message || "Erro ao verificar assinatura. Tente novamente.");
     } finally {
       setLoadingSubscription(false);
@@ -98,36 +110,42 @@ export const useStripe = () => {
     }
 
     try {
-      console.log('🚀 Iniciando checkout para plano:', plan);
+      console.log('🚀 useStripe: Iniciando checkout para plano:', plan);
       setCheckoutLoading(plan);
       
       const { data, error } = await supabase.functions.invoke("create-checkout", {
         body: { plan }
       });
       
-      console.log('📦 Resposta do checkout:', { data, error });
+      console.log('📦 useStripe: Resposta da função create-checkout:', { data, error });
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ useStripe: Erro na função create-checkout:', error);
+        throw error;
+      }
       
       if (data?.url) {
-        console.log('🔗 URL recebida:', data.url);
+        console.log('🔗 useStripe: URL recebida:', data.url);
         
         // Detectar se é mobile
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        console.log('📱 É mobile?', isMobile);
+        console.log('📱 useStripe: É mobile?', isMobile);
         
         if (isMobile) {
           // No mobile, usar window.location.href para garantir que funcione
-          console.log('📱 Redirecionando mobile para:', data.url);
+          console.log('📱 useStripe: Redirecionando mobile para:', data.url);
           window.location.href = data.url;
         } else {
           // No desktop, abrir em nova aba
-          console.log('💻 Abrindo em nova aba:', data.url);
+          console.log('💻 useStripe: Abrindo em nova aba:', data.url);
           window.open(data.url, "_blank");
         }
+      } else {
+        console.error('❌ useStripe: Nenhuma URL retornada na resposta');
+        throw new Error("Nenhuma URL de checkout retornada");
       }
     } catch (e: any) {
-      console.error('❌ Erro no checkout:', e);
+      console.error('❌ useStripe: Erro no checkout:', e);
       toast.error(e.message || "Erro ao iniciar pagamento. Tente novamente.");
     } finally {
       setCheckoutLoading(null);

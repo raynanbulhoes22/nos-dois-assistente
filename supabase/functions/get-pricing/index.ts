@@ -6,13 +6,17 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log('🏷️ GET-PRICING: Iniciando função');
+  
   if (req.method === "OPTIONS") {
+    console.log('🏷️ GET-PRICING: Retornando CORS headers');
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Retornar preços padrão para a landing page
-    // Quando você configurar o Stripe completamente, pode implementar a busca real
+    console.log('🏷️ GET-PRICING: Retornando preços padrão');
+    
+    // Preços fixos conforme definido no sistema
     const pricing = {
       solo: {
         price: 11.97,
@@ -26,14 +30,20 @@ serve(async (req) => {
       }
     };
 
+    console.log('🏷️ GET-PRICING: Preços:', pricing);
+
     return new Response(JSON.stringify(pricing), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
-    console.error('Erro na função get-pricing:', error);
+    console.error('🏷️ GET-PRICING: Erro na função:', error);
     const message = error instanceof Error ? error.message : String(error);
-    return new Response(JSON.stringify({ error: message }), {
+    
+    return new Response(JSON.stringify({ 
+      error: "Erro ao buscar preços",
+      details: message 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

@@ -293,39 +293,6 @@ export type Database = {
         }
         Relationships: []
       }
-      historico_de_interacoes: {
-        Row: {
-          id: string
-          instancia: string
-          mensagem: string
-          message_id: string | null
-          nome: string
-          origem: string | null
-          registrado_em: string | null
-          telefone: string
-        }
-        Insert: {
-          id?: string
-          instancia: string
-          mensagem: string
-          message_id?: string | null
-          nome: string
-          origem?: string | null
-          registrado_em?: string | null
-          telefone: string
-        }
-        Update: {
-          id?: string
-          instancia?: string
-          mensagem?: string
-          message_id?: string | null
-          nome?: string
-          origem?: string | null
-          registrado_em?: string | null
-          telefone?: string
-        }
-        Relationships: []
-      }
       n8n_chat_histories: {
         Row: {
           id: number
@@ -582,42 +549,7 @@ export type Database = {
       }
     }
     Views: {
-      registros_financeiros_resumo: {
-        Row: {
-          cartao_mascarado: string | null
-          categoria: string | null
-          data: string | null
-          id: string | null
-          mes_referencia: string | null
-          tipo: string | null
-          tipo_movimento: string | null
-          user_id: string | null
-          valor: number | null
-        }
-        Insert: {
-          cartao_mascarado?: never
-          categoria?: string | null
-          data?: string | null
-          id?: string | null
-          mes_referencia?: never
-          tipo?: string | null
-          tipo_movimento?: string | null
-          user_id?: string | null
-          valor?: number | null
-        }
-        Update: {
-          cartao_mascarado?: never
-          categoria?: string | null
-          data?: string | null
-          id?: string | null
-          mes_referencia?: never
-          tipo?: string | null
-          tipo_movimento?: string | null
-          user_id?: string | null
-          valor?: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       encrypt_cpf: {
@@ -627,6 +559,20 @@ export type Database = {
       encrypt_sensitive_data: {
         Args: { data_input: string }
         Returns: string
+      }
+      get_registros_financeiros_resumo: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          cartao_mascarado: string
+          categoria: string
+          data: string
+          id: string
+          mes_referencia: string
+          tipo: string
+          tipo_movimento: string
+          user_id: string
+          valor: number
+        }[]
       }
       normalize_phone_number: {
         Args: { phone_input: string }

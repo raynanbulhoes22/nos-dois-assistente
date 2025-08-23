@@ -23,9 +23,21 @@ export function MobileBottomNav() {
 
   const menuOptions = [
     {
+      to: "/cartoes",
+      label: "Cartões",
+      icon: CreditCard,
+      description: "Gerencie seus cartões"
+    },
+    {
+      to: "/dividas",
+      label: "Dívidas", 
+      icon: TrendingDown,
+      description: "Controle suas dívidas"
+    },
+    {
       to: "/assinaturas",
       label: "Assinaturas",
-      icon: CreditCard,
+      icon: Settings,
       description: "Gerencie sua assinatura"
     },
     {
@@ -175,7 +187,7 @@ export function MobileBottomNav() {
                   className={cn(
                     "flex flex-col items-center justify-center py-2 px-2 text-xs w-full",
                     "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
-                    location.pathname === "/relatorios" || location.pathname === "/assinaturas" || location.pathname === "/configuracoes"
+                    location.pathname === "/relatorios" || location.pathname === "/cartoes" || location.pathname === "/dividas" || location.pathname === "/assinaturas" || location.pathname === "/configuracoes"
                       ? "text-primary"
                       : "text-muted-foreground hover:text-foreground"
                   )}

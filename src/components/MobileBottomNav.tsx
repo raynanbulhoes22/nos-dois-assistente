@@ -29,10 +29,11 @@ export function MobileBottomNav() {
       description: "Gerencie seus cartões"
     },
     {
-      to: "/dividas",
+      to: "#",
       label: "Dívidas", 
       icon: TrendingDown,
-      description: "Controle suas dívidas"
+      description: "Em breve - Controle suas dívidas",
+      disabled: true
     },
     {
       to: "/assinaturas",
@@ -221,11 +222,23 @@ export function MobileBottomNav() {
                     
                     <Separator className="my-2" />
                     
-                    {menuOptions.map((option) => (
+                     {menuOptions.map((option) => (
                       <button
                         key={option.to}
-                        onClick={() => handleMenuNavigation(option.to)}
-                        className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors text-left"
+                        onClick={() => option.disabled ? 
+                          toast({
+                            title: "Funcionalidade em breve!",
+                            description: option.description,
+                          }) : 
+                          handleMenuNavigation(option.to)
+                        }
+                        className={cn(
+                          "flex items-center gap-3 p-3 rounded-lg transition-colors text-left",
+                          option.disabled 
+                            ? "text-muted-foreground cursor-not-allowed opacity-50" 
+                            : "hover:bg-accent"
+                        )}
+                        disabled={option.disabled}
                       >
                         <option.icon className="h-5 w-5" />
                         <div>

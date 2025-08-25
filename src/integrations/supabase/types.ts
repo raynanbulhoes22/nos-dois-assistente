@@ -516,6 +516,10 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          last_payment_attempt: string | null
+          next_billing_date: string | null
+          payment_error: string | null
+          payment_status: string | null
           stripe_customer_id: string | null
           subscribed: boolean
           subscription_end: string | null
@@ -527,6 +531,10 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          last_payment_attempt?: string | null
+          next_billing_date?: string | null
+          payment_error?: string | null
+          payment_status?: string | null
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
@@ -538,6 +546,10 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          last_payment_attempt?: string | null
+          next_billing_date?: string | null
+          payment_error?: string | null
+          payment_status?: string | null
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null

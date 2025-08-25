@@ -15,7 +15,9 @@ import { SmartInsights } from "./dashboard/SmartInsights";
 import { MobileOptimizedTabs } from "./dashboard/MobileOptimizedTabs";
 import { AdvancedStatsCards } from "./dashboard/AdvancedStatsCards";
 import { DashboardFilters } from "./dashboard/DashboardFilters";
+import { PaymentAlertsPanel } from "./dashboard/PaymentAlertsPanel";
 import { WelcomeModal } from "./WelcomeModal";
+import { usePaymentAlerts } from "@/hooks/usePaymentAlerts";
 interface User {
   id: string;
   email?: string;
@@ -30,6 +32,7 @@ export const Dashboard = ({
   const [showFilters, setShowFilters] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState<any>({});
   const { toast } = useToast();
+  const { alerts, loading: alertsLoading, checkPaymentAlerts, dismissAlert } = usePaymentAlerts();
 
   // Calculate date ranges based on selected period
   const getDateRange = () => {
@@ -302,6 +305,18 @@ export const Dashboard = ({
                 });
               }}
             />
+          )}
+
+          {/* Payment Alerts */}
+          {alerts.length > 0 && (
+            <section>
+              <PaymentAlertsPanel
+                alerts={alerts}
+                loading={alertsLoading}
+                onDismiss={dismissAlert}
+                onRefresh={checkPaymentAlerts}
+              />
+            </section>
           )}
 
           {/* Primary KPIs - Clean Layout */}

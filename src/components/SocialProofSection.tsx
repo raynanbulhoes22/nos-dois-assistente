@@ -31,21 +31,21 @@ export const SocialProofSection = () => {
       name: "Marina Silva",
       role: "Empreendedora",
       avatar: "MS",
-      content: "Finalmente consegui organizar minhas finanças! O WhatsApp Bot é incrível, registro tudo na hora. Economizei R$ 2.400 no primeiro mês.",
+      content: "Finalmente consegui organizar minhas finanças! O WhatsApp Bot é incrível, registro tudo na hora. Economizei R$ 480 no primeiro mês.",
       rating: 5
     },
     {
       name: "Carlos Mendes",
       role: "Professor",
       avatar: "CM",
-      content: "A IA me ajuda a entender onde gasto demais. Os relatórios são super claros e as previsões me ajudaram a quitar minhas dívidas.",
+      content: "A IA me ajuda a entender onde gasto demais. Os relatórios são super claros e já consigo ver onde posso melhorar meu controle financeiro.",
       rating: 5
     },
     {
       name: "Ana & João",
       role: "Casal",
       avatar: "AJ",
-      content: "Perfeito para casais! Agora os dois conseguimos acompanhar nossos gastos em tempo real. Já conseguimos comprar nossa casa própria.",
+      content: "Perfeito para casais! Agora conseguimos acompanhar nossos gastos em tempo real e planejar melhor nosso futuro.",
       rating: 5
     }
   ];
@@ -53,21 +53,21 @@ export const SocialProofSection = () => {
   const metrics: Metric[] = [
     {
       icon: <Users className="w-8 h-8 text-primary" />,
-      value: "15.000+",
-      label: "Usuários Ativos",
-      description: "Pessoas transformando suas vidas financeiras"
+      value: "50+",
+      label: "Early Users",
+      description: "Primeiros usuários testando a plataforma"
     },
     {
       icon: <DollarSign className="w-8 h-8 text-success" />,
-      value: "R$ 45M+",
+      value: "R$ 15.000+",
       label: "Economia Gerada",
-      description: "Valor total economizado pelos usuários"
+      description: "Valor economizado pelos usuários iniciais"
     },
     {
       icon: <TrendingUp className="w-8 h-8 text-primary" />,
-      value: "87%",
-      label: "Melhoria Média",
-      description: "Dos usuários melhoram controle financeiro"
+      value: "100%",
+      label: "Recomendam",
+      description: "Dos usuários recomendam a plataforma"
     },
     {
       icon: <Shield className="w-8 h-8 text-success" />,
@@ -84,13 +84,13 @@ export const SocialProofSection = () => {
         <div className="text-center mb-12 md:mb-16">
           <Badge variant="outline" className="mb-3 md:mb-4 border-primary/30 text-primary bg-primary/5 text-xs md:text-sm">
             <Star className="w-3 h-3 md:w-4 md:h-4 mr-2" />
-            Avaliação 4.9/5 estrelas
+            Resultados Reais dos Early Users
           </Badge>
           <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-            Mais de 15.000 pessoas já transformaram suas finanças
+            Primeiros usuários já estão transformando suas finanças
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-            Veja o que nossos usuários estão dizendo sobre os resultados reais que conseguiram
+            Conheça os resultados que nossos early users estão conseguindo com a plataforma
           </p>
         </div>
 

@@ -69,7 +69,7 @@ export const HeroSection = () => {
             </div>
             
             <p className="text-xs sm:text-sm text-muted-foreground">
-              7 dias grátis • Sem cartão de crédito • Cancele quando quiser
+              7 dias grátis • Cancele quando quiser
             </p>
           </div>
 

@@ -18,6 +18,7 @@ import { DashboardFilters } from "./dashboard/DashboardFilters";
 import { PaymentAlertsPanel } from "./dashboard/PaymentAlertsPanel";
 import { WelcomeModal } from "./WelcomeModal";
 import { usePaymentAlerts } from "@/hooks/usePaymentAlerts";
+import { QuickTip } from "./help/QuickTip";
 interface User {
   id: string;
   email?: string;
@@ -27,7 +28,7 @@ export const Dashboard = ({
 }: {
   user: User;
 }) => {
-  const [showBalance, setShowBalance] = useState(true);
+  const [showBalance, setShowBalance] = useState(true);  
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [showFilters, setShowFilters] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState<any>({});
@@ -292,6 +293,9 @@ export const Dashboard = ({
       {/* Main Content - Mobile optimized */}
       <div className="p-4 sm:px-6 pb-6">
         <div className="space-y-8">
+          {/* Quick Tip Component */}
+          <QuickTip className="mb-4" />
+          
           {/* Filters Panel */}
           {showFilters && (
             <DashboardFilters

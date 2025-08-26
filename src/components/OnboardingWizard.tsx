@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export interface OnboardingData {
   dataNascimento?: string;
@@ -59,6 +60,18 @@ export const OnboardingWizard = () => {
     gastosFixos: [],
     categoriasSelecionadas: []
   });
+
+  const getStepDescription = (step: number): string => {
+    const descriptions = {
+      1: "Vamos conhecer você melhor",
+      2: "Configure suas fontes de renda",
+      3: "Defina seus gastos fixos mensais",
+      4: "Registre seus cartões de crédito",
+      5: "Determine seu saldo inicial",
+      6: "Finalize sua configuração"
+    };
+    return descriptions[step as keyof typeof descriptions] || "Configurando sua conta";
+  };
 
   const nextStep = () => setCurrentStep(prev => prev + 1);
   const prevStep = () => setCurrentStep(prev => prev - 1);
@@ -269,53 +282,46 @@ export const OnboardingWizard = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      {/* Mobile Progress - App-like */}
-      <div className="mb-6 sm:mb-8 bg-card/50 sm:bg-transparent rounded-2xl sm:rounded-none p-4 sm:p-0 backdrop-blur-sm sm:backdrop-blur-none border sm:border-0">
-        {/* Mobile Step Indicators */}
-        <div className="flex justify-center items-center mb-3 sm:mb-4 sm:justify-between">
-          {[1, 2, 3, 4, 5, 6].map((step) => (
-            <div key={step} className="flex items-center">
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader className="text-center">
+        <div className="flex justify-center mb-4">
+          <div className="flex items-center space-x-2">
+            {[1, 2, 3, 4, 5, 6].map((step) => (
               <div
-                className={`flex items-center justify-center w-8 h-8 sm:w-8 sm:h-8 rounded-full text-sm font-semibold transition-all duration-300 ${
-                  currentStep >= step
-                    ? 'bg-primary text-primary-foreground shadow-lg scale-110 sm:scale-100'
-                    : 'bg-muted/60 sm:bg-muted text-muted-foreground'
+                key={step}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all duration-200 ${
+                  step <= currentStep
+                    ? 'bg-primary text-primary-foreground shadow-lg'
+                    : step === currentStep + 1
+                    ? 'bg-primary/20 text-primary border-2 border-primary'
+                    : 'bg-muted text-muted-foreground'
                 }`}
               >
-                {currentStep > step ? '✓' : step}
+                {step}
               </div>
-              {step < 6 && (
-                <div className="w-6 sm:w-8 h-0.5 mx-1 sm:mx-2 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className={`h-full bg-primary transition-all duration-500 ${
-                      currentStep > step ? 'w-full' : 'w-0'
-                    }`}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-        
-        {/* Progress Bar */}
-        <div className="w-full bg-muted/40 sm:bg-muted rounded-full h-1.5 sm:h-2 mb-3 sm:mb-2">
-          <div
-            className="bg-gradient-to-r from-primary to-primary/80 sm:bg-primary h-full rounded-full transition-all duration-500 ease-out shadow-sm"
+        <CardTitle className="text-xl sm:text-2xl">Configuração da Conta</CardTitle>
+        <CardDescription className="text-sm sm:text-base">
+          Passo {currentStep} de 6 - {getStepDescription(currentStep)}
+        </CardDescription>
+        <div className="w-full bg-muted rounded-full h-2 mt-4">
+          <div 
+            className="bg-primary h-2 rounded-full transition-all duration-300 shadow-sm"
             style={{ width: `${(currentStep / 6) * 100}%` }}
           />
         </div>
-        
-        {/* Step Text */}
-        <p className="text-center text-xs sm:text-sm text-muted-foreground font-medium">
-          Etapa {currentStep} de 6
-        </p>
-      </div>
+        <div className="text-xs text-muted-foreground mt-2">
+          {Math.round((currentStep / 6) * 100)}% concluído
+        </div>
+      </CardHeader>
       
-      {/* Step Content with Mobile Optimizations */}
-      <div className="animate-fade-in">
-        {renderStep()}
-      </div>
-    </div>
+      <CardContent>
+        <div className="animate-fade-in">
+          {renderStep()}
+        </div>
+      </CardContent>
+    </Card>
   );
 };

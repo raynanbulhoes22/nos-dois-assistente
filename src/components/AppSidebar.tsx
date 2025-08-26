@@ -9,13 +9,15 @@ import {
   FileText, 
   Settings,
   LogOut,
-  Clock 
+  Clock,
+  HelpCircle 
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { useHelpCenterContext } from "@/contexts/HelpCenterContext";
 
 import {
   Sidebar,
@@ -57,6 +59,7 @@ export function AppSidebar() {
   const { subscriptionStatus } = useAuth();
   const currentPath = location.pathname;
   const { toast } = useToast();
+  const { openHelp } = useHelpCenterContext();
 
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
@@ -158,6 +161,24 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
+              {/* Help Center */}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <button
+                    onClick={() => openHelp()}
+                    className="flex items-center gap-3 rounded-lg px-3 py-3 sm:py-2 
+                      text-sm font-medium transition-all duration-200 
+                      touch-manipulation min-h-[44px] sm:min-h-[36px]
+                      hover:bg-accent/80 active:bg-accent/90 w-full text-left"
+                  >
+                    <HelpCircle className="h-5 w-5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    {state !== "collapsed" && (
+                      <span className="truncate">Central de Ajuda</span>
+                    )}
+                  </button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
               {availableBottomItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>

@@ -62,7 +62,7 @@ export const CalendarioFinanceiro = ({
     return (
       <div
         className={cn(
-          "w-full h-full p-0.5 sm:p-2 rounded-md transition-all duration-200 relative",
+          "w-full h-full p-1 sm:p-2 rounded-md transition-all duration-200 relative",
           heatCls,
           hasEvents && (isMobile ? "cursor-pointer active:opacity-80" : "cursor-pointer hover:scale-105 hover:shadow-lg hover:z-10 active:scale-95")
         )}
@@ -78,19 +78,19 @@ export const CalendarioFinanceiro = ({
             <div className="flex-1 flex flex-col overflow-hidden">
               {isMobile ? (
                 <>
-                  <div className="flex items-center gap-1 mb-1">
-                    {eventosDia?.eventos.slice(0, 3).map((evento, index) => (
+                  <div className="flex items-center justify-center gap-1 mb-1 flex-wrap">
+                    {eventosDia?.eventos.slice(0, 4).map((evento, index) => (
                       <span
                         key={index}
                         className={cn(
-                          "block rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2",
+                          "block rounded-full h-2 w-2 shadow-sm border border-white/20",
                           evento.isEntrada ? "bg-success" : "bg-destructive"
                         )}
                       />
                     ))}
-                    {(eventosDia?.eventos.length ?? 0) > 3 && (
-                      <span className="text-[10px] text-muted-foreground font-medium">
-                        +{(eventosDia?.eventos.length ?? 0) - 3}
+                    {(eventosDia?.eventos.length ?? 0) > 4 && (
+                      <span className="text-[9px] text-muted-foreground font-bold bg-background/80 px-1 rounded">
+                        +{(eventosDia?.eventos.length ?? 0) - 4}
                       </span>
                     )}
                   </div>
@@ -222,7 +222,7 @@ export const CalendarioFinanceiro = ({
               head_row: "flex w-full",
               head_cell: "text-muted-foreground rounded-md w-full font-semibold text-xs sm:text-sm py-1 sm:py-2 text-center",
               row: "flex w-full",
-              cell: "relative w-full h-10 sm:h-20 text-center text-sm focus-within:relative focus-within:z-20 border border-border/50",
+              cell: "relative w-full h-16 sm:h-20 text-center text-sm focus-within:relative focus-within:z-20 border border-border/50",
               day: "h-full w-full p-0 font-normal relative flex flex-col",
               day_today: "bg-primary/5",
               day_selected: "bg-primary/10",

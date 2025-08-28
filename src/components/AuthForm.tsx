@@ -16,6 +16,7 @@ import { authSchema, type AuthFormData } from '@/lib/validations';
 import { sanitizeInput, authRateLimiter, checkPasswordStrength } from '@/lib/security';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { logger } from '@/lib/production-logger';
+import { usePixel } from '@/contexts/PixelContext';
 
 const signInSchema = authSchema.omit({ name: true });
 const signUpSchemaWithConfirm = authSchema.extend({
@@ -40,6 +41,7 @@ export const AuthForm = () => {
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
+  const { trackSignUp, trackViewContent } = usePixel();
 
   const signInForm = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -138,6 +140,9 @@ export const AuthForm = () => {
         setRegisteredEmail(sanitizedEmail);
         setShowEmailConfirmation(true);
         
+        // Track signup completion for tracking purposes
+        trackViewContent('auth_page', 'registration');
+        
         // Verificar se precisa confirmar email
         if (!signUpResult.session && signUpResult.user) {
           logger.info('Email de confirmação enviado');
@@ -147,6 +152,10 @@ export const AuthForm = () => {
           });
         } else if (signUpResult.session) {
           logger.info('Login automático realizado após cadastro');
+          
+          // Track successful signup
+          trackSignUp(signUpResult.user?.id);
+          
           toast({
             title: "Cadastro e login realizados! 🎉",
             description: "Bem-vindo ao Lyvo | LucraAI!",

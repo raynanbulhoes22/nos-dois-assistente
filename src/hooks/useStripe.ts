@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { logger } from '@/lib/production-logger';
 import { useAuth } from './useAuth';
+import { usePixel } from '@/contexts/PixelContext';
 
 export interface PricingData {
   solo: {
@@ -29,6 +31,7 @@ export const useStripe = () => {
   const [loadingSubscription, setLoadingSubscription] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const { user } = useAuth();
+  const { trackSubscription } = usePixel();
 
   const formatPrice = useCallback((price: number): string => {
     return new Intl.NumberFormat('pt-BR', {
@@ -193,6 +196,10 @@ export const useStripe = () => {
         checkSubscription().then((data) => {
           if (data?.subscribed) {
             toast.success(`Assinatura ativa! Seu plano ${data.subscription_tier} está ativo.`);
+            
+            // Track successful subscription
+            const planValue = data.subscription_tier === 'casal' ? 49.90 : 29.90;
+            trackSubscription(planValue, data.subscription_tier || 'unknown');
           }
         });
       }, 2000); // Wait 2 seconds for Stripe to process

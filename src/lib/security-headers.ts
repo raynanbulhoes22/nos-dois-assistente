@@ -4,11 +4,11 @@ export const getSecurityHeaders = (): Record<string, string> => {
     // Content Security Policy
     'Content-Security-Policy': [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://checkout.stripe.com https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: https: blob:",
-      "connect-src 'self' https://hgdwjxmorrpqdmxslwmz.supabase.co https://api.stripe.com https://checkout.stripe.com wss://hgdwjxmorrpqdmxslwmz.supabase.co",
+      "img-src 'self' data: https: blob: https://www.facebook.com https://www.google-analytics.com",
+      "connect-src 'self' https://hgdwjxmorrpqdmxslwmz.supabase.co https://api.stripe.com https://checkout.stripe.com wss://hgdwjxmorrpqdmxslwmz.supabase.co https://www.facebook.com https://www.google-analytics.com https://analytics.google.com",
       "frame-src 'self' https://js.stripe.com https://checkout.stripe.com",
       "object-src 'none'",
       "base-uri 'self'",
@@ -37,11 +37,11 @@ export const applySecurityMeta = (): void => {
   const csp = import.meta.env.DEV 
     ? [
         "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://connect.facebook.net https://www.googletagmanager.com",
         "style-src 'self' 'unsafe-inline'",
         "font-src 'self' data:",
-        "img-src 'self' data: blob:",
-        "connect-src 'self' ws: wss:",
+        "img-src 'self' data: blob: https://www.facebook.com https://www.google-analytics.com",
+        "connect-src 'self' ws: wss: https://www.facebook.com https://www.google-analytics.com https://analytics.google.com",
         "frame-src 'self'",
         "object-src 'none'"
       ].join('; ')

@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { FinancialDataProvider } from "@/contexts/FinancialDataContext";
 import { HelpCenterProvider } from "@/contexts/HelpCenterContext";
+import { PixelProvider } from "@/contexts/PixelContext";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { AuthForm } from "@/components/AuthForm";
 import { AppSidebar } from "@/components/AppSidebar";
 import { SubscriptionRedirect } from "@/components/SubscriptionRedirect";
@@ -20,6 +22,7 @@ import { Relatorios } from "./pages/Relatorios";
 import { Configuracoes } from "./pages/Configuracoes";
 import Dividas from "./pages/Dividas";
 import PrimeirosPasos from "./pages/PrimeirosPasos";
+import MarketingDashboard from "./pages/MarketingDashboard";
 import NotFound from "./pages/NotFound";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { useViewportHeight } from "@/hooks/use-viewport-height";
@@ -44,19 +47,22 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <HelpCenterProvider>
-          <FinancialDataProvider user={user}>
-            <BrowserRouter>
-              {user ? (
-                <AuthenticatedLayout />
-              ) : (
-                <UnauthenticatedLayout />
-              )}
-              <Toaster />
-              <Sonner />
-            </BrowserRouter>
-          </FinancialDataProvider>
-        </HelpCenterProvider>
+        <PixelProvider>
+          <HelpCenterProvider>
+            <FinancialDataProvider user={user}>
+              <BrowserRouter>
+                <CookieConsentBanner />
+                {user ? (
+                  <AuthenticatedLayout />
+                ) : (
+                  <UnauthenticatedLayout />
+                )}
+                <Toaster />
+                <Sonner />
+              </BrowserRouter>
+            </FinancialDataProvider>
+          </HelpCenterProvider>
+        </PixelProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
@@ -132,6 +138,11 @@ const AuthenticatedLayout = () => {
                 <Route path="/configuracoes" element={
                   <ProtectedRoute>
                     <Configuracoes />
+                  </ProtectedRoute>
+                } />
+                <Route path="/marketing" element={
+                  <ProtectedRoute>
+                    <MarketingDashboard />
                   </ProtectedRoute>
                 } />
                 <Route path="/auth" element={<Navigate to="/dashboard" replace />} />

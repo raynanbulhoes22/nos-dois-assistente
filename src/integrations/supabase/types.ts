@@ -401,6 +401,9 @@ export type Database = {
           onboarding_completed: boolean
           preferencia_notificacao: string | null
           telefone_conjuge: string | null
+          terms_accepted: boolean
+          terms_accepted_at: string | null
+          terms_version: string | null
         }
         Insert: {
           cpf?: string | null
@@ -417,6 +420,9 @@ export type Database = {
           onboarding_completed?: boolean
           preferencia_notificacao?: string | null
           telefone_conjuge?: string | null
+          terms_accepted?: boolean
+          terms_accepted_at?: string | null
+          terms_version?: string | null
         }
         Update: {
           cpf?: string | null
@@ -433,6 +439,9 @@ export type Database = {
           onboarding_completed?: boolean
           preferencia_notificacao?: string | null
           telefone_conjuge?: string | null
+          terms_accepted?: boolean
+          terms_accepted_at?: string | null
+          terms_version?: string | null
         }
         Relationships: []
       }

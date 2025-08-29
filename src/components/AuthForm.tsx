@@ -17,6 +17,7 @@ import { sanitizeInput, authRateLimiter, checkPasswordStrength } from '@/lib/sec
 import { PhoneInput } from '@/components/ui/phone-input';
 import { logger } from '@/lib/production-logger';
 import { usePixel } from '@/contexts/PixelContext';
+import { TermsOfServiceModal } from '@/components/TermsOfServiceModal';
 
 const signInSchema = authSchema.omit({ name: true });
 const signUpSchemaWithConfirm = authSchema.extend({
@@ -24,7 +25,10 @@ const signUpSchemaWithConfirm = authSchema.extend({
   whatsapp: z
     .string()
     .min(1, 'WhatsApp é obrigatório')
-    .regex(/^55\d{10,11}$/, 'WhatsApp deve estar no formato brasileiro (11 ou 12 dígitos com código do país)')
+    .regex(/^55\d{10,11}$/, 'WhatsApp deve estar no formato brasileiro (11 ou 12 dígitos com código do país)'),
+  terms_accepted: z.boolean().refine((val) => val === true, {
+    message: "Você deve aceitar os Termos de Uso para continuar",
+  })
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Senhas não coincidem",
   path: ["confirmPassword"],
@@ -40,6 +44,7 @@ export const AuthForm = () => {
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const { toast } = useToast();
   const { trackSignUp, trackViewContent } = usePixel();
 
@@ -59,6 +64,7 @@ export const AuthForm = () => {
       confirmPassword: '',
       name: '',
       whatsapp: '',
+      terms_accepted: false,
     },
   });
 
@@ -92,7 +98,10 @@ export const AuthForm = () => {
           emailRedirectTo: redirectUrl,
           data: {
             nome: sanitizedName,
-            numero_wpp: sanitizedWhatsapp
+            numero_wpp: sanitizedWhatsapp,
+            terms_accepted: true,
+            terms_accepted_at: new Date().toISOString(),
+            terms_version: '1.0'
           }
         }
       });
@@ -806,22 +815,66 @@ export const AuthForm = () => {
                                </FormControl>
                                <FormMessage />
                              </FormItem>
+                          )}
+                         />
+
+                         {/* Terms of Service Acceptance */}
+                         <FormField
+                           control={signUpForm.control}
+                           name="terms_accepted"
+                           render={({ field }) => (
+                             <FormItem className="space-y-3">
+                               <div className="flex items-start space-x-3">
+                                 <FormControl>
+                                   <Checkbox
+                                     checked={field.value}
+                                     onCheckedChange={field.onChange}
+                                     disabled={isLoading}
+                                     className="mt-1"
+                                   />
+                                 </FormControl>
+                                 <div className="space-y-1 leading-none">
+                                   <FormLabel className="text-sm font-medium cursor-pointer">
+                                     Li e aceito os{' '}
+                                     <button
+                                       type="button"
+                                       onClick={() => setShowTermsModal(true)}
+                                       className="text-primary underline hover:text-primary/80"
+                                     >
+                                       Termos de Uso
+                                     </button>
+                                     {' '}da plataforma <span className="text-destructive">*</span>
+                                   </FormLabel>
+                                   <p className="text-xs text-muted-foreground">
+                                     Ao aceitar, você concorda com nossos termos e política de privacidade.
+                                   </p>
+                                 </div>
+                               </div>
+                               <FormMessage />
+                             </FormItem>
                            )}
                          />
-                        <Button 
-                          type="submit" 
-                          className="w-full h-12 text-base font-medium bg-gradient-to-r from-secondary to-primary hover:from-secondary/90 hover:to-primary-dark"
-                          disabled={isLoading || !passwordStrength.isStrong}
-                        >
+                         
+                         <Button 
+                           type="submit" 
+                           className="w-full h-12 text-base font-medium bg-gradient-to-r from-secondary to-primary hover:from-secondary/90 hover:to-primary-dark"
+                           disabled={isLoading || !passwordStrength.isStrong || !signUpForm.watch('terms_accepted')}
+                         >
                           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                           {isLoading ? "Criando conta..." : "Criar conta"}
                         </Button>
                         
-                        {!passwordStrength.isStrong && signUpForm.watch('password') && (
-                          <p className="text-xs text-amber-600 text-center bg-amber-50 p-2 rounded-lg">
-                            ⚠️ Fortaleça sua senha para continuar
-                          </p>
-                        )}
+                         {(!passwordStrength.isStrong && signUpForm.watch('password')) && (
+                           <p className="text-xs text-amber-600 text-center bg-amber-50 p-2 rounded-lg">
+                             ⚠️ Fortaleça sua senha para continuar
+                           </p>
+                         )}
+
+                         {(!signUpForm.watch('terms_accepted') && signUpForm.formState.isSubmitted) && (
+                           <p className="text-xs text-red-600 text-center bg-red-50 p-2 rounded-lg">
+                             ⚠️ Você deve aceitar os Termos de Uso para continuar
+                           </p>
+                         )}
                       </form>
                     </Form>
                   </TabsContent>
@@ -831,6 +884,17 @@ export const AuthForm = () => {
           </Card>
         </div>
       </div>
+
+      {/* Terms of Service Modal */}
+      <TermsOfServiceModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        onAccept={() => {
+          signUpForm.setValue('terms_accepted', true);
+          setShowTermsModal(false);
+        }}
+        showAcceptButton={true}
+      />
     </div>
   );
 };

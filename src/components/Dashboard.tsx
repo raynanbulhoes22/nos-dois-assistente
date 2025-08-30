@@ -19,6 +19,9 @@ import { PaymentAlertsPanel } from "./dashboard/PaymentAlertsPanel";
 import { WelcomeModal } from "./WelcomeModal";
 import { usePaymentAlerts } from "@/hooks/usePaymentAlerts";
 import { QuickTip } from "./help/QuickTip";
+import { TermsUpdateAlert } from "./TermsUpdateAlert";
+import { TermsUpdateModal } from "./TermsUpdateModal";
+import { useTermsCheck } from "@/hooks/useTermsCheck";
 interface User {
   id: string;
   email?: string;
@@ -32,8 +35,10 @@ export const Dashboard = ({
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [showFilters, setShowFilters] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState<any>({});
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const { toast } = useToast();
   const { alerts, loading: alertsLoading, checkPaymentAlerts, dismissAlert } = usePaymentAlerts();
+  const { needsAcceptance, userVersion, currentVersion, loading: termsLoading, acceptNewTerms } = useTermsCheck();
 
   // Calculate date ranges based on selected period
   const getDateRange = () => {
@@ -296,6 +301,15 @@ export const Dashboard = ({
           {/* Quick Tip Component */}
           <QuickTip className="mb-4" />
           
+          {/* Terms Update Alert */}
+          {needsAcceptance && !termsLoading && (
+            <TermsUpdateAlert
+              onViewTerms={() => setShowTermsModal(true)}
+              userVersion={userVersion}
+              currentVersion={currentVersion}
+            />
+          )}
+          
           {/* Filters Panel */}
           {showFilters && (
             <DashboardFilters
@@ -359,6 +373,15 @@ export const Dashboard = ({
 
       {/* Welcome Modal */}
       <WelcomeModal user={user} />
+      
+      {/* Terms Update Modal */}
+      <TermsUpdateModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        onAccept={acceptNewTerms}
+        userVersion={userVersion}
+        currentVersion={currentVersion}
+      />
     </div>
   );
 };

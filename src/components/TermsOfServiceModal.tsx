@@ -29,7 +29,7 @@ export const TermsOfServiceModal = ({
             Termos de Uso - Lyvo | LucraAI
           </DialogTitle>
           <DialogDescription>
-            Versão 1.0 - Última atualização: {new Date().toLocaleDateString('pt-BR')}
+            Versão 2.0 - Última atualização: {new Date().toLocaleDateString('pt-BR')}
           </DialogDescription>
         </DialogHeader>
         

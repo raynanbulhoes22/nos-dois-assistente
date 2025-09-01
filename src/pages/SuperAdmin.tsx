@@ -7,9 +7,21 @@ import { Navigate } from 'react-router-dom';
 import { Shield, Users, BarChart3, Target } from 'lucide-react';
 
 export const SuperAdmin = () => {
-  const { isAdmin } = useAdminAuth();
+  const { isAdmin, loading } = useAdminAuth();
+
+  console.log('[SuperAdmin] isAdmin:', isAdmin, 'loading:', loading);
+
+  // Aguardar o carregamento da autenticação antes de fazer redirect
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (!isAdmin) {
+    console.log('[SuperAdmin] Redirecting - not admin');
     return <Navigate to="/" replace />;
   }
 

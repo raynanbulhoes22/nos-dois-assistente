@@ -10,10 +10,12 @@ import {
   Settings,
   LogOut,
   Clock,
-  HelpCircle 
+  HelpCircle,
+  Shield
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +59,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const { subscriptionStatus } = useAuth();
+  const { isAdmin } = useAdminAuth();
   const currentPath = location.pathname;
   const { toast } = useToast();
   const { openHelp } = useHelpCenterContext();
@@ -178,6 +181,27 @@ export function AppSidebar() {
                   </button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              
+              {/* Super Admin - Apenas para admin */}
+              {isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/super-admin"
+                      className={({ isActive }) => `${getNavCls({ isActive })} 
+                        flex items-center gap-3 rounded-lg px-3 py-3 sm:py-2 
+                        text-sm font-medium transition-all duration-200 
+                        touch-manipulation min-h-[44px] sm:min-h-[36px]
+                        hover:bg-accent/80 active:bg-accent/90 border border-amber-200 dark:border-amber-800`}
+                    >
+                      <Shield className="h-5 w-5 sm:h-4 sm:w-4 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+                      {state !== "collapsed" && (
+                        <span className="truncate text-amber-600 dark:text-amber-400">Super Admin</span>
+                      )}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
               
               {availableBottomItems.map((item) => (
                 <SidebarMenuItem key={item.title}>

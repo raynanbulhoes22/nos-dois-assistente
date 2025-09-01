@@ -23,6 +23,7 @@ import { Configuracoes } from "./pages/Configuracoes";
 import Dividas from "./pages/Dividas";
 import PrimeirosPasos from "./pages/PrimeirosPasos";
 import MarketingDashboard from "./pages/MarketingDashboard";
+import { SuperAdmin } from "./pages/SuperAdmin";
 import NotFound from "./pages/NotFound";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { useViewportHeight } from "@/hooks/use-viewport-height";
@@ -145,6 +146,7 @@ const AuthenticatedLayout = () => {
                     <MarketingDashboard />
                   </ProtectedRoute>
                 } />
+                <Route path="/super-admin" element={<SuperAdmin />} />
                 <Route path="/auth" element={<Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { FinancialDataProvider } from "@/contexts/FinancialDataContext";
 import { HelpCenterProvider } from "@/contexts/HelpCenterContext";
 import { PixelProvider } from "@/contexts/PixelContext";
+import { RealtimeProvider } from "@/contexts/RealtimeContext";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { AuthForm } from "@/components/AuthForm";
 import { AppSidebar } from "@/components/AppSidebar";
@@ -50,18 +51,20 @@ const App = () => {
       <TooltipProvider>
         <PixelProvider>
           <HelpCenterProvider>
-            <FinancialDataProvider user={user}>
-              <BrowserRouter>
-                <CookieConsentBanner />
-                {user ? (
-                  <AuthenticatedLayout />
-                ) : (
-                  <UnauthenticatedLayout />
-                )}
-                <Toaster />
-                <Sonner />
-              </BrowserRouter>
-            </FinancialDataProvider>
+            <RealtimeProvider>
+              <FinancialDataProvider user={user}>
+                <BrowserRouter>
+                  <CookieConsentBanner />
+                  {user ? (
+                    <AuthenticatedLayout />
+                  ) : (
+                    <UnauthenticatedLayout />
+                  )}
+                  <Toaster />
+                  <Sonner />
+                </BrowserRouter>
+              </FinancialDataProvider>
+            </RealtimeProvider>
           </HelpCenterProvider>
         </PixelProvider>
       </TooltipProvider>

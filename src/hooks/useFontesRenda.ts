@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useFinancialCache } from "@/contexts/FinancialDataContext";
+import { useRealtime } from "@/contexts/RealtimeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { startOfMonth, endOfMonth } from "date-fns";
@@ -21,6 +22,7 @@ export interface FonteRenda {
 export const useFontesRenda = () => {
   const { user } = useAuth();
   const { getFromCache, setCache, invalidateCache } = useFinancialCache();
+  const { registerInvalidationCallback } = useRealtime();
   const { toast } = useToast();
   const [fontes, setFontes] = useState<FonteRenda[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -372,6 +374,18 @@ export const useFontesRenda = () => {
   useEffect(() => {
     fetchFontes();
   }, [user]);
+
+  // Setup realtime listener
+  useEffect(() => {
+    if (!user) return;
+
+    const cleanup = registerInvalidationCallback('fontes_renda', () => {
+      console.log('[useFontesRenda] Realtime update triggered');
+      fetchFontes();
+    });
+
+    return cleanup;
+  }, [user, registerInvalidationCallback, fetchFontes]);
 
   return {
     fontes,

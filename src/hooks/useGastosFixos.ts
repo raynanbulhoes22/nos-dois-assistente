@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { useFinancialCache } from '@/contexts/FinancialDataContext';
+import { useRealtime } from '@/contexts/RealtimeContext';
 import { toast } from 'sonner';
 
 export interface GastoFixo {
@@ -20,6 +21,7 @@ export interface GastoFixo {
 export const useGastosFixos = () => {
   const { user } = useAuth();
   const { getFromCache, setCache, invalidateCache } = useFinancialCache();
+  const { registerInvalidationCallback } = useRealtime();
   const [gastosFixos, setGastosFixos] = useState<GastoFixo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -429,6 +431,18 @@ export const useGastosFixos = () => {
       fetchGastosFixos();
     }
   }, [user, fetchGastosFixos]);
+
+  // Setup realtime listener
+  useEffect(() => {
+    if (!user) return;
+
+    const cleanup = registerInvalidationCallback('gastos_fixos', () => {
+      console.log('[useGastosFixos] Realtime update triggered');
+      fetchGastosFixos();
+    });
+
+    return cleanup;
+  }, [user, registerInvalidationCallback, fetchGastosFixos]);
 
   return {
     gastosFixos,

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useFinancialCache } from "@/contexts/FinancialDataContext";
+import { useRealtime } from "@/contexts/RealtimeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizePhoneNumber } from "@/lib/phone-utils";
 import { detectarECriarCartoesAutomaticos } from "@/lib/cartao-utils";
@@ -38,6 +39,7 @@ interface MovimentacoesData {
 export const useMovimentacoes = () => {
   const { user } = useAuth();
   const { getFromCache, setCache, invalidateCache } = useFinancialCache();
+  const { registerInvalidationCallback } = useRealtime();
   const { toast } = useToast();
   const { processarTransacoes, verificarAlertas, atualizarLimitesDisponiveis } = useCartaoProcessamento();
   
@@ -408,6 +410,18 @@ export const useMovimentacoes = () => {
       }
     };
   }, [user, fetchMovimentacoes]);
+
+  // Setup realtime listener
+  useEffect(() => {
+    if (!user) return;
+
+    const cleanup = registerInvalidationCallback('registros_financeiros', () => {
+      console.log('[useMovimentacoes] Realtime update triggered');
+      fetchMovimentacoes(true); // Force refresh on realtime update
+    });
+
+    return cleanup;
+  }, [user, registerInvalidationCallback, fetchMovimentacoes]);
 
   const refetch = useCallback((forceRefresh = false) => {
     if (user) {

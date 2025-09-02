@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useFinancialCache } from "@/contexts/FinancialDataContext";
+import { useRealtime } from "@/contexts/RealtimeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -19,6 +20,7 @@ export interface Cartao {
 export const useCartoes = () => {
   const { user } = useAuth();
   const { getFromCache, setCache, invalidateCache } = useFinancialCache();
+  const { registerInvalidationCallback } = useRealtime();
   const { toast } = useToast();
   const [cartoes, setCartoes] = useState<Cartao[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -204,6 +206,18 @@ export const useCartoes = () => {
   useEffect(() => {
     fetchCartoes();
   }, [user]);
+
+  // Setup realtime listener
+  useEffect(() => {
+    if (!user) return;
+
+    const cleanup = registerInvalidationCallback('cartoes_credito', () => {
+      console.log('[useCartoes] Realtime update triggered');
+      fetchCartoes();
+    });
+
+    return cleanup;
+  }, [user, registerInvalidationCallback, fetchCartoes]);
 
   return {
     cartoes,

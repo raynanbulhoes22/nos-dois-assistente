@@ -13,6 +13,7 @@ import { CalendarIcon, CreditCard, TrendingUp, ArrowLeftRight } from "lucide-rea
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useOptimizedCache } from "@/hooks/useOptimizedCache";
 import { FINANCIAL_CATEGORIES, TRANSACTION_TYPES, PAYMENT_METHODS } from "@/constants/categories";
 import { useCartoes } from "@/hooks/useCartoes";
 import { useFontesRenda } from "@/hooks/useFontesRenda";
@@ -86,6 +87,7 @@ export const TransactionForm = ({
   const [transacaoParaVincular, setTransacaoParaVincular] = useState<any>(null);
   
   const { toast } = useToast();
+  const { onSuccessfulOperation } = useOptimizedCache();
   const { cartoes } = useCartoes();
   const { fontes } = useFontesRenda();
   const { availableNames } = useProfileNames(userId);
@@ -241,6 +243,9 @@ export const TransactionForm = ({
         title: editTransaction ? "Transação atualizada" : "Transação criada",
         description: editTransaction ? "A transação foi atualizada com sucesso." : "A transação foi adicionada com sucesso."
       });
+
+      // Invalidate related caches for real-time updates
+      onSuccessfulOperation(editTransaction ? 'update' : 'create', 'registros_financeiros', false);
 
       // Só fechar o modal se não houver vinculação pendente
       if (!showVinculacaoDialog) {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useFinancialCache } from "@/contexts/FinancialDataContext";
+import { useRealtime } from "@/contexts/RealtimeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -22,6 +23,7 @@ export interface FaturaFutura {
 export const useFaturasFuturas = () => {
   const { user } = useAuth();
   const { getFromCache, setCache, invalidateCache } = useFinancialCache();
+  const { registerInvalidationCallback } = useRealtime();
   const { toast } = useToast();
   const [faturas, setFaturas] = useState<FaturaFutura[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -221,6 +223,18 @@ export const useFaturasFuturas = () => {
   useEffect(() => {
     fetchFaturasFuturas();
   }, [fetchFaturasFuturas]);
+
+  // Setup realtime listener
+  useEffect(() => {
+    if (!user) return;
+
+    const cleanup = registerInvalidationCallback('registros_financeiros', () => {
+      console.log('[useFaturasFuturas] Realtime update triggered');
+      fetchFaturasFuturas();
+    });
+
+    return cleanup;
+  }, [user, registerInvalidationCallback, fetchFaturasFuturas]);
 
   return {
     faturas,

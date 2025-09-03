@@ -17,19 +17,37 @@ export const AdminLoginForm = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
+      console.log('[AdminLoginForm] Attempting login with:', { email });
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
         password,
       });
 
+      console.log('[AdminLoginForm] Login response:', { data, error });
+
       if (error) {
-        toast.error("Credenciais inválidas");
+        console.error('[AdminLoginForm] Login error:', error);
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error("Email ou senha incorretos");
+        } else if (error.message.includes('Email not confirmed')) {
+          toast.error("Email não confirmado. Verifique sua caixa de entrada.");
+        } else {
+          toast.error(`Erro ao fazer login: ${error.message}`);
+        }
         return;
       }
 
-      toast.success("Login realizado com sucesso");
+      if (data?.user) {
+        console.log('[AdminLoginForm] Login successful:', data.user.email);
+        toast.success("Login realizado com sucesso");
+      } else {
+        console.warn('[AdminLoginForm] No user data received');
+        toast.error("Resposta inesperada do servidor");
+      }
     } catch (error) {
-      toast.error("Erro ao fazer login");
+      console.error('[AdminLoginForm] Unexpected error:', error);
+      toast.error("Erro de conectividade. Verifique sua conexão e tente novamente.");
     } finally {
       setLoading(false);
     }

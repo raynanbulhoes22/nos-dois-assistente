@@ -149,7 +149,6 @@ const AuthenticatedLayout = () => {
                     <MarketingDashboard />
                   </ProtectedRoute>
                 } />
-                <Route path="/super-admin" element={<SuperAdmin />} />
                 <Route path="/auth" element={<Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
@@ -169,6 +168,7 @@ const UnauthenticatedLayout = () => {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<AuthForm />} />
+        <Route path="/super-admin" element={<SuperAdmin />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

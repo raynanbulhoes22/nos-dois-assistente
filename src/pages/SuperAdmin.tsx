@@ -4,8 +4,8 @@ import { AdminAnalytics } from '@/components/admin/AdminAnalytics';
 import { PixelDashboard } from '@/components/admin/PixelDashboard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navigate } from 'react-router-dom';
-import { Shield, Users, BarChart3, Target, LogIn } from 'lucide-react';
-import { AuthForm } from '@/components/AuthForm';
+import { Shield, Users, BarChart3, Target } from 'lucide-react';
+import { AdminLoginForm } from '@/components/admin/AdminLoginForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export const SuperAdmin = () => {
@@ -37,7 +37,7 @@ export const SuperAdmin = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <AuthForm />
+            <AdminLoginForm />
           </CardContent>
         </Card>
       </div>

@@ -625,6 +625,10 @@ export type Database = {
           valor: number
         }[]
       }
+      is_user_admin: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
       normalize_phone_number: {
         Args: { phone_input: string }
         Returns: string

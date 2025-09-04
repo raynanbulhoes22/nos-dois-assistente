@@ -17,7 +17,26 @@ export const AdminLoginForm = () => {
     setLoading(true);
 
     try {
-      console.log('[AdminLoginForm] Attempting login with:', { email });
+      console.log('[AdminLoginForm] Starting login process...');
+      console.log('[AdminLoginForm] Attempting login with:', { email: email.trim() });
+      
+      // Test basic connectivity first
+      const SUPABASE_URL = "https://hgdwjxmorrpqdmxslwmz.supabase.co";
+      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhnZHdqeG1vcnJwcWRteHNsd216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExODgyNzgsImV4cCI6MjA2Njc2NDI3OH0.RrgvKfuMkFtCFbK28CB-2xd6-eDk6y8CAAwpAfHCfAY";
+      
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+          method: 'HEAD',
+          headers: {
+            'apikey': SUPABASE_KEY,
+          }
+        });
+        console.log('[AdminLoginForm] Connectivity test:', response.status);
+      } catch (connectError) {
+        console.error('[AdminLoginForm] Connectivity test failed:', connectError);
+        toast.error("Falha na conectividade com Supabase. Verifique as configurações de rede.");
+        return;
+      }
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -28,7 +47,12 @@ export const AdminLoginForm = () => {
 
       if (error) {
         console.error('[AdminLoginForm] Login error:', error);
-        if (error.message.includes('Invalid login credentials')) {
+        
+        // Check for network/CSP issues
+        if (error.message.includes('Failed to fetch') || error.name.includes('AuthRetryableFetchError')) {
+          toast.error("Erro de conectividade. Possível bloqueio de segurança do navegador.");
+          console.error('[AdminLoginForm] Network/CSP error detected. This might be a sandbox/CSP restriction.');
+        } else if (error.message.includes('Invalid login credentials')) {
           toast.error("Email ou senha incorretos");
         } else if (error.message.includes('Email not confirmed')) {
           toast.error("Email não confirmado. Verifique sua caixa de entrada.");
@@ -41,13 +65,15 @@ export const AdminLoginForm = () => {
       if (data?.user) {
         console.log('[AdminLoginForm] Login successful:', data.user.email);
         toast.success("Login realizado com sucesso");
+        // Force a page refresh to ensure auth state is updated
+        window.location.reload();
       } else {
         console.warn('[AdminLoginForm] No user data received');
         toast.error("Resposta inesperada do servidor");
       }
     } catch (error) {
       console.error('[AdminLoginForm] Unexpected error:', error);
-      toast.error("Erro de conectividade. Verifique sua conexão e tente novamente.");
+      toast.error("Erro de conectividade. Pode ser um problema de CORS ou CSP.");
     } finally {
       setLoading(false);
     }

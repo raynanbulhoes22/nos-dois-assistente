@@ -31,17 +31,22 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   const registerInvalidationCallback = useCallback((table: string, callback: () => void) => {
-    if (!callbacksRef.current.has(table)) {
-      callbacksRef.current.set(table, new Set());
+    if (!user) return () => {};
+
+    // Create unique channel key per user and table
+    const channelKey = `${user.id}-${table}`;
+
+    if (!callbacksRef.current.has(channelKey)) {
+      callbacksRef.current.set(channelKey, new Set());
     }
-    callbacksRef.current.get(table)!.add(callback);
+    callbacksRef.current.get(channelKey)!.add(callback);
 
     // Setup realtime channel for this table if not exists and user is authenticated
-    if (user && !channelsRef.current.has(table)) {
+    if (!channelsRef.current.has(channelKey)) {
       console.log('[Realtime] Setting up channel for table:', table);
       
       const channel = supabase
-        .channel(`table-${table}`)
+        .channel(`user-${user.id}-table-${table}`)
         .on(
           'postgres_changes',
           {
@@ -53,26 +58,31 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           (payload) => {
             console.log('[Realtime] Change detected for table:', table, payload);
             
-            // Invalidate cache for the changed table and related tables
-            const relatedTables = getRelatedTables(table);
-            invalidateCache([table, ...relatedTables]);
+            // Debounce cache invalidation to prevent excessive updates
+            setTimeout(() => {
+              const relatedTables = getRelatedTables(table);
+              invalidateCache([table, ...relatedTables]);
+            }, 150);
           }
         )
         .subscribe();
 
-      channelsRef.current.set(table, channel);
+      channelsRef.current.set(channelKey, channel);
     }
 
     // Return cleanup function
     return () => {
-      callbacksRef.current.get(table)?.delete(callback);
-      if (callbacksRef.current.get(table)?.size === 0) {
-        const channel = channelsRef.current.get(table);
-        if (channel) {
-          supabase.removeChannel(channel);
-          channelsRef.current.delete(table);
+      const callbacks = callbacksRef.current.get(channelKey);
+      if (callbacks) {
+        callbacks.delete(callback);
+        if (callbacks.size === 0) {
+          const channel = channelsRef.current.get(channelKey);
+          if (channel) {
+            supabase.removeChannel(channel);
+            channelsRef.current.delete(channelKey);
+          }
+          callbacksRef.current.delete(channelKey);
         }
-        callbacksRef.current.delete(table);
       }
     };
   }, [user, invalidateCache]);

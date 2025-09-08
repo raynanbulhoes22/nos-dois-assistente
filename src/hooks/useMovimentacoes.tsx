@@ -383,7 +383,7 @@ export const useMovimentacoes = () => {
     }
   }, [user, getFromCache, setCache, categorizarMovimentacao, toast, processarTransacoes, verificarAlertas, atualizarLimitesDisponiveis]);
 
-  // Debounced fetch effect
+  // Debounced fetch effect - Reduced timeout for faster loading
   useEffect(() => {
     if (!user) {
       setIsLoading(false);
@@ -395,14 +395,10 @@ export const useMovimentacoes = () => {
       clearTimeout(fetchTimeoutRef.current);
     }
 
-    // Debounce the fetch
+    // Reduce debounce delay for faster loading
     fetchTimeoutRef.current = setTimeout(() => {
-      const fetchKey = `${user.id}_${Date.now()}`;
-      if (lastFetchRef.current !== fetchKey) {
-        lastFetchRef.current = fetchKey;
-        fetchMovimentacoes();
-      }
-    }, 100);
+      fetchMovimentacoes();
+    }, 50); // Reduced from 100ms to 50ms
 
     return () => {
       if (fetchTimeoutRef.current) {

@@ -47,6 +47,7 @@ export interface OnboardingData {
 export const OnboardingWizard = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [subscriptionTier, setSubscriptionTier] = useState<string>('Solo');
+  const [isCompleting, setIsCompleting] = useState(false);
   const { user, verifySubscription } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -77,8 +78,9 @@ export const OnboardingWizard = () => {
   const prevStep = () => setCurrentStep(prev => prev - 1);
 
   const completeOnboarding = async () => {
-    if (!user) return;
+    if (!user || isCompleting) return;
 
+    setIsCompleting(true);
     try {
       // Atualizar perfil do usuário
       const profileUpdate: any = {
@@ -248,6 +250,8 @@ export const OnboardingWizard = () => {
         description: "Não foi possível completar a configuração. Tente novamente.",
         variant: "destructive"
       });
+    } finally {
+      setIsCompleting(false);
     }
   };
 
@@ -275,7 +279,7 @@ export const OnboardingWizard = () => {
       case 5:
         return <OnboardingStep5 data={data} setData={setData} onNext={nextStep} onPrev={prevStep} />;
       case 6:
-        return <OnboardingStep6 data={data} setData={setData} onComplete={completeOnboarding} onPrev={prevStep} isLoading={false} />;
+        return <OnboardingStep6 data={data} setData={setData} onComplete={completeOnboarding} onPrev={prevStep} isLoading={isCompleting} />;
       default:
         return <OnboardingStep1 data={data} setData={setData} onNext={nextStep} />;
     }

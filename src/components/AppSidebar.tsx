@@ -45,7 +45,7 @@ const mainNavigationItems: NavigationItem[] = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Movimentações", url: "/movimentacoes", icon: TrendingUp },
   { title: "Orçamento", url: "/orcamento", icon: Target },
-  { title: "Cartões", url: "/cartoes", icon: CreditCard },
+  { title: "Cartões", url: "/cartoes", icon: CreditCard, disabled: true, comingSoon: true },
   { title: "Dívidas", url: "/dividas", icon: TrendingDown, disabled: true, comingSoon: true },
   { title: "Relatórios", url: "/relatorios", icon: FileText },
 ];
@@ -74,9 +74,10 @@ export function AppSidebar() {
   const availableBottomItems = bottomNavigationItems;
 
   const handleDisabledItemClick = (itemTitle: string) => {
+    const isCartoes = itemTitle === "Cartões";
     toast({
-      title: "Funcionalidade em breve!",
-      description: `${itemTitle} estará disponível em breve.`,
+      title: isCartoes ? "Funcionalidade em manutenção!" : "Funcionalidade em breve!",
+      description: isCartoes ? `${itemTitle} está temporariamente em manutenção.` : `${itemTitle} estará disponível em breve.`,
     });
   };
 
@@ -132,9 +133,9 @@ export function AppSidebar() {
                         {state !== "collapsed" && (
                           <div className="flex items-center justify-between w-full">
                             <span className="truncate">{item.title}</span>
-                            {item.comingSoon && (
-                              <Badge variant="secondary" className="text-xs">Em breve</Badge>
-                            )}
+                             {item.comingSoon && (
+                              <Badge variant="secondary" className="text-xs">Em manutenção</Badge>
+                             )}
                           </div>
                         )}
                       </button>

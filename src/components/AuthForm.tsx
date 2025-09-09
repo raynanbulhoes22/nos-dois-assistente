@@ -18,6 +18,7 @@ import { PhoneInput } from '@/components/ui/phone-input';
 import { logger } from '@/lib/production-logger';
 import { usePixel } from '@/contexts/PixelContext';
 import { TermsOfServiceModal } from '@/components/TermsOfServiceModal';
+import { useWhatsappValidation } from '@/hooks/useWhatsappValidation';
 
 const signInSchema = authSchema.omit({ name: true });
 const signUpSchemaWithConfirm = authSchema.extend({
@@ -87,6 +88,45 @@ export const AuthForm = () => {
 
     setIsLoading(true);
     logger.info('Iniciando processo de cadastro');
+
+    // Verificar se WhatsApp já está em uso (validação anti-fraude)
+    try {
+      const { data: existingProfiles, error: checkError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('numero_wpp', sanitizedWhatsapp)
+        .limit(1);
+
+      if (checkError) {
+        logger.error('Erro ao verificar WhatsApp duplicado', checkError);
+        toast({
+          title: "Erro de validação",
+          description: "Não foi possível verificar o WhatsApp. Tente novamente.",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (existingProfiles && existingProfiles.length > 0) {
+        toast({
+          title: "WhatsApp já cadastrado",
+          description: "Este número de WhatsApp já está sendo usado por outro usuário. Use um número diferente.",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+      }
+    } catch (error) {
+      logger.error('Erro inesperado na validação de WhatsApp', error);
+      toast({
+        title: "Erro de validação",
+        description: "Erro inesperado. Tente novamente.",
+        variant: "destructive"
+      });
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const redirectUrl = `${window.location.origin}/dashboard`;

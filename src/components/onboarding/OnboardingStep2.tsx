@@ -7,6 +7,9 @@ import { OnboardingData } from '../OnboardingWizard';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Phone, Users, AlertCircle, CheckCircle } from 'lucide-react';
 import { logger } from '@/lib/production-logger';
+import { useWhatsappValidation } from '@/hooks/useWhatsappValidation';
+import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 interface OnboardingStep2Props {
   data: OnboardingData;
   setData: (data: OnboardingData) => void;
@@ -21,20 +24,78 @@ export const OnboardingStep2 = ({
 }: OnboardingStep2Props) => {
   const { status } = useSubscription();
   const isCasalPlan = status?.subscription_tier === 'Casal';
+  const { validateWhatsapp, validateConjugeWhatsapp, isValidating } = useWhatsappValidation();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!data.numero_wpp) {
-      logger.warn('Tentativa de prosseguir sem número de WhatsApp');
+      toast({
+        title: "WhatsApp obrigatório",
+        description: "Por favor, informe seu número de WhatsApp.",
+        variant: "destructive"
+      });
       return;
     }
-    if (isCasalPlan && (!data.nomeConjuge || !data.telefoneConjuge)) {
-      logger.warn('Tentativa de prosseguir com dados incompletos do casal');
-      return;
+
+    setIsSubmitting(true);
+
+    try {
+      // Validar WhatsApp principal
+      const mainValidation = await validateWhatsapp(data.numero_wpp);
+      if (!mainValidation.isValid) {
+        toast({
+          title: "WhatsApp inválido",
+          description: mainValidation.errorMessage,
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Validar WhatsApp do cônjuge se for plano casal
+      if (isCasalPlan) {
+        if (!data.nomeConjuge) {
+          toast({
+            title: "Nome do cônjuge obrigatório",
+            description: "Por favor, informe o nome do seu cônjuge.",
+            variant: "destructive"
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
+        if (data.telefoneConjuge) {
+          const conjugeValidation = await validateConjugeWhatsapp(
+            data.telefoneConjuge, 
+            data.numero_wpp
+          );
+          if (!conjugeValidation.isValid) {
+            toast({
+              title: "WhatsApp do cônjuge inválido",
+              description: conjugeValidation.errorMessage,
+              variant: "destructive"
+            });
+            setIsSubmitting(false);
+            return;
+          }
+        }
+      }
+
+      logger.info('Validação do passo 2 concluída com sucesso');
+      onNext();
+    } catch (error) {
+      logger.error('Erro durante validação do passo 2', error);
+      toast({
+        title: "Erro de validação",
+        description: "Erro inesperado. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    logger.info('Validação do passo 2 concluída com sucesso');
-    onNext();
   };
   return (
     <Card className="border-0 sm:border shadow-none sm:shadow-sm bg-card/80 sm:bg-card backdrop-blur-sm sm:backdrop-blur-none">
@@ -169,8 +230,9 @@ export const OnboardingStep2 = ({
             <Button 
               type="submit" 
               className="flex-1 h-12 sm:h-10 text-base sm:text-sm bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary"
+              disabled={isSubmitting || isValidating}
             >
-              Próximo →
+              {isSubmitting || isValidating ? 'Validando...' : 'Próximo →'}
             </Button>
           </div>
         </form>

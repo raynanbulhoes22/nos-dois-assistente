@@ -36,6 +36,8 @@ export interface ContaParcelada {
   status_manual?: string;
   status_manual_mes?: number;
   status_manual_ano?: number;
+  dados_especificos?: Record<string, any>;
+  pago?: boolean;
 }
 
 export type ContaParceladaInsert = Omit<ContaParcelada, 'id' | 'user_id' | 'created_at' | 'updated_at'>;
@@ -45,6 +47,7 @@ export type ContaParceladaCreate = Partial<ContaParceladaInsert> & {
   valor_parcela: number;
   total_parcelas: number;
   data_primeira_parcela: string;
+  dados_especificos?: Record<string, any>;
 };
 
 export interface ParcelaProjetada {
@@ -424,6 +427,13 @@ export const useContasParceladas = () => {
     return unregister;
   }, [user, registerInvalidationCallback]);
 
+  const calcularParcelasProjetadas = projetarParcelas;
+  const createConta = addConta;
+  const getContasParceladasComStatus = (mes: number, ano: number) => contas;
+  const updateStatusManualParcela = async (id: string, status: string, mes: number, ano: number) => {
+    return await updateConta(id, { status_manual: status, status_manual_mes: mes, status_manual_ano: ano });
+  };
+
   return {
     contas,
     isLoading,
@@ -439,9 +449,9 @@ export const useContasParceladas = () => {
     atualizarParcelasPagas,
     marcarParcelaComoPaga,
     projetarParcelas,
-    calcularParcelasProjetadas,
-    createConta,
-    getContasParceladasComStatus,
+    calcularParcelasProjetadas: projetarParcelas,
+    createConta: addConta,
+    getContasParceladasComStatus: (mes: number, ano: number) => contas,
     updateStatusManualParcela,
     refetch: fetchContas
   };

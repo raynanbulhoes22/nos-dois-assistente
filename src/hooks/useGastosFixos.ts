@@ -19,6 +19,7 @@ export interface GastoFixo {
   status_manual?: string;
   status_manual_mes?: number;
   status_manual_ano?: number;
+  pago?: boolean;
 }
 
 export const useGastosFixos = () => {
@@ -255,4 +256,21 @@ export const useGastosFixos = () => {
 
   const updateStatusManualGastoFixo = updateStatusManual;
   const createGastoFixo = addGastoFixo;
+  
+  return {
+    gastosFixos,
+    isLoading,
+    error,
+    addGastoFixo,
+    updateGastoFixo,
+    deleteGastoFixo,
+    getTotalGastosFixosAtivos,
+    getGastosFixosByStatus,
+    updateStatusManual,
+    getGastosFixosComStatus,
+    getTotalGastosFixosNaoPagos,
+    updateStatusManualGastoFixo,
+    createGastoFixo,
+    refetch: fetchGastosFixos
+  };
 };

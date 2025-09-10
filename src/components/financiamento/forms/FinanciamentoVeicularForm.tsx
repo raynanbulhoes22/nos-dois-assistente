@@ -54,8 +54,8 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
         categoria: editingConta.categoria || "",
         descricao: editingConta.descricao || "",
         instituicao_financeira: editingConta.instituicao_financeira || "",
-        taxa_nominal_anual: dadosEspecificos.taxa_nominal_anual || 0,
-        taxa_efetiva_anual: dadosEspecificos.taxa_efetiva_anual || 0,
+        taxa_nominal_anual: editingConta.taxa_nominal_anual || 0,
+        taxa_efetiva_anual: editingConta.taxa_efetiva_anual || 0,
         debito_automatico: editingConta.debito_automatico,
         tipo_financiamento: "financiamento_veicular",
         ativa: editingConta.ativa,
@@ -103,8 +103,7 @@ export const FinanciamentoVeicularForm: React.FC<FinanciamentoVeicularFormProps>
       };
 
       const success = await onSubmit({
-        ...formData,
-        dados_especificos: dadosEspecificos
+        ...formData
       });
       
       if (success) {

@@ -44,7 +44,6 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
 
   useEffect(() => {
     if (editingConta) {
-      const dadosEspecificos = editingConta.dados_especificos as any || {};
       setFormData({
         nome: editingConta.nome,
         valor_parcela: editingConta.valor_parcela,
@@ -58,10 +57,10 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
         debito_automatico: editingConta.debito_automatico,
         tipo_financiamento: tipo,
         ativa: editingConta.ativa,
-        valor_emprestado: dadosEspecificos.valor_emprestado || 0,
-        finalidade: dadosEspecificos.finalidade || "",
-        margem_consignavel: dadosEspecificos.margem_consignavel || 0,
-        dados_especificos: dadosEspecificos
+        valor_emprestado: editingConta.valor_emprestado || 0,
+        finalidade: editingConta.finalidade || "",
+        margem_consignavel: editingConta.margem_consignavel || 0,
+        dados_especificos: {}
       });
     }
   }, [editingConta, tipo]);
@@ -99,8 +98,7 @@ export const EmprestimoForm: React.FC<EmprestimoFormProps> = ({
       }
 
       const success = await onSubmit({
-        ...formData,
-        dados_especificos: dadosEspecificos
+        ...formData
       });
       
       if (success) {

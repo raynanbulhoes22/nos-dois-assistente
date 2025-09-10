@@ -41,7 +41,6 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
 
   useEffect(() => {
     if (editingConta) {
-      const dadosEspecificos = editingConta.dados_especificos as any || {};
       setFormData({
         nome: editingConta.nome,
         valor_parcela: editingConta.valor_parcela,
@@ -54,8 +53,8 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
         debito_automatico: editingConta.debito_automatico,
         tipo_financiamento: "parcelamento",
         ativa: editingConta.ativa,
-        loja: dadosEspecificos.loja || "",
-        dados_especificos: dadosEspecificos
+        loja: editingConta.loja || "",
+        dados_especificos: {}
       });
     }
   }, [editingConta]);
@@ -85,8 +84,7 @@ export const ParcelamentoForm: React.FC<ParcelamentoFormProps> = ({
       };
 
       const success = await onSubmit({
-        ...formData,
-        dados_especificos: dadosEspecificos
+        ...formData
       });
       
       if (success) {

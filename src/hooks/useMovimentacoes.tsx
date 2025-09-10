@@ -311,9 +311,22 @@ export const useMovimentacoes = () => {
             .eq('tipo_compromisso', 'cartao_credito');
 
           // Detectar cartões órfãos e criar automaticamente
+          const cartoesTransformados = (cartoesExistentes || []).map(c => {
+            const dadosEspecificos = c.dados_especificos as any;
+            return {
+              ...c,
+              apelido: c.nome,
+              ultimos_digitos: dadosEspecificos?.ultimos_digitos || '',
+              limite: c.valor_principal || 0,
+              limite_disponivel: dadosEspecificos?.limite_disponivel,
+              dia_vencimento: c.dia_vencimento || 1,
+              vencimento_fatura: c.dia_vencimento || 1
+            };
+          });
+
           const resultado = await detectarECriarCartoesAutomaticos(
             movimentacoesProcessadas,
-            cartoesExistentes || [],
+            cartoesTransformados,
             user.id
           );
 
@@ -358,14 +371,28 @@ export const useMovimentacoes = () => {
               .eq('ativo', true);
 
             if (cartoesData && cartoesData.length > 0) {
+              // Transformar dados brutos em formato Cartao
+              const cartoesTransformados = cartoesData.map(c => {
+                const dadosEspecificos = c.dados_especificos as any;
+                return {
+                  ...c,
+                  apelido: c.nome,
+                  ultimos_digitos: dadosEspecificos?.ultimos_digitos || '',
+                  limite: c.valor_principal || 0,
+                  limite_disponivel: dadosEspecificos?.limite_disponivel,
+                  dia_vencimento: c.dia_vencimento || 1,
+                  vencimento_fatura: c.dia_vencimento || 1
+                };
+              });
+
               // Atualizar limites disponíveis se necessário
-              await atualizarLimitesDisponiveis(cartoesData, movimentacoesProcessadas);
+              await atualizarLimitesDisponiveis(cartoesTransformados, movimentacoesProcessadas);
               
               // Processar transações automaticamente
-              await processarTransacoes(movimentacoesProcessadas, cartoesData);
+              await processarTransacoes(movimentacoesProcessadas, cartoesTransformados);
               
               // Verificar alertas de limite
-              const alertas = verificarAlertas(cartoesData);
+              const alertas = verificarAlertas(cartoesTransformados);
               if (alertas.length > 0) {
                 console.log('Alertas de cartão:', alertas);
               }

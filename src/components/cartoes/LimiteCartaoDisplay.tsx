@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { CreditCard, AlertTriangle, CheckCircle, TrendingUp, TrendingDown, Edit3, Trash2, Info } from "lucide-react";
 import { Cartao } from "@/hooks/useCartoes";
 import { useLimiteDinamicoCartao } from "@/hooks/useLimiteDinamicoCartao";
+import { extrairDiaVencimento } from "@/lib/date-utils";
 
 interface LimiteCartaoDisplayProps {
   cartao: Cartao;
@@ -251,9 +252,9 @@ export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: Lim
             </div>
           )}
 
-          {cartao.dia_vencimento && (
+          {cartao.data_vencimento && (
             <div className="text-xs text-muted-foreground">
-              Vencimento: dia {cartao.dia_vencimento}
+              Vencimento: dia {extrairDiaVencimento(cartao.data_vencimento)}
             </div>
           )}
 
@@ -291,11 +292,11 @@ export const LimiteCartaoDisplay = ({ cartao, className, onEdit, onDelete }: Lim
               <p className="text-sm text-muted-foreground">
                 Final: •••• {cartao.ultimos_digitos}
               </p>
-              {cartao.dia_vencimento && (
-                <p className="text-sm text-muted-foreground">
-                  Vencimento: Todo dia {cartao.dia_vencimento}
-                </p>
-              )}
+               {cartao.data_vencimento && (
+                 <p className="text-sm text-muted-foreground">
+                   Vencimento: Todo dia {extrairDiaVencimento(cartao.data_vencimento)}
+                 </p>
+               )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

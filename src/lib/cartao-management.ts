@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Cartao } from '@/hooks/useCartoes';
+import { extrairDiaVencimento } from '@/lib/date-utils';
 
 export interface TransacaoCartao {
   id: string;
@@ -245,10 +246,11 @@ export const verificarAlertasCartao = (cartao: Cartao): string[] => {
   }
 
   // Verificar vencimento próximo
-  if (cartao.dia_vencimento) {
+  if (cartao.data_vencimento) {
     const hoje = new Date();
     const diaAtual = hoje.getDate();
-    const diasParaVencimento = cartao.dia_vencimento - diaAtual;
+    const diaVencimento = extrairDiaVencimento(cartao.data_vencimento);
+    const diasParaVencimento = diaVencimento - diaAtual;
     
     if (diasParaVencimento <= 3 && diasParaVencimento > 0) {
       alertas.push(`Fatura do cartão ${cartao.apelido} vence em ${diasParaVencimento} dia(s)`);

@@ -7,6 +7,7 @@ import { useMovimentacoes } from '@/hooks/useMovimentacoes';
 import { EventoFinanceiro, EventosDia, FiltrosCalendario } from '@/components/calendario/tipos';
 import { startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, format, subMonths } from 'date-fns';
 import { calcularValorFaturaCartao } from '@/lib/cartao-utils';
+import { extrairDiaVencimento } from '@/lib/date-utils';
 
 export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
   const { user } = useAuth();
@@ -95,7 +96,8 @@ export const useEventosCalendario = (mesAtual: number, anoAtual: number) => {
       cartoes.forEach(cartao => {
         if (!cartao.ativo) return;
 
-        const dataVencimento = new Date(anoAtual, mesAtual - 1, cartao.dia_vencimento);
+        const diaVencimento = cartao.data_vencimento ? extrairDiaVencimento(cartao.data_vencimento) : 1;
+        const dataVencimento = new Date(anoAtual, mesAtual - 1, diaVencimento);
         const valorFatura = calcularValorFaturaCartao(transacoesFormatadas, cartao, mesAtual, anoAtual);
         
         eventos.push({

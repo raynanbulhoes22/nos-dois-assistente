@@ -4,6 +4,7 @@ import { useCartoes } from "@/hooks/useCartoes";
 import { useCartaoProcessamento } from "@/hooks/useCartaoProcessamento";
 import { useCartaoDetection } from "@/hooks/useCartaoDetection";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
+import { extrairDiaVencimento, criarDataVencimento } from "@/lib/date-utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -60,7 +61,7 @@ export const Cartoes = () => {
     ultimos_digitos: '',
     limite: 0,
     limite_disponivel: 0,
-    dia_vencimento: '',
+    data_vencimento: '',
     ativo: true
   });
 
@@ -103,7 +104,7 @@ export const Cartoes = () => {
       ultimos_digitos: '',
       limite: 0,
       limite_disponivel: 0,
-      dia_vencimento: '',
+      data_vencimento: '',
       ativo: true
     });
   };
@@ -112,11 +113,12 @@ export const Cartoes = () => {
     e.preventDefault();
     try {
       await addCartao({
+        nome: cartaoForm.apelido,
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
         limite: cartaoForm.limite,
         limite_disponivel: (cartaoForm.limite_disponivel || cartaoForm.limite).toString(),
-        dia_vencimento: parseInt(cartaoForm.dia_vencimento),
+        dia_vencimento: cartaoForm.data_vencimento ? parseInt(cartaoForm.data_vencimento) : undefined,
         ativo: cartaoForm.ativo
       });
       setShowCartaoModal(false);
@@ -133,7 +135,7 @@ export const Cartoes = () => {
       ultimos_digitos: cartao.ultimos_digitos || '',
       limite: cartao.limite || 0,
       limite_disponivel: parseFloat(cartao.limite_disponivel) || cartao.limite || 0,
-      dia_vencimento: (cartao.dia_vencimento || '').toString(),
+      data_vencimento: cartao.data_vencimento ? extrairDiaVencimento(cartao.data_vencimento).toString() : '',
       ativo: cartao.ativo !== false
     });
     setShowCartaoModal(true);
@@ -147,7 +149,7 @@ export const Cartoes = () => {
         ultimos_digitos: cartaoForm.ultimos_digitos,
         limite: cartaoForm.limite,
         limite_disponivel: cartaoForm.limite_disponivel.toString(),
-        dia_vencimento: parseInt(cartaoForm.dia_vencimento),
+        data_vencimento: cartaoForm.data_vencimento ? criarDataVencimento(parseInt(cartaoForm.data_vencimento)) : undefined,
         ativo: cartaoForm.ativo
       });
       setShowCartaoModal(false);
@@ -255,12 +257,12 @@ export const Cartoes = () => {
                   />
                 </div>
                 
-                <div>
-                  <Label htmlFor="dia_vencimento">Dia do Vencimento</Label>
-                  <Select 
-                    value={cartaoForm.dia_vencimento} 
-                    onValueChange={(value) => setCartaoForm({...cartaoForm, dia_vencimento: value})}
-                  >
+                 <div>
+                   <Label htmlFor="data_vencimento">Dia do Vencimento</Label>
+                   <Select 
+                     value={cartaoForm.data_vencimento} 
+                     onValueChange={(value) => setCartaoForm({...cartaoForm, data_vencimento: value})}
+                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o dia" />
                     </SelectTrigger>
@@ -566,10 +568,10 @@ export const Cartoes = () => {
                   <div key={cartao.id} className="flex justify-between items-center p-4 border rounded-lg">
                     <div>
                       <h4 className="font-medium">{cartao.apelido}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Final {cartao.ultimos_digitos} • 
-                        {cartao.dia_vencimento ? ` Vence dia ${cartao.dia_vencimento}` : ' Sem data de vencimento'}
-                      </p>
+                       <p className="text-sm text-muted-foreground">
+                         Final {cartao.ultimos_digitos} • 
+                         {cartao.data_vencimento ? ` Vence dia ${extrairDiaVencimento(cartao.data_vencimento)}` : ' Sem data de vencimento'}
+                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Badge variant={cartao.ativo ? "default" : "secondary"}>

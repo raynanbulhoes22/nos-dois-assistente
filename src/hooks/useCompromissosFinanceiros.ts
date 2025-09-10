@@ -33,8 +33,9 @@ export interface Cartao extends CompromissoFinanceiro {
   ultimos_digitos: string;
   limite: number;
   limite_disponivel?: string;
-  dia_vencimento: number; // Extraído de data_vencimento
-  vencimento_fatura: number; // Alias para dia_vencimento (backward compatibility)
+  data_vencimento?: string; // Nova coluna unificada
+  dia_vencimento?: number; // Calculado dinamicamente a partir de data_vencimento (backward compatibility)
+  vencimento_fatura?: number; // Alias para dia_vencimento (backward compatibility)
 }
 
 export interface GastoFixo extends CompromissoFinanceiro {
@@ -219,8 +220,9 @@ export const useCompromissosFinanceiros = () => {
         ultimos_digitos: c.dados_especificos?.ultimos_digitos || '',
         limite: c.valor_principal || 0,
         limite_disponivel: c.dados_especificos?.limite_disponivel,
-        dia_vencimento: c.data_vencimento ? extrairDiaVencimento(c.data_vencimento) : 1,
-        vencimento_fatura: c.data_vencimento ? extrairDiaVencimento(c.data_vencimento) : 1 // Backward compatibility
+        // Manter backward compatibility
+        dia_vencimento: c.data_vencimento ? extrairDiaVencimento(c.data_vencimento) : undefined,
+        vencimento_fatura: c.data_vencimento ? extrairDiaVencimento(c.data_vencimento) : undefined
       } as Cartao))
   , [compromissos]);
 

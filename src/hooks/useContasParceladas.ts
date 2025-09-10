@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useFinancialCache } from "@/contexts/FinancialDataContext";
 import { useRealtime } from "@/contexts/RealtimeContext";
+import { 
+  PaymentStatusManager, 
+  PaymentStatus, 
+  PaymentType, 
+  type CompromissoComStatus 
+} from '@/lib/payment-status';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -430,8 +436,12 @@ export const useContasParceladas = () => {
   const calcularParcelasProjetadas = projetarParcelas;
   const createConta = addConta;
   const getContasParceladasComStatus = (mes: number, ano: number) => contas;
-  const updateStatusManualParcela = async (id: string, status: string, mes: number, ano: number) => {
-    return await updateConta(id, { status_manual: status, status_manual_mes: mes, status_manual_ano: ano });
+  const updateStatusManualParcela = async (id: string, status: PaymentStatus, mes: number, ano: number) => {
+    if (!PaymentStatusManager.isValidStatus(status)) {
+      return false;
+    }
+    const statusUpdate = PaymentStatusManager.createStatusUpdate(status, mes, ano);
+    return await updateConta(id, statusUpdate);
   };
 
   return {

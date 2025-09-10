@@ -4,6 +4,12 @@ import { useAuth } from './useAuth';
 import { useFinancialCache } from '@/contexts/FinancialDataContext';
 import { useRealtime } from '@/contexts/RealtimeContext';
 import { toast } from 'sonner';
+import { 
+  PaymentStatusManager, 
+  PaymentStatus, 
+  PaymentType, 
+  type CompromissoComStatus 
+} from '@/lib/payment-status';
 
 export interface GastoFixo {
   id: string;
@@ -201,27 +207,25 @@ export const useGastosFixos = () => {
       .reduce((total, gasto) => total + gasto.valor_mensal, 0);
   }, [gastosFixos]);
 
-  const getGastosFixosByStatus = useCallback((mes: number, ano: number) => {
-    return gastosFixos.map(gasto => {
-      let status = 'pendente';
-      
-      if (gasto.status_manual_mes === mes && gasto.status_manual_ano === ano) {
-        status = gasto.status_manual || 'pendente';
-      }
-      
-      return {
-        ...gasto,
-        status_atual: status
-      };
-    });
+  const getGastosFixosByStatus = useCallback((mes: number, ano: number): CompromissoComStatus[] => {
+    return gastosFixos.map(gasto => 
+      PaymentStatusManager.createCompromissoComStatus(
+        gasto,
+        mes,
+        ano,
+        PaymentType.EXPENSE
+      )
+    );
   }, [gastosFixos]);
 
-  const updateStatusManual = useCallback(async (id: string, status: string, mes: number, ano: number) => {
-    return await updateGastoFixo(id, {
-      status_manual: status,
-      status_manual_mes: mes,
-      status_manual_ano: ano
-    });
+  const updateStatusManual = useCallback(async (id: string, status: PaymentStatus, mes: number, ano: number) => {
+    if (!PaymentStatusManager.isValidStatus(status)) {
+      toast.error('Status de pagamento inválido');
+      return false;
+    }
+
+    const statusUpdate = PaymentStatusManager.createStatusUpdate(status, mes, ano);
+    return await updateGastoFixo(id, statusUpdate);
   }, [updateGastoFixo]);
 
   useEffect(() => {
@@ -249,9 +253,11 @@ export const useGastosFixos = () => {
 
   const getTotalGastosFixosNaoPagos = useCallback((mes: number, ano: number) => {
     const gastosComStatus = getGastosFixosByStatus(mes, ano);
-    return gastosComStatus
-      .filter(gasto => gasto.status_atual !== 'pago')
-      .reduce((total, gasto) => total + gasto.valor_mensal, 0);
+    const naoPageos = PaymentStatusManager.filterByStatus(
+      gastosComStatus, 
+      [PaymentStatus.PENDING, PaymentStatus.OVERDUE]
+    );
+    return PaymentStatusManager.calculateTotals(naoPageos).total;
   }, [getGastosFixosByStatus]);
 
   const updateStatusManualGastoFixo = updateStatusManual;

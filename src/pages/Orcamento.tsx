@@ -9,6 +9,7 @@ import { usePrevisibilidadeFinanceira } from "@/hooks/usePrevisibilidadeFinancei
 import { useGastosFixos } from "@/hooks/useGastosFixos";
 import { useSaldoInicial } from "@/hooks/useSaldoInicial";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { PaymentStatus } from "@/lib/payment-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -181,8 +182,8 @@ export const Orcamento = () => {
         const gastosComStatus = await getGastosFixosComStatus(mesAtual, anoAtual);
         if (isMounted) {
           setGastosFixosComStatus(gastosComStatus);
-          const pagos = gastosComStatus.filter(g => g.pago).reduce((sum, g) => sum + g.valor_mensal, 0);
-          const pendentes = gastosComStatus.filter(g => !g.pago).reduce((sum, g) => sum + g.valor_mensal, 0);
+          const pagos = gastosComStatus.filter(g => g.pago).reduce((sum, g) => sum + (g.valor_mensal || g.valor), 0);
+          const pendentes = gastosComStatus.filter(g => !g.pago).reduce((sum, g) => sum + (g.valor_mensal || g.valor), 0);
           setTotalGastosPagos(pagos);
           setTotalGastosPendentes(pendentes);
         }
@@ -415,12 +416,13 @@ export const Orcamento = () => {
 
   const handleToggleStatusGastoFixo = async (id: string, novoStatus: 'pago' | 'pendente') => {
     try {
-      await updateStatusManualGastoFixo(id, novoStatus, mesAtual, anoAtual);
+      const paymentStatus = novoStatus === 'pago' ? PaymentStatus.PAID : PaymentStatus.PENDING;
+      await updateStatusManualGastoFixo(id, paymentStatus, mesAtual, anoAtual);
       // Atualizar os gastos com status
       const gastosComStatus = await getGastosFixosComStatus(mesAtual, anoAtual);
       setGastosFixosComStatus(gastosComStatus);
-      const pagos = gastosComStatus.filter(g => g.pago).reduce((sum, g) => sum + g.valor_mensal, 0);
-      const pendentes = gastosComStatus.filter(g => !g.pago && g.ativo).reduce((sum, g) => sum + g.valor_mensal, 0);
+      const pagos = gastosComStatus.filter(g => g.pago).reduce((sum, g) => sum + (g.valor_mensal || g.valor), 0);
+      const pendentes = gastosComStatus.filter(g => !g.pago && g.ativo).reduce((sum, g) => sum + (g.valor_mensal || g.valor), 0);
       setTotalGastosPagos(pagos);
       setTotalGastosPendentes(pendentes);
       toast.success(`Status do gasto alterado para ${novoStatus}`);
@@ -431,7 +433,8 @@ export const Orcamento = () => {
 
   const handleToggleStatusParcela = async (id: string, novoStatus: 'pago' | 'pendente') => {
     try {
-      await updateStatusManualParcela(id, novoStatus, mesAtual, anoAtual);
+      const paymentStatus = novoStatus === 'pago' ? PaymentStatus.PAID : PaymentStatus.PENDING;
+      await updateStatusManualParcela(id, paymentStatus, mesAtual, anoAtual);
       // Atualizar as contas com status
       const contasComStatus = await getContasParceladasComStatus(mesAtual, anoAtual);
       setContasParceladasComStatus(contasComStatus);

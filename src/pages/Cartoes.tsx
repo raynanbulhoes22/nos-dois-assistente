@@ -4,7 +4,7 @@ import { useCartoes } from "@/hooks/useCartoes";
 import { useCartaoProcessamento } from "@/hooks/useCartaoProcessamento";
 import { useCartaoDetection } from "@/hooks/useCartaoDetection";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
-import { extrairDiaVencimento, criarDataVencimento } from "@/lib/date-utils";
+import { extrairDiaVencimento } from "@/lib/date-utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,7 +61,6 @@ export const Cartoes = () => {
     ultimos_digitos: '',
     limite: 0,
     limite_disponivel: 0,
-    data_vencimento: '',
     ativo: true
   });
 
@@ -104,7 +103,6 @@ export const Cartoes = () => {
       ultimos_digitos: '',
       limite: 0,
       limite_disponivel: 0,
-      data_vencimento: '',
       ativo: true
     });
   };
@@ -118,7 +116,6 @@ export const Cartoes = () => {
         ultimos_digitos: cartaoForm.ultimos_digitos,
         limite: cartaoForm.limite,
         limite_disponivel: (cartaoForm.limite_disponivel || cartaoForm.limite).toString(),
-        dia_vencimento: cartaoForm.data_vencimento ? parseInt(cartaoForm.data_vencimento) : undefined,
         ativo: cartaoForm.ativo
       });
       setShowCartaoModal(false);
@@ -135,7 +132,6 @@ export const Cartoes = () => {
       ultimos_digitos: cartao.ultimos_digitos || '',
       limite: cartao.limite || 0,
       limite_disponivel: parseFloat(cartao.limite_disponivel) || cartao.limite || 0,
-      data_vencimento: cartao.data_vencimento ? extrairDiaVencimento(cartao.data_vencimento).toString() : '',
       ativo: cartao.ativo !== false
     });
     setShowCartaoModal(true);
@@ -145,11 +141,11 @@ export const Cartoes = () => {
     e.preventDefault();
     try {
       await updateCartao(editingCartao.id, {
+        nome: cartaoForm.apelido,
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
         limite: cartaoForm.limite,
         limite_disponivel: cartaoForm.limite_disponivel.toString(),
-        data_vencimento: cartaoForm.data_vencimento ? criarDataVencimento(parseInt(cartaoForm.data_vencimento)) : undefined,
         ativo: cartaoForm.ativo
       });
       setShowCartaoModal(false);
@@ -248,36 +244,17 @@ export const Cartoes = () => {
                   />
                 </div>
                 
-                <div>
-                  <Label htmlFor="limite_disponivel">Limite Disponível</Label>
-                  <CurrencyInput
-                    value={cartaoForm.limite_disponivel}
-                    onChange={(value) => setCartaoForm({...cartaoForm, limite_disponivel: value || 0})}
-                    placeholder="R$ 0,00"
-                  />
-                </div>
-                
                  <div>
-                   <Label htmlFor="data_vencimento">Dia do Vencimento</Label>
-                   <Select 
-                     value={cartaoForm.data_vencimento} 
-                     onValueChange={(value) => setCartaoForm({...cartaoForm, data_vencimento: value})}
-                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o dia" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Array.from({length: 28}, (_, i) => i + 1).map(dia => (
-                        <SelectItem key={dia} value={dia.toString()}>
-                          Dia {dia}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <Switch
+                   <Label htmlFor="limite_disponivel">Limite Disponível</Label>
+                   <CurrencyInput
+                     value={cartaoForm.limite_disponivel}
+                     onChange={(value) => setCartaoForm({...cartaoForm, limite_disponivel: value || 0})}
+                     placeholder="R$ 0,00"
+                   />
+                 </div>
+                 
+                 <div className="flex items-center space-x-2">
+                   <Switch
                     id="ativo"
                     checked={cartaoForm.ativo}
                     onCheckedChange={(checked) => setCartaoForm({...cartaoForm, ativo: checked})}

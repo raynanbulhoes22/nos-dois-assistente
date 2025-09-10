@@ -76,8 +76,11 @@ export const useCartaoDetection = () => {
   const criarCartaoDetectado = async (cartaoDetectado: CartaoDetectado) => {
     try {
       const resultado = await criarCartaoAutomatico({
+        nome: cartaoDetectado.apelido,
         apelido: cartaoDetectado.apelido,
-        ultimos_digitos: cartaoDetectado.ultimosDigitos
+        ultimos_digitos: cartaoDetectado.ultimosDigitos,
+        limite: 1000, // Limite padrão para cartões detectados
+        ativo: true
       });
 
       if (resultado) {

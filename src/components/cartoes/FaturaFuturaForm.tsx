@@ -98,7 +98,7 @@ export const FaturaFuturaForm = ({ onSuccess, cartoes }: FaturaFuturaFormProps) 
       if (cartaoSelecionado?.data_vencimento) {
         const diaVencimento = extrairDiaVencimento(cartaoSelecionado.data_vencimento);
         const proximaDataVencimento = calcularProximaDataVencimento(diaVencimento);
-        setFormData(prev => ({ ...prev, [field]: value, data: proximaDataVencimento }));
+        setFormData(prev => ({ ...prev, [field]: value, data: new Date(proximaDataVencimento) }));
         return;
       }
     }

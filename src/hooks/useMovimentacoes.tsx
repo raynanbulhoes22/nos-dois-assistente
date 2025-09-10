@@ -7,6 +7,7 @@ import { normalizePhoneNumber } from "@/lib/phone-utils";
 import { detectarECriarCartoesAutomaticos } from "@/lib/cartao-utils";
 import { useToast } from "@/hooks/use-toast";
 import { useCartaoProcessamento } from "@/hooks/useCartaoProcessamento";
+import type { Cartao } from "@/hooks/useCompromissosFinanceiros";
 
 export interface Movimentacao {
   id: string;
@@ -375,14 +376,30 @@ export const useMovimentacoes = () => {
               const cartoesTransformados = cartoesData.map(c => {
                 const dadosEspecificos = c.dados_especificos as any;
                 return {
-                  ...c,
+                  id: c.id,
+                  user_id: c.user_id,
+                  tipo_compromisso: 'cartao_credito' as const,
+                  nome: c.nome,
+                  descricao: c.descricao,
+                  categoria: c.categoria,
+                  ativo: c.ativo,
+                  valor_principal: c.valor_principal,
+                  data_vencimento: c.data_vencimento,
+                  total_parcelas: c.total_parcelas,
+                  parcelas_pagas: c.parcelas_pagas,
+                  dados_especificos: c.dados_especificos,
+                  status_manual: c.status_manual,
+                  status_manual_mes: c.status_manual_mes,
+                  status_manual_ano: c.status_manual_ano,
+                  created_at: c.created_at,
+                  updated_at: c.updated_at,
                   apelido: c.nome,
                   ultimos_digitos: dadosEspecificos?.ultimos_digitos || '',
                   limite: c.valor_principal || 0,
                   limite_disponivel: dadosEspecificos?.limite_disponivel,
                   dia_vencimento: c.data_vencimento ? new Date(c.data_vencimento).getDate() : 1,
                   vencimento_fatura: c.data_vencimento ? new Date(c.data_vencimento).getDate() : 1
-                };
+                } as Cartao;
               });
 
               // Atualizar limites disponíveis se necessário

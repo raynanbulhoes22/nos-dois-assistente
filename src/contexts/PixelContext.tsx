@@ -1,11 +1,11 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { usePixelManager } from '@/hooks/usePixelManager';
 
-// Pixel configuration - in production, these should come from environment variables
+// Pixel configuration - loaded from environment variables
 const PIXEL_CONFIG = {
-  facebookPixelId: process.env.NODE_ENV === 'production' ? 'YOUR_FB_PIXEL_ID' : undefined,
-  googleAnalyticsId: process.env.NODE_ENV === 'production' ? 'YOUR_GA_ID' : undefined,
-  googleAdsId: process.env.NODE_ENV === 'production' ? 'YOUR_GOOGLE_ADS_ID' : undefined,
+  facebookPixelId: import.meta.env.VITE_FACEBOOK_PIXEL_ID,
+  googleAnalyticsId: import.meta.env.VITE_GOOGLE_ANALYTICS_ID,
+  googleAdsId: import.meta.env.VITE_GOOGLE_ADS_ID,
 };
 
 interface PixelContextType {

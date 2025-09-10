@@ -45,7 +45,7 @@ const mainNavigationItems: NavigationItem[] = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Movimentações", url: "/movimentacoes", icon: TrendingUp },
   { title: "Orçamento", url: "/orcamento", icon: Target },
-  { title: "Cartões", url: "/cartoes", icon: CreditCard, disabled: true, comingSoon: true },
+  { title: "Cartões", url: "/cartoes", icon: CreditCard },
   { title: "Dívidas", url: "/dividas", icon: TrendingDown, disabled: true, comingSoon: true },
   { title: "Relatórios", url: "/relatorios", icon: FileText },
 ];
@@ -74,10 +74,9 @@ export function AppSidebar() {
   const availableBottomItems = bottomNavigationItems;
 
   const handleDisabledItemClick = (itemTitle: string) => {
-    const isCartoes = itemTitle === "Cartões";
     toast({
-      title: isCartoes ? "Funcionalidade em manutenção!" : "Funcionalidade em breve!",
-      description: isCartoes ? `${itemTitle} está temporariamente em manutenção.` : `${itemTitle} estará disponível em breve.`,
+      title: "Funcionalidade em breve!",
+      description: `${itemTitle} estará disponível em breve.`,
     });
   };
 
@@ -121,39 +120,19 @@ export function AppSidebar() {
                {availableMainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    {item.disabled ? (
-                      <button
-                        onClick={() => handleDisabledItemClick(item.title)}
-                        className="flex items-center gap-3 rounded-lg px-3 py-3 sm:py-2 
-                          text-sm font-medium transition-all duration-200 
-                          touch-manipulation min-h-[44px] sm:min-h-[36px]
-                          text-muted-foreground cursor-not-allowed opacity-50 w-full text-left"
-                      >
-                        <item.icon className="h-5 w-5 sm:h-4 sm:w-4 flex-shrink-0" />
-                        {state !== "collapsed" && (
-                          <div className="flex items-center justify-between w-full">
-                            <span className="truncate">{item.title}</span>
-                             {item.comingSoon && (
-                              <Badge variant="secondary" className="text-xs">Em manutenção</Badge>
-                             )}
-                          </div>
-                        )}
-                      </button>
-                    ) : (
-                      <NavLink
-                        to={item.url}
-                        className={({ isActive }) => `${getNavCls({ isActive })} 
-                          flex items-center gap-3 rounded-lg px-3 py-3 sm:py-2 
-                          text-sm font-medium transition-all duration-200 
-                          touch-manipulation min-h-[44px] sm:min-h-[36px]
-                          hover:bg-accent/80 active:bg-accent/90`}
-                      >
-                        <item.icon className="h-5 w-5 sm:h-4 sm:w-4 flex-shrink-0" />
-                        {state !== "collapsed" && (
-                          <span className="truncate">{item.title}</span>
-                        )}
-                      </NavLink>
-                    )}
+                    <NavLink
+                      to={item.url}
+                      className={({ isActive }) => `${getNavCls({ isActive })} 
+                        flex items-center gap-3 rounded-lg px-3 py-3 sm:py-2 
+                        text-sm font-medium transition-all duration-200 
+                        touch-manipulation min-h-[44px] sm:min-h-[36px]
+                        hover:bg-accent/80 active:bg-accent/90`}
+                    >
+                      <item.icon className="h-5 w-5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      {state !== "collapsed" && (
+                        <span className="truncate">{item.title}</span>
+                      )}
+                    </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

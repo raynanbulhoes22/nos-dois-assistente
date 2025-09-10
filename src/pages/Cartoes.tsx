@@ -5,6 +5,7 @@ import { useCartaoProcessamento } from "@/hooks/useCartaoProcessamento";
 import { useCartaoDetection } from "@/hooks/useCartaoDetection";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 import { extrairDiaVencimento } from "@/lib/date-utils";
+import { formatCurrency } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,6 @@ import { AlertasCartaoPanel } from "@/components/cartoes/AlertasCartaoPanel";
 import { CartaoDetectionAlert } from "@/components/cartoes/CartaoDetectionAlert";
 import { FaturasFuturasTab } from "@/components/cartoes/FaturasFuturasTab";
 import { FaturasFuturasSection } from "@/components/cartoes/FaturasFuturasSection";
-import { formatCurrency } from "@/lib/utils";
 import { 
   CreditCard, 
   Plus, 
@@ -71,15 +71,27 @@ export const Cartoes = () => {
     }
   }, [cartoes, verificarAlertas]);
 
-  // Calcular estatísticas
+  // Calcular estatísticas com tratamento de NaN
   const cartoesAtivos = cartoes.filter(c => c.ativo);
-  const totalLimite = getTotalLimite();
-  const totalUtilizado = cartoesAtivos.reduce((total, cartao) => {
-    const limite = Number(cartao.limite || 0);
-    const disponivel = Number(cartao.limite_disponivel || limite);
-    return total + (limite - disponivel);
+  
+  const totalLimite = cartoesAtivos.reduce((total, cartao) => {
+    const limite = Number(cartao.limite) || 0;
+    return total + limite;
   }, 0);
-  const totalDisponivel = totalLimite - totalUtilizado;
+  
+  const totalDisponivel = cartoesAtivos.reduce((total, cartao) => {
+    let disponivel = 0;
+    if (cartao.limite_disponivel !== undefined && cartao.limite_disponivel !== null) {
+      disponivel = typeof cartao.limite_disponivel === 'string' 
+        ? parseFloat(cartao.limite_disponivel) || 0
+        : Number(cartao.limite_disponivel) || 0;
+    } else {
+      disponivel = Number(cartao.limite) || 0;
+    }
+    return total + disponivel;
+  }, 0);
+  
+  const totalUtilizado = Math.max(0, totalLimite - totalDisponivel);
   const percentualUtilizacao = totalLimite > 0 ? (totalUtilizado / totalLimite) * 100 : 0;
 
   // Calcular gastos do mês atual com cartões
@@ -115,7 +127,7 @@ export const Cartoes = () => {
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
         limite: cartaoForm.limite,
-        limite_disponivel: (cartaoForm.limite_disponivel || cartaoForm.limite).toString(),
+        limite_disponivel: cartaoForm.limite_disponivel || cartaoForm.limite,
         ativo: cartaoForm.ativo
       });
       setShowCartaoModal(false);
@@ -130,8 +142,12 @@ export const Cartoes = () => {
     setCartaoForm({
       apelido: cartao.apelido || '',
       ultimos_digitos: cartao.ultimos_digitos || '',
-      limite: cartao.limite || 0,
-      limite_disponivel: parseFloat(cartao.limite_disponivel) || cartao.limite || 0,
+      limite: Number(cartao.limite) || 0,
+      limite_disponivel: cartao.limite_disponivel ? 
+        (typeof cartao.limite_disponivel === 'string' ? 
+          parseFloat(cartao.limite_disponivel) || 0 : 
+          Number(cartao.limite_disponivel) || 0
+        ) : Number(cartao.limite) || 0,
       ativo: cartao.ativo !== false
     });
     setShowCartaoModal(true);
@@ -145,7 +161,7 @@ export const Cartoes = () => {
         apelido: cartaoForm.apelido,
         ultimos_digitos: cartaoForm.ultimos_digitos,
         limite: cartaoForm.limite,
-        limite_disponivel: cartaoForm.limite_disponivel.toString(),
+        limite_disponivel: cartaoForm.limite_disponivel,
         ativo: cartaoForm.ativo
       });
       setShowCartaoModal(false);
@@ -305,9 +321,9 @@ export const Cartoes = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Limite Total</p>
-                <p className="text-3xl font-bold">{formatCurrency(totalLimite)}</p>
+                <p className="text-3xl font-bold">{formatCurrency(totalLimite || 0)}</p>
                 <p className="text-xs text-success mt-1">
-                  Disponível: {formatCurrency(totalDisponivel)}
+                  Disponível: {formatCurrency(totalDisponivel || 0)}
                 </p>
               </div>
               <div className="p-3 bg-blue-500/10 rounded-xl">
@@ -326,7 +342,7 @@ export const Cartoes = () => {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Crédito Disponível</p>
                 <p className={`text-3xl font-bold ${totalDisponivel >= 0 ? 'text-success' : 'text-destructive'}`}>
-                  {formatCurrency(totalDisponivel)}
+                  {formatCurrency(totalDisponivel || 0)}
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   {((totalLimite - totalDisponivel) / totalLimite * 100 || 0).toFixed(1)}% usado
@@ -351,7 +367,7 @@ export const Cartoes = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Gasto do Mês</p>
-                <p className="text-3xl font-bold text-warning">{formatCurrency(gastosCartoesMes)}</p>
+                <p className="text-3xl font-bold text-warning">{formatCurrency(gastosCartoesMes || 0)}</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Média: {formatCurrency(cartoesAtivos.length > 0 ? gastosCartoesMes / cartoesAtivos.length : 0)}
                 </p>

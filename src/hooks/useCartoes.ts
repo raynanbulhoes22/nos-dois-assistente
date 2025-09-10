@@ -5,17 +5,22 @@ import { criarDataVencimento } from "@/lib/date-utils";
 export type { Cartao } from "@/hooks/useCompromissosFinanceiros";
 
 export const useCartoes = () => {
-  const { compromissos, addCompromisso, updateCompromisso, deleteCompromisso, isLoading } = useCompromissosFinanceiros();
+  const { cartoes, addCompromisso, updateCompromisso, deleteCompromisso, isLoading } = useCompromissosFinanceiros();
   
-  // Filtrar cartões da lista de compromissos
-  const cartoes = useMemo(() => 
-    compromissos.filter(c => c.tipo_compromisso === 'cartao_credito') as Cartao[]
-  , [compromissos]);
+  // Usar diretamente os cartões já transformados do useCompromissosFinanceiros
 
-  const addCartao = useCallback(async (cartao: Omit<Cartao, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'tipo_compromisso' | 'parcelas_pagas' | 'dados_especificos'>) => {
+  const addCartao = useCallback(async (cartao: {
+    nome?: string;
+    apelido: string;
+    ultimos_digitos: string;
+    limite: number;
+    limite_disponivel?: string | number;
+    ativo: boolean;
+    dia_vencimento?: number;
+  }) => {
     const compromissoData = {
       tipo_compromisso: 'cartao_credito' as const,
-      nome: cartao.apelido,
+      nome: cartao.nome || cartao.apelido,
       valor_principal: cartao.limite,
       ativo: cartao.ativo,
       parcelas_pagas: 0,
@@ -24,16 +29,25 @@ export const useCartoes = () => {
         apelido: cartao.apelido,
         ultimos_digitos: cartao.ultimos_digitos,
         limite: cartao.limite,
-        limite_disponivel: cartao.limite_disponivel || cartao.limite.toString()
+        limite_disponivel: cartao.limite_disponivel?.toString() || cartao.limite.toString()
       }
     };
 
     return addCompromisso(compromissoData);
   }, [addCompromisso]);
 
-  const updateCartao = useCallback(async (id: string, updates: Partial<Cartao>) => {
+  const updateCartao = useCallback(async (id: string, updates: {
+    nome?: string;
+    apelido?: string;
+    ultimos_digitos?: string;
+    limite?: number;
+    limite_disponivel?: string | number;
+    ativo?: boolean;
+    dia_vencimento?: number;
+  }) => {
     const updateData: any = {};
     
+    if (updates.nome) updateData.nome = updates.nome;
     if (updates.apelido) updateData.nome = updates.apelido;
     if (updates.limite !== undefined) updateData.valor_principal = updates.limite;
     if (updates.ativo !== undefined) updateData.ativo = updates.ativo;
@@ -41,18 +55,19 @@ export const useCartoes = () => {
       updateData.data_vencimento = criarDataVencimento(updates.dia_vencimento);
     }
 
-    // Atualizar dados específicos
-    if (updates.apelido || updates.ultimos_digitos || updates.limite !== undefined || updates.limite_disponivel !== undefined) {
+    // Atualizar dados específicos sempre que houver mudanças relevantes
+    const cartaoAtual = cartoes.find(c => c.id === id);
+    if (cartaoAtual) {
       updateData.dados_especificos = {
-        apelido: updates.apelido,
-        ultimos_digitos: updates.ultimos_digitos,
-        limite: updates.limite,
-        limite_disponivel: updates.limite_disponivel
+        apelido: updates.apelido || cartaoAtual.apelido,
+        ultimos_digitos: updates.ultimos_digitos || cartaoAtual.ultimos_digitos,
+        limite: updates.limite !== undefined ? updates.limite : cartaoAtual.limite,
+        limite_disponivel: updates.limite_disponivel?.toString() || cartaoAtual.limite_disponivel
       };
     }
 
     return updateCompromisso(id, updateData);
-  }, [updateCompromisso]);
+  }, [updateCompromisso, cartoes]);
 
   const deleteCartao = useCallback(async (id: string) => {
     return deleteCompromisso(id);
@@ -60,7 +75,8 @@ export const useCartoes = () => {
 
   const getTotalLimite = useCallback(() => {
     return cartoes.reduce((total, cartao) => {
-      return total + (cartao.ativo ? cartao.limite : 0);
+      const limite = Number(cartao.limite) || 0;
+      return total + (cartao.ativo ? limite : 0);
     }, 0);
   }, [cartoes]);
 

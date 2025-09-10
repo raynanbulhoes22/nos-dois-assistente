@@ -98,42 +98,6 @@ export type Database = {
         }
         Relationships: []
       }
-      cartoes_credito: {
-        Row: {
-          apelido: string
-          ativo: boolean
-          created_at: string
-          dia_vencimento: number | null
-          id: string
-          limite: number | null
-          limite_disponivel: string | null
-          ultimos_digitos: string
-          user_id: string
-        }
-        Insert: {
-          apelido: string
-          ativo?: boolean
-          created_at?: string
-          dia_vencimento?: number | null
-          id?: string
-          limite?: number | null
-          limite_disponivel?: string | null
-          ultimos_digitos: string
-          user_id: string
-        }
-        Update: {
-          apelido?: string
-          ativo?: boolean
-          created_at?: string
-          dia_vencimento?: number | null
-          id?: string
-          limite?: number | null
-          limite_disponivel?: string | null
-          ultimos_digitos?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       compromissos_financeiros: {
         Row: {
           ativo: boolean
@@ -197,108 +161,6 @@ export type Database = {
         }
         Relationships: []
       }
-      contas_parceladas: {
-        Row: {
-          ano_veiculo: number | null
-          ativa: boolean
-          cartao_id: string | null
-          categoria: string | null
-          created_at: string
-          dados_especificos: Json | null
-          data_primeira_parcela: string
-          debito_automatico: boolean | null
-          descricao: string | null
-          finalidade: string | null
-          id: string
-          instituicao_financeira: string | null
-          loja: string | null
-          margem_consignavel: number | null
-          nome: string
-          parcelas_pagas: number
-          status_manual: string | null
-          status_manual_ano: number | null
-          status_manual_mes: number | null
-          taxa_efetiva_anual: number | null
-          taxa_juros: number | null
-          taxa_nominal_anual: number | null
-          tipo_financiamento: string | null
-          total_parcelas: number
-          updated_at: string
-          user_id: string
-          valor_bem: number | null
-          valor_emprestado: number | null
-          valor_entrada: number | null
-          valor_financiado: number | null
-          valor_parcela: number
-        }
-        Insert: {
-          ano_veiculo?: number | null
-          ativa?: boolean
-          cartao_id?: string | null
-          categoria?: string | null
-          created_at?: string
-          dados_especificos?: Json | null
-          data_primeira_parcela: string
-          debito_automatico?: boolean | null
-          descricao?: string | null
-          finalidade?: string | null
-          id?: string
-          instituicao_financeira?: string | null
-          loja?: string | null
-          margem_consignavel?: number | null
-          nome: string
-          parcelas_pagas?: number
-          status_manual?: string | null
-          status_manual_ano?: number | null
-          status_manual_mes?: number | null
-          taxa_efetiva_anual?: number | null
-          taxa_juros?: number | null
-          taxa_nominal_anual?: number | null
-          tipo_financiamento?: string | null
-          total_parcelas: number
-          updated_at?: string
-          user_id: string
-          valor_bem?: number | null
-          valor_emprestado?: number | null
-          valor_entrada?: number | null
-          valor_financiado?: number | null
-          valor_parcela: number
-        }
-        Update: {
-          ano_veiculo?: number | null
-          ativa?: boolean
-          cartao_id?: string | null
-          categoria?: string | null
-          created_at?: string
-          dados_especificos?: Json | null
-          data_primeira_parcela?: string
-          debito_automatico?: boolean | null
-          descricao?: string | null
-          finalidade?: string | null
-          id?: string
-          instituicao_financeira?: string | null
-          loja?: string | null
-          margem_consignavel?: number | null
-          nome?: string
-          parcelas_pagas?: number
-          status_manual?: string | null
-          status_manual_ano?: number | null
-          status_manual_mes?: number | null
-          taxa_efetiva_anual?: number | null
-          taxa_juros?: number | null
-          taxa_nominal_anual?: number | null
-          tipo_financiamento?: string | null
-          total_parcelas?: number
-          updated_at?: string
-          user_id?: string
-          valor_bem?: number | null
-          valor_emprestado?: number | null
-          valor_entrada?: number | null
-          valor_financiado?: number | null
-          valor_parcela?: number
-        }
-        Relationships: []
-      }
       fontes_renda: {
         Row: {
           ativa: boolean
@@ -335,54 +197,6 @@ export type Database = {
           tipo?: string
           user_id?: string
           valor?: number
-        }
-        Relationships: []
-      }
-      gastos_fixos: {
-        Row: {
-          ativo: boolean
-          categoria: string | null
-          created_at: string
-          data_inicio: string
-          id: string
-          nome: string
-          observacoes: string | null
-          status_manual: string | null
-          status_manual_ano: number | null
-          status_manual_mes: number | null
-          updated_at: string
-          user_id: string
-          valor_mensal: number
-        }
-        Insert: {
-          ativo?: boolean
-          categoria?: string | null
-          created_at?: string
-          data_inicio?: string
-          id?: string
-          nome: string
-          observacoes?: string | null
-          status_manual?: string | null
-          status_manual_ano?: number | null
-          status_manual_mes?: number | null
-          updated_at?: string
-          user_id: string
-          valor_mensal: number
-        }
-        Update: {
-          ativo?: boolean
-          categoria?: string | null
-          created_at?: string
-          data_inicio?: string
-          id?: string
-          nome?: string
-          observacoes?: string | null
-          status_manual?: string | null
-          status_manual_ano?: number | null
-          status_manual_mes?: number | null
-          updated_at?: string
-          user_id?: string
-          valor_mensal?: number
         }
         Relationships: []
       }

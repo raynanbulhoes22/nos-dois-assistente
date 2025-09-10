@@ -134,6 +134,69 @@ export type Database = {
         }
         Relationships: []
       }
+      compromissos_financeiros: {
+        Row: {
+          ativo: boolean
+          categoria: string | null
+          created_at: string
+          dados_especificos: Json | null
+          data_inicio: string | null
+          data_vencimento: number | null
+          descricao: string | null
+          id: string
+          nome: string
+          parcelas_pagas: number | null
+          status_manual: string | null
+          status_manual_ano: number | null
+          status_manual_mes: number | null
+          tipo_compromisso: string
+          total_parcelas: number | null
+          updated_at: string
+          user_id: string
+          valor_principal: number | null
+        }
+        Insert: {
+          ativo?: boolean
+          categoria?: string | null
+          created_at?: string
+          dados_especificos?: Json | null
+          data_inicio?: string | null
+          data_vencimento?: number | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          parcelas_pagas?: number | null
+          status_manual?: string | null
+          status_manual_ano?: number | null
+          status_manual_mes?: number | null
+          tipo_compromisso: string
+          total_parcelas?: number | null
+          updated_at?: string
+          user_id: string
+          valor_principal?: number | null
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string | null
+          created_at?: string
+          dados_especificos?: Json | null
+          data_inicio?: string | null
+          data_vencimento?: number | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          parcelas_pagas?: number | null
+          status_manual?: string | null
+          status_manual_ano?: number | null
+          status_manual_mes?: number | null
+          tipo_compromisso?: string
+          total_parcelas?: number | null
+          updated_at?: string
+          user_id?: string
+          valor_principal?: number | null
+        }
+        Relationships: []
+      }
       contas_parceladas: {
         Row: {
           ano_veiculo: number | null

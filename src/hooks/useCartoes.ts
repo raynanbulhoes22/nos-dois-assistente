@@ -11,7 +11,7 @@ export interface Cartao {
   apelido: string;
   ultimos_digitos: string;
   limite?: number;
-  limite_disponivel?: string; // Corrigido: DB armazena como string
+  limite_disponivel?: string;
   dia_vencimento?: number;
   ativo: boolean;
   created_at: string;
@@ -46,51 +46,79 @@ export const useCartoes = () => {
       }
 
       const { data, error } = await supabase
-        .from('cartoes_credito')
+        .from('compromissos_financeiros')
         .select('*')
         .eq('user_id', user.id)
+        .eq('tipo_compromisso', 'cartao_credito')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // @ts-ignore - Temporário: corrigir tipos depois
-      const cartoesData = data || [];
+      const cartoesData = (data || []).map(item => {
+        const dadosEspecificos = item.dados_especificos as any;
+        
+        return {
+          id: item.id,
+          user_id: item.user_id,
+          apelido: item.nome,
+          ultimos_digitos: dadosEspecificos?.ultimos_digitos || '',
+          limite: item.valor_principal || 0,
+          limite_disponivel: dadosEspecificos?.limite_disponivel,
+          dia_vencimento: item.data_vencimento || 1,
+          ativo: item.ativo,
+          created_at: item.created_at
+        } as Cartao;
+      });
+
       setCartoes(cartoesData);
-      setCache(cacheKey, cartoesData, 5 * 60 * 1000); // Cache for 5 minutes
+      setCache(cacheKey, cartoesData);
     } catch (error) {
       console.error('Erro ao buscar cartões:', error);
       setError('Erro ao carregar cartões');
+      toast({
+        title: "❌ Erro",
+        description: "Não foi possível carregar os cartões.",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const addCartao = async (cartao: Omit<Cartao, 'id' | 'user_id' | 'created_at'>) => {
-    if (!user) return false;
+    if (!user) return null;
 
     try {
-      const { error } = await supabase
-        .from('cartoes_credito')
+      const { data, error } = await supabase
+        .from('compromissos_financeiros')
         .insert({
           user_id: user.id,
-          apelido: cartao.apelido,
-          ultimos_digitos: cartao.ultimos_digitos,
-          limite: cartao.limite,
-          limite_disponivel: cartao.limite_disponivel, // Já é string na interface
-          dia_vencimento: cartao.dia_vencimento,
-          ativo: cartao.ativo
-        });
+          tipo_compromisso: 'cartao_credito',
+          nome: cartao.apelido,
+          categoria: 'Cartão de Crédito',
+          ativo: cartao.ativo,
+          valor_principal: cartao.limite || 0,
+          data_vencimento: cartao.dia_vencimento || 1,
+          dados_especificos: {
+            ultimos_digitos: cartao.ultimos_digitos,
+            limite_disponivel: cartao.limite_disponivel
+          }
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
+      const cacheKey = `cartoes_${user.id}`;
+      invalidateCache(cacheKey);
+      await fetchCartoes();
+      
       toast({
-        title: "✅ Sucesso!",
-        description: "Cartão adicionado com sucesso!"
+        title: "✅ Cartão Adicionado!",
+        description: `${cartao.apelido} foi adicionado com sucesso.`
       });
 
-      invalidateCache(`cartoes_${user.id}`);
-      await fetchCartoes();
-      return true;
+      return data;
     } catch (error) {
       console.error('Erro ao adicionar cartão:', error);
       toast({
@@ -98,28 +126,48 @@ export const useCartoes = () => {
         description: "Não foi possível adicionar o cartão.",
         variant: "destructive"
       });
-      return false;
+      return null;
     }
   };
 
   const updateCartao = async (id: string, updates: Partial<Cartao>) => {
+    if (!user) return false;
+
     try {
-      // @ts-ignore - Temporário: corrigir tipos depois
+      const updateData: any = {};
+      
+      if (updates.apelido !== undefined) updateData.nome = updates.apelido;
+      if (updates.ativo !== undefined) updateData.ativo = updates.ativo;
+      if (updates.limite !== undefined) updateData.valor_principal = updates.limite;
+      if (updates.dia_vencimento !== undefined) updateData.data_vencimento = updates.dia_vencimento;
+      
+      // Construir dados_especificos
+      const dadosEspecificos: any = {};
+      if (updates.ultimos_digitos !== undefined) dadosEspecificos.ultimos_digitos = updates.ultimos_digitos;
+      if (updates.limite_disponivel !== undefined) dadosEspecificos.limite_disponivel = updates.limite_disponivel;
+      
+      if (Object.keys(dadosEspecificos).length > 0) {
+        updateData.dados_especificos = dadosEspecificos;
+      }
+
       const { error } = await supabase
-        .from('cartoes_credito')
-        .update(updates)
+        .from('compromissos_financeiros')
+        .update(updateData)
         .eq('id', id)
-        .eq('user_id', user?.id);
+        .eq('user_id', user.id)
+        .eq('tipo_compromisso', 'cartao_credito');
 
       if (error) throw error;
 
+      const cacheKey = `cartoes_${user.id}`;
+      invalidateCache(cacheKey);
+      await fetchCartoes();
+      
       toast({
-        title: "✅ Sucesso!",
-        description: "Cartão atualizado com sucesso!"
+        title: "✅ Cartão Atualizado!",
+        description: "Cartão atualizado com sucesso."
       });
 
-      invalidateCache(`cartoes_${user.id}`);
-      await fetchCartoes();
       return true;
     } catch (error) {
       console.error('Erro ao atualizar cartão:', error);
@@ -133,22 +181,27 @@ export const useCartoes = () => {
   };
 
   const deleteCartao = async (id: string) => {
+    if (!user) return false;
+
     try {
       const { error } = await supabase
-        .from('cartoes_credito')
+        .from('compromissos_financeiros')
         .delete()
         .eq('id', id)
-        .eq('user_id', user?.id);
+        .eq('user_id', user.id)
+        .eq('tipo_compromisso', 'cartao_credito');
 
       if (error) throw error;
 
+      const cacheKey = `cartoes_${user.id}`;
+      invalidateCache(cacheKey);
+      await fetchCartoes();
+      
       toast({
-        title: "✅ Sucesso!",
-        description: "Cartão removido com sucesso!"
+        title: "✅ Cartão Removido!",
+        description: "Cartão removido com sucesso."
       });
 
-      invalidateCache(`cartoes_${user.id}`);
-      await fetchCartoes();
       return true;
     } catch (error) {
       console.error('Erro ao remover cartão:', error);
@@ -172,22 +225,27 @@ export const useCartoes = () => {
 
     try {
       const { data, error } = await supabase
-        .from('cartoes_credito')
+        .from('compromissos_financeiros')
         .insert({
           user_id: user.id,
-          apelido: dadosCartao.apelido,
-          ultimos_digitos: dadosCartao.ultimos_digitos,
-          limite: null,
-          dia_vencimento: null,
-          ativo: true
+          tipo_compromisso: 'cartao_credito',
+          nome: dadosCartao.apelido,
+          categoria: 'Cartão de Crédito',
+          ativo: true,
+          valor_principal: 0,
+          data_vencimento: 1,
+          dados_especificos: {
+            ultimos_digitos: dadosCartao.ultimos_digitos,
+            limite_disponivel: null
+          }
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      // Atualizar lista local
-      invalidateCache(`cartoes_${user.id}`);
+      const cacheKey = `cartoes_${user.id}`;
+      invalidateCache(cacheKey);
       await fetchCartoes();
       
       return data;
@@ -204,20 +262,23 @@ export const useCartoes = () => {
   };
 
   useEffect(() => {
-    fetchCartoes();
+    if (user) {
+      fetchCartoes();
+    }
   }, [user]);
 
   // Setup realtime listener
   useEffect(() => {
     if (!user) return;
 
-    const cleanup = registerInvalidationCallback('cartoes_credito', () => {
-      console.log('[useCartoes] Realtime update triggered');
+    const unregister = registerInvalidationCallback('compromissos_financeiros', () => {
+      const cacheKey = `cartoes_${user.id}`;
+      invalidateCache(cacheKey);
       fetchCartoes();
     });
 
-    return cleanup;
-  }, [user, registerInvalidationCallback, fetchCartoes]);
+    return unregister;
+  }, [user, registerInvalidationCallback]);
 
   return {
     cartoes,

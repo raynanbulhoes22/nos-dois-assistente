@@ -96,8 +96,8 @@ export const useFinancialStats = () => {
     fetchProfile();
   }, [user, getFromCache, setCache]);
 
-  // Memoized stats calculation
-  const calculatedStats = useMemo(async () => {
+  // Async function to calculate stats
+  const calculateStats = async (): Promise<FinancialStats | null> => {
     if (!user || movLoading || fontesLoading || cartoesLoading || isLoadingProfile) {
       return null;
     }
@@ -115,7 +115,12 @@ export const useFinancialStats = () => {
 
       const hoje = new Date();
       const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-      const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+      
+      console.log('🔍 useFinancialStats - Calculando stats para:', {
+        mes: hoje.getMonth() + 1,
+        ano: hoje.getFullYear(),
+        inicioMes
+      });
       
       // Buscar saldo inicial do orçamento mensal (fonte da verdade)
       const { data: orcamentoMensal } = await supabase
@@ -127,31 +132,59 @@ export const useFinancialStats = () => {
         .maybeSingle();
       
       const saldoInicial = orcamentoMensal?.saldo_inicial || 0;
+      console.log('💰 Saldo inicial encontrado:', saldoInicial);
     
       // Calcular entradas e saídas do mês atual (excluindo saldo inicial)
-      const entradasMes = entradas.filter(entrada => 
-        new Date(entrada.data) >= inicioMes && entrada.categoria !== 'Saldo Inicial'
-      ).reduce((total, entrada) => total + entrada.valor, 0);
+      const entradasMes = entradas.filter(entrada => {
+        const dataEntrada = new Date(entrada.data);
+        return dataEntrada >= inicioMes && 
+               dataEntrada.getMonth() === hoje.getMonth() &&
+               dataEntrada.getFullYear() === hoje.getFullYear() &&
+               entrada.categoria !== 'Saldo Inicial';
+      }).reduce((total, entrada) => total + entrada.valor, 0);
       
-      const saidasMes = saidas.filter(saida => 
-        new Date(saida.data) >= inicioMes && saida.categoria !== 'Saldo Inicial'
-      ).reduce((total, saida) => total + saida.valor, 0);
+      const saidasMes = saidas.filter(saida => {
+        const dataSaida = new Date(saida.data);
+        return dataSaida >= inicioMes && 
+               dataSaida.getMonth() === hoje.getMonth() &&
+               dataSaida.getFullYear() === hoje.getFullYear() &&
+               saida.categoria !== 'Saldo Inicial';
+      }).reduce((total, saida) => total + saida.valor, 0);
 
-      // Separar transações por origem
-      const transacoesWpp = movimentacoes.filter(mov => mov.numero_wpp).length;
-      const transacoesManuais = movimentacoes.filter(mov => !mov.numero_wpp).length;
+      console.log('📊 Movimentações do mês:', {
+        entradas: entradasMes,
+        saidas: saidasMes,
+        saldo: entradasMes - saidasMes
+      });
+
+      // Separar transações por origem do mês atual
+      const movimentacoesMes = movimentacoes.filter(mov => {
+        const dataMovimentacao = new Date(mov.data);
+        return dataMovimentacao >= inicioMes && 
+               dataMovimentacao.getMonth() === hoje.getMonth() &&
+               dataMovimentacao.getFullYear() === hoje.getFullYear();
+      });
+      
+      const transacoesWpp = movimentacoesMes.filter(mov => mov.numero_wpp).length;
+      const transacoesManuais = movimentacoesMes.filter(mov => !mov.numero_wpp).length;
 
       // Calcular uso de cartão (aproximação baseada em transações)
-      const gastosCartao = saidas.filter(saida => 
-        saida.forma_pagamento?.toLowerCase().includes('cartão') ||
-        saida.forma_pagamento?.toLowerCase().includes('credito')
-      ).reduce((total, saida) => total + saida.valor, 0);
+      const gastosCartao = saidasMes;
 
       const rendaRegistrada = getTotalRendaAtiva();
       const saldoMovimentacoesMes = entradasMes - saidasMes;
       
       // Saldo computado = saldo inicial + movimentações do mês
       const saldoComputado = saldoInicial + saldoMovimentacoesMes;
+      
+      console.log('🎯 Resultado dos cálculos:', {
+        rendaRegistrada,
+        saldoInicial,
+        saldoMovimentacoesMes,
+        saldoComputado,
+        transacoesWpp,
+        transacoesManuais
+      });
     
       const metaEconomia = profile?.meta_economia_mensal || 0;
       const percentualMeta = metaEconomia > 0 ? (saldoComputado / metaEconomia) * 100 : 0;
@@ -230,6 +263,17 @@ export const useFinancialStats = () => {
       console.error('Error calculating financial stats:', error);
       return null;
     }
+  };
+
+  useEffect(() => {
+    const updateStats = async () => {
+      const newStats = await calculateStats();
+      if (newStats) {
+        setStats(newStats);
+      }
+    };
+    
+    updateStats();
   }, [
     user, 
     movimentacoes, 
@@ -243,21 +287,8 @@ export const useFinancialStats = () => {
     movLoading,
     fontesLoading,
     cartoesLoading,
-    isLoadingProfile,
-    getFromCache,
-    setCache
+    isLoadingProfile
   ]);
-
-  useEffect(() => {
-    const updateStats = async () => {
-      const newStats = await calculatedStats;
-      if (newStats) {
-        setStats(newStats);
-      }
-    };
-    
-    updateStats();
-  }, [calculatedStats]);
 
   return stats;
 };

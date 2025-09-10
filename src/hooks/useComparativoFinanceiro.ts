@@ -36,19 +36,29 @@ export const useComparativoFinanceiro = (mes?: number, ano?: number) => {
       return cachedData;
     }
 
-    // Filtrar movimentações do mês/ano específico
-    const movimentacoesMes = [...entradas, ...saidas].filter(mov => {
-      const dataMovimentacao = new Date(mov.data);
+    // Filtrar entradas e saídas do mês/ano específico separadamente
+    const entradasMes = entradas.filter(entrada => {
+      const dataMovimentacao = new Date(entrada.data);
       return dataMovimentacao.getMonth() + 1 === mesAtual && 
-             dataMovimentacao.getFullYear() === anoAtual;
+             dataMovimentacao.getFullYear() === anoAtual &&
+             entrada.categoria !== 'Saldo Inicial';
     });
 
-    const entradasMes = movimentacoesMes.filter(mov => 
-      entradas.some(entrada => entrada.id === mov.id)
-    );
-    const saidasMes = movimentacoesMes.filter(mov => 
-      saidas.some(saida => saida.id === mov.id)
-    );
+    const saidasMes = saidas.filter(saida => {
+      const dataMovimentacao = new Date(saida.data);
+      return dataMovimentacao.getMonth() + 1 === mesAtual && 
+             dataMovimentacao.getFullYear() === anoAtual &&
+             saida.categoria !== 'Saldo Inicial';
+    });
+
+    console.log('📈 useComparativoFinanceiro - Dados do mês:', {
+      mes: mesAtual,
+      ano: anoAtual,
+      entradasCount: entradasMes.length,
+      saidasCount: saidasMes.length,
+      totalEntradas: entradasMes.reduce((total, entrada) => total + entrada.valor, 0),
+      totalSaidas: saidasMes.reduce((total, saida) => total + saida.valor, 0)
+    });
 
     // Valores projetados
     const rendaProjetada = getTotalRendaAtiva();

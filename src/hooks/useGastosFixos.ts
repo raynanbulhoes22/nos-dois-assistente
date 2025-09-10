@@ -65,7 +65,7 @@ export const useGastosFixos = () => {
           categoria: item.categoria,
           valor_mensal: item.valor_principal || 0,
           ativo: item.ativo,
-          data_inicio: item.data_inicio || new Date().toISOString(),
+          data_inicio: item.data_referencia || new Date().toISOString(),
           observacoes: dadosEspecificos?.observacoes,
           created_at: item.created_at,
           updated_at: item.updated_at,

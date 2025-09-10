@@ -305,9 +305,10 @@ export const useMovimentacoes = () => {
         try {
           // Buscar cartões existentes
           const { data: cartoesExistentes } = await supabase
-            .from('cartoes_credito')
+            .from('compromissos_financeiros')
             .select('*')
-            .eq('user_id', user.id);
+            .eq('user_id', user.id)
+            .eq('tipo_compromisso', 'cartao_credito');
 
           // Detectar cartões órfãos e criar automaticamente
           const resultado = await detectarECriarCartoesAutomaticos(
@@ -350,9 +351,10 @@ export const useMovimentacoes = () => {
           try {
             // Buscar cartões ativos
             const { data: cartoesData } = await supabase
-              .from('cartoes_credito')
+              .from('compromissos_financeiros')
               .select('*')
               .eq('user_id', user.id)
+              .eq('tipo_compromisso', 'cartao_credito')
               .eq('ativo', true);
 
             if (cartoesData && cartoesData.length > 0) {

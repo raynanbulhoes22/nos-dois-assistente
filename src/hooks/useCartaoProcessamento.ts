@@ -91,8 +91,15 @@ export const useCartaoProcessamento = () => {
           const limiteCalculado = calcularLimiteDisponivel(cartao, transacoes);
 
           await supabase
-            .from('cartoes_credito')
-            .update({ limite_disponivel: limiteCalculado.toString() } as any)
+            .from('compromissos_financeiros')
+            .update({ 
+              dados_especificos: { 
+                apelido: cartao.apelido,
+                ultimos_digitos: cartao.ultimos_digitos,
+                limite: cartao.limite,
+                limite_disponivel: limiteCalculado.toString() 
+              }
+            } as any)
             .eq('id', cartao.id)
             .eq('user_id', user.id);
 

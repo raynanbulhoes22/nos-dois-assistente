@@ -27,25 +27,18 @@ export const useOptimizedCache = () => {
         'financial_overview',
         'monthly_stats'
       ],
-      'cartoes_credito': [
+      'compromissos_financeiros': [
         `cartoes_${user.id}`,
+        `gastos_fixos_${user.id}`,
+        `contas_parceladas_${user.id}`,
         `movimentacoes_${user.id}`,
         `faturas_futuras_${user.id}`,
         `financial_stats_${user.id}`,
-        'credit_limits'
-      ],
-      'contas_parceladas': [
-        `contas_parceladas_${user.id}`,
-        `financial_stats_${user.id}`,
-        `dashboard_data_${user.id}`,
-        'installments_projection',
-        'monthly_projections'
-      ],
-      'gastos_fixos': [
-        `gastos_fixos_${user.id}`,
-        `financial_stats_${user.id}`,
         `dashboard_data_${user.id}`,
         `orcamentos_${user.id}`,
+        'credit_limits',
+        'installments_projection',
+        'monthly_projections',
         'fixed_expenses_projection'
       ],
       'fontes_renda': [
@@ -100,12 +93,10 @@ export const useOptimizedCache = () => {
 // Helper function to get related tables for cross-invalidation
 function getRelatedTables(table: string): string[] {
   const relations = {
-    'registros_financeiros': ['cartoes_credito', 'contas_parceladas'],
-    'cartoes_credito': ['registros_financeiros'],
-    'contas_parceladas': ['registros_financeiros'],
-    'gastos_fixos': ['orcamentos_mensais'],
+    'registros_financeiros': ['compromissos_financeiros'],
+    'compromissos_financeiros': ['registros_financeiros'],
     'fontes_renda': ['orcamentos_mensais'],
-    'orcamentos_mensais': ['gastos_fixos', 'fontes_renda']
+    'orcamentos_mensais': ['fontes_renda', 'compromissos_financeiros']
   };
   
   return relations[table as keyof typeof relations] || [];

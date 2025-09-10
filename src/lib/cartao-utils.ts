@@ -202,14 +202,19 @@ export const criarCartaoAutomatico = async (
     const { supabase } = await import('@/integrations/supabase/client');
     
     const { error } = await supabase
-      .from('cartoes_credito')
+      .from('compromissos_financeiros')
       .insert({
         user_id: userId,
-        apelido: dadosCartao.apelido,
-        ultimos_digitos: dadosCartao.ultimosDigitos,
-        limite: null,
-        dia_vencimento: null,
-        ativo: true
+        tipo_compromisso: 'cartao_credito',
+        nome: dadosCartao.apelido,
+        ativo: true,
+        parcelas_pagas: 0,
+        data_referencia: new Date().toISOString().split('T')[0],
+        dados_especificos: {
+          apelido: dadosCartao.apelido,
+          ultimos_digitos: dadosCartao.ultimosDigitos,
+          limite: null
+        }
       });
 
     if (error) {

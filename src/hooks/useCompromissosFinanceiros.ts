@@ -15,8 +15,8 @@ export interface CompromissoFinanceiro {
   categoria?: string;
   ativo: boolean;
   valor_principal?: number;
-  data_inicio?: string;
-  data_vencimento?: number;
+  data_referencia?: string; // Data principal do compromisso
+  dia_vencimento?: number; // Para cartões e gastos fixos: dia do mês (1-31)
   total_parcelas?: number;
   parcelas_pagas: number;
   dados_especificos: Record<string, any>;
@@ -34,19 +34,21 @@ export interface Cartao extends CompromissoFinanceiro {
   ultimos_digitos: string;
   limite: number;
   limite_disponivel?: string;
-  dia_vencimento: number;
+  dia_vencimento: number; // Vem da coluna dia_vencimento
+  vencimento_fatura: number; // Alias para dia_vencimento (backward compatibility)
 }
 
 export interface GastoFixo extends CompromissoFinanceiro {
   tipo_compromisso: 'gasto_fixo';
   valor_mensal: number;
   observacoes?: string;
+  dia_pagamento?: number; // Vem da coluna dia_vencimento
 }
 
 export interface ContaParcelada extends CompromissoFinanceiro {
   tipo_compromisso: 'conta_parcelada';
   valor_parcela: number;
-  data_primeira_parcela: string;
+  data_primeira_parcela: string; // Vem da coluna data_referencia
   tipo_financiamento?: string;
   instituicao_financeira?: string;
   loja?: string;
@@ -212,7 +214,8 @@ export const useCompromissosFinanceiros = () => {
         ultimos_digitos: c.dados_especificos?.ultimos_digitos || '',
         limite: c.valor_principal || 0,
         limite_disponivel: c.dados_especificos?.limite_disponivel,
-        dia_vencimento: c.data_vencimento || 1
+        dia_vencimento: c.dia_vencimento || 1,
+        vencimento_fatura: c.dia_vencimento || 1 // Backward compatibility
       } as Cartao))
   , [compromissos]);
 
@@ -222,7 +225,8 @@ export const useCompromissosFinanceiros = () => {
       .map(c => ({
         ...c,
         valor_mensal: c.valor_principal || 0,
-        observacoes: c.dados_especificos?.observacoes
+        observacoes: c.dados_especificos?.observacoes,
+        dia_pagamento: c.dia_vencimento
       } as GastoFixo))
   , [compromissos]);
 
@@ -232,7 +236,7 @@ export const useCompromissosFinanceiros = () => {
       .map(c => ({
         ...c,
         valor_parcela: c.valor_principal || 0,
-        data_primeira_parcela: c.data_inicio || '',
+        data_primeira_parcela: c.data_referencia || '',
         tipo_financiamento: c.dados_especificos?.tipo_financiamento,
         instituicao_financeira: c.dados_especificos?.instituicao_financeira,
         loja: c.dados_especificos?.loja,

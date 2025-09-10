@@ -64,7 +64,7 @@ export const useCartoes = () => {
           ultimos_digitos: dadosEspecificos?.ultimos_digitos || '',
           limite: item.valor_principal || 0,
           limite_disponivel: dadosEspecificos?.limite_disponivel,
-          dia_vencimento: item.data_vencimento || 1,
+          dia_vencimento: item.dia_vencimento || 1,
           ativo: item.ativo,
           created_at: item.created_at
         } as Cartao;

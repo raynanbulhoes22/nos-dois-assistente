@@ -104,16 +104,21 @@ export const OnboardingWizard = () => {
 
       // Criar gastos fixos se existirem
       if (data.gastosFixos && data.gastosFixos.length > 0) {
+        // Transformar gastos fixos no formato de compromissos_financeiros
         const gastosFixosData = data.gastosFixos.map(gasto => ({
           user_id: user.id,
+          tipo_compromisso: 'gasto_fixo' as const,
           nome: gasto.nome,
-          valor_mensal: gasto.valor,
           categoria: gasto.categoria,
-          data_inicio: new Date().toISOString().split('T')[0]
+          valor_principal: gasto.valor,
+          data_referencia: new Date().toISOString().split('T')[0],
+          ativo: true,
+          parcelas_pagas: 0,
+          dados_especificos: {}
         }));
 
         const { error: gastosError } = await supabase
-          .from('gastos_fixos')
+          .from('compromissos_financeiros')
           .insert(gastosFixosData);
 
         if (gastosError) throw gastosError;
@@ -121,16 +126,25 @@ export const OnboardingWizard = () => {
 
       // Criar cartões se existirem
       if (data.cartoes && data.cartoes.length > 0) {
+        // Transformar cartões no formato de compromissos_financeiros
         const cartoesData = data.cartoes.map(cartao => ({
           user_id: user.id,
-          apelido: cartao.apelido,
-          limite: cartao.limite,
+          tipo_compromisso: 'cartao_credito' as const,
+          nome: cartao.apelido,
+          valor_principal: cartao.limite,
           dia_vencimento: (cartao.vencimento ?? cartao.diaVencimento),
-          ultimos_digitos: cartao.ultimosDigitos
+          data_referencia: new Date().toISOString().split('T')[0],
+          ativo: true,
+          parcelas_pagas: 0,
+          dados_especificos: {
+            apelido: cartao.apelido,
+            ultimos_digitos: cartao.ultimosDigitos,
+            limite: cartao.limite
+          }
         }));
 
         const { error: cartoesError } = await supabase
-          .from('cartoes_credito')
+          .from('compromissos_financeiros')
           .insert(cartoesData);
 
         if (cartoesError) throw cartoesError;

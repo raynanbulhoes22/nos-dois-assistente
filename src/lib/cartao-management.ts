@@ -64,9 +64,14 @@ export const processarCompraCartao = async (
     const novoLimite = limiteAtual - transacao.valor;
 
     const { error } = await supabase
-      .from('cartoes_credito')
+      .from('compromissos_financeiros')
       .update({ 
-        limite_disponivel: novoLimite.toString()
+        dados_especificos: { 
+          apelido: cartao.apelido,
+          ultimos_digitos: cartao.ultimos_digitos,
+          limite: cartao.limite,
+          limite_disponivel: novoLimite.toString() 
+        }
       } as any)
       .eq('id', cartao.id)
       .eq('user_id', userId);
@@ -94,9 +99,14 @@ export const processarPagamentoFatura = async (
     const novoLimite = limiteAtual + transacao.valor;
 
     const { error } = await supabase
-      .from('cartoes_credito')
+      .from('compromissos_financeiros')
       .update({ 
-        limite_disponivel: novoLimite.toString()
+        dados_especificos: { 
+          apelido: cartao.apelido,
+          ultimos_digitos: cartao.ultimos_digitos,
+          limite: cartao.limite,
+          limite_disponivel: novoLimite.toString() 
+        }
       } as any)
       .eq('id', cartao.id)
       .eq('user_id', userId);

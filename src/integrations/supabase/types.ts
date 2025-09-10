@@ -104,9 +104,8 @@ export type Database = {
           categoria: string | null
           created_at: string
           dados_especificos: Json | null
-          data_referencia: string | null
+          data_vencimento: string | null
           descricao: string | null
-          dia_vencimento: number | null
           id: string
           nome: string
           parcelas_pagas: number | null
@@ -124,9 +123,8 @@ export type Database = {
           categoria?: string | null
           created_at?: string
           dados_especificos?: Json | null
-          data_referencia?: string | null
+          data_vencimento?: string | null
           descricao?: string | null
-          dia_vencimento?: number | null
           id?: string
           nome: string
           parcelas_pagas?: number | null
@@ -144,9 +142,8 @@ export type Database = {
           categoria?: string | null
           created_at?: string
           dados_especificos?: Json | null
-          data_referencia?: string | null
+          data_vencimento?: string | null
           descricao?: string | null
-          dia_vencimento?: number | null
           id?: string
           nome?: string
           parcelas_pagas?: number | null

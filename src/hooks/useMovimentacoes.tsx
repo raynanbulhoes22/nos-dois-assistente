@@ -319,8 +319,8 @@ export const useMovimentacoes = () => {
               ultimos_digitos: dadosEspecificos?.ultimos_digitos || '',
               limite: c.valor_principal || 0,
               limite_disponivel: dadosEspecificos?.limite_disponivel,
-              dia_vencimento: c.dia_vencimento || 1,
-              vencimento_fatura: c.dia_vencimento || 1
+              dia_vencimento: c.data_vencimento ? new Date(c.data_vencimento).getDate() : 1,
+              vencimento_fatura: c.data_vencimento ? new Date(c.data_vencimento).getDate() : 1
             };
           });
 
@@ -380,8 +380,8 @@ export const useMovimentacoes = () => {
                   ultimos_digitos: dadosEspecificos?.ultimos_digitos || '',
                   limite: c.valor_principal || 0,
                   limite_disponivel: dadosEspecificos?.limite_disponivel,
-                  dia_vencimento: c.dia_vencimento || 1,
-                  vencimento_fatura: c.dia_vencimento || 1
+                  dia_vencimento: c.data_vencimento ? new Date(c.data_vencimento).getDate() : 1,
+                  vencimento_fatura: c.data_vencimento ? new Date(c.data_vencimento).getDate() : 1
                 };
               });
 

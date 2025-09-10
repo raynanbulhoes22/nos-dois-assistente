@@ -65,7 +65,7 @@ export const useGastosFixos = () => {
           categoria: item.categoria,
           valor_mensal: item.valor_principal || 0,
           ativo: item.ativo,
-          data_inicio: item.data_referencia || new Date().toISOString(),
+          data_inicio: item.data_vencimento || new Date().toISOString(),
           observacoes: dadosEspecificos?.observacoes,
           created_at: item.created_at,
           updated_at: item.updated_at,
@@ -99,7 +99,7 @@ export const useGastosFixos = () => {
           categoria: gasto.categoria,
           ativo: gasto.ativo,
           valor_principal: gasto.valor_mensal,
-          data_inicio: gasto.data_inicio,
+          data_vencimento: gasto.data_inicio,
           dados_especificos: {
             observacoes: gasto.observacoes
           },
@@ -135,7 +135,7 @@ export const useGastosFixos = () => {
       if (updates.categoria !== undefined) updateData.categoria = updates.categoria;
       if (updates.ativo !== undefined) updateData.ativo = updates.ativo;
       if (updates.valor_mensal !== undefined) updateData.valor_principal = updates.valor_mensal;
-      if (updates.data_inicio !== undefined) updateData.data_inicio = updates.data_inicio;
+      if (updates.data_inicio !== undefined) updateData.data_vencimento = updates.data_inicio;
       if (updates.status_manual !== undefined) updateData.status_manual = updates.status_manual;
       if (updates.status_manual_mes !== undefined) updateData.status_manual_mes = updates.status_manual_mes;
       if (updates.status_manual_ano !== undefined) updateData.status_manual_ano = updates.status_manual_ano;

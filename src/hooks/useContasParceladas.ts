@@ -110,7 +110,7 @@ export const useContasParceladas = () => {
           valor_parcela: item.valor_principal || 0,
           total_parcelas: item.total_parcelas || 0,
           parcelas_pagas: item.parcelas_pagas || 0,
-          data_primeira_parcela: item.data_referencia || '',
+          data_primeira_parcela: item.data_vencimento || '',
           ativa: item.ativo,
           created_at: item.created_at,
           updated_at: item.updated_at,

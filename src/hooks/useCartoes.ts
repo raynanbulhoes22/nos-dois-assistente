@@ -64,7 +64,7 @@ export const useCartoes = () => {
           ultimos_digitos: dadosEspecificos?.ultimos_digitos || '',
           limite: item.valor_principal || 0,
           limite_disponivel: dadosEspecificos?.limite_disponivel,
-          dia_vencimento: item.dia_vencimento || 1,
+          dia_vencimento: item.data_vencimento ? new Date(item.data_vencimento).getDate() : 1,
           ativo: item.ativo,
           created_at: item.created_at
         } as Cartao;
@@ -98,7 +98,7 @@ export const useCartoes = () => {
           categoria: 'Cartão de Crédito',
           ativo: cartao.ativo,
           valor_principal: cartao.limite || 0,
-          data_vencimento: cartao.dia_vencimento || 1,
+          data_vencimento: new Date(new Date().getFullYear(), new Date().getMonth(), cartao.dia_vencimento || 1).toISOString().split('T')[0],
           dados_especificos: {
             ultimos_digitos: cartao.ultimos_digitos,
             limite_disponivel: cartao.limite_disponivel
@@ -139,7 +139,9 @@ export const useCartoes = () => {
       if (updates.apelido !== undefined) updateData.nome = updates.apelido;
       if (updates.ativo !== undefined) updateData.ativo = updates.ativo;
       if (updates.limite !== undefined) updateData.valor_principal = updates.limite;
-      if (updates.dia_vencimento !== undefined) updateData.data_vencimento = updates.dia_vencimento;
+      if (updates.dia_vencimento !== undefined) {
+        updateData.data_vencimento = new Date(new Date().getFullYear(), new Date().getMonth(), updates.dia_vencimento).toISOString().split('T')[0];
+      }
       
       // Construir dados_especificos
       const dadosEspecificos: any = {};
@@ -233,7 +235,7 @@ export const useCartoes = () => {
           categoria: 'Cartão de Crédito',
           ativo: true,
           valor_principal: 0,
-          data_vencimento: 1,
+          data_vencimento: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
           dados_especificos: {
             ultimos_digitos: dadosCartao.ultimos_digitos,
             limite_disponivel: null

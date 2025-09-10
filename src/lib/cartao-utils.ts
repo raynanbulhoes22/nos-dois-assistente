@@ -209,7 +209,7 @@ export const criarCartaoAutomatico = async (
         nome: dadosCartao.apelido,
         ativo: true,
         parcelas_pagas: 0,
-        data_referencia: new Date().toISOString().split('T')[0],
+        data_vencimento: new Date().toISOString().split('T')[0],
         dados_especificos: {
           apelido: dadosCartao.apelido,
           ultimos_digitos: dadosCartao.ultimosDigitos,

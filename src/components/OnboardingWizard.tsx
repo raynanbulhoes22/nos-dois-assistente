@@ -111,7 +111,7 @@ export const OnboardingWizard = () => {
           nome: gasto.nome,
           categoria: gasto.categoria,
           valor_principal: gasto.valor,
-          data_referencia: new Date().toISOString().split('T')[0],
+          data_vencimento: new Date().toISOString().split('T')[0],
           ativo: true,
           parcelas_pagas: 0,
           dados_especificos: {}
@@ -132,8 +132,7 @@ export const OnboardingWizard = () => {
           tipo_compromisso: 'cartao_credito' as const,
           nome: cartao.apelido,
           valor_principal: cartao.limite,
-          dia_vencimento: (cartao.vencimento ?? cartao.diaVencimento),
-          data_referencia: new Date().toISOString().split('T')[0],
+          data_vencimento: new Date(new Date().getFullYear(), new Date().getMonth(), cartao.vencimento ?? cartao.diaVencimento).toISOString().split('T')[0],
           ativo: true,
           parcelas_pagas: 0,
           dados_especificos: {

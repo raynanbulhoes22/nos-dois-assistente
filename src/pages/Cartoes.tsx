@@ -61,7 +61,8 @@ export const Cartoes = () => {
     ultimos_digitos: '',
     limite: 0,
     limite_disponivel: 0,
-    ativo: true
+    ativo: true,
+    dia_vencimento: undefined as number | undefined
   });
 
   // Verificar alertas quando os cartões mudarem
@@ -115,7 +116,8 @@ export const Cartoes = () => {
       ultimos_digitos: '',
       limite: 0,
       limite_disponivel: 0,
-      ativo: true
+      ativo: true,
+      dia_vencimento: undefined
     });
   };
 
@@ -128,7 +130,8 @@ export const Cartoes = () => {
         ultimos_digitos: cartaoForm.ultimos_digitos,
         limite: cartaoForm.limite,
         limite_disponivel: cartaoForm.limite_disponivel || cartaoForm.limite,
-        ativo: cartaoForm.ativo
+        ativo: cartaoForm.ativo,
+        dia_vencimento: cartaoForm.dia_vencimento
       });
       setShowCartaoModal(false);
       resetCartaoForm();
@@ -148,7 +151,8 @@ export const Cartoes = () => {
           parseFloat(cartao.limite_disponivel) || 0 : 
           Number(cartao.limite_disponivel) || 0
         ) : Number(cartao.limite) || 0,
-      ativo: cartao.ativo !== false
+      ativo: cartao.ativo !== false,
+      dia_vencimento: cartao.data_vencimento ? extrairDiaVencimento(cartao.data_vencimento) : undefined
     });
     setShowCartaoModal(true);
   };
@@ -162,7 +166,8 @@ export const Cartoes = () => {
         ultimos_digitos: cartaoForm.ultimos_digitos,
         limite: cartaoForm.limite,
         limite_disponivel: cartaoForm.limite_disponivel,
-        ativo: cartaoForm.ativo
+        ativo: cartaoForm.ativo,
+        dia_vencimento: cartaoForm.dia_vencimento
       });
       setShowCartaoModal(false);
       setEditingCartao(null);
@@ -267,6 +272,25 @@ export const Cartoes = () => {
                      onChange={(value) => setCartaoForm({...cartaoForm, limite_disponivel: value || 0})}
                      placeholder="R$ 0,00"
                    />
+                 </div>
+                 
+                 <div>
+                   <Label htmlFor="dia_vencimento">Dia do Vencimento da Fatura</Label>
+                   <Select 
+                     value={cartaoForm.dia_vencimento?.toString() || ""} 
+                     onValueChange={(value) => setCartaoForm({...cartaoForm, dia_vencimento: value ? parseInt(value) : undefined})}
+                   >
+                     <SelectTrigger>
+                       <SelectValue placeholder="Selecione o dia (opcional)" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => (
+                         <SelectItem key={dia} value={dia.toString()}>
+                           Dia {dia}
+                         </SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
                  </div>
                  
                  <div className="flex items-center space-x-2">

@@ -17,7 +17,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import { Movimentacoes } from "./pages/Movimentacoes";
 import { Assinaturas } from "./pages/Assinaturas";
-import { Orcamento } from "./pages/Orcamento";
+import Orcamento from "./pages/Orcamento";
 import { Cartoes } from "./pages/Cartoes";
 import { Relatorios } from "./pages/Relatorios";
 import { Configuracoes } from "./pages/Configuracoes";

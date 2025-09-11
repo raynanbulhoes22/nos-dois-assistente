@@ -4,9 +4,10 @@ import { useFontesRenda } from "@/hooks/useFontesRenda";
 import { useCartoes } from "@/hooks/useCartoes";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrcamentos } from "@/hooks/useOrcamentos";
-import { useFinancialCache } from "@/contexts/FinancialDataContext";
+import { useFinancialCache } from "@/hooks/useFinancialCache";
 import { supabase } from "@/integrations/supabase/client";
 import { garantirSaldoInicialMesAtual } from "@/lib/saldo-utils";
+import { safeNumber, logFinancialCalculation, getCurrentPeriod } from "@/lib/financial-utils";
 
 export interface FinancialStats {
   rendaRegistrada: number;
@@ -113,6 +114,7 @@ export const useFinancialStats = () => {
       // Garantir que existe saldo inicial para o mês atual
       await garantirSaldoInicialMesAtual(user.id);
 
+      const currentPeriod = getCurrentPeriod();
       const hoje = new Date();
       const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
       
@@ -127,11 +129,11 @@ export const useFinancialStats = () => {
         .from('orcamentos_mensais')
         .select('saldo_inicial')
         .eq('user_id', user.id)
-        .eq('mes', hoje.getMonth() + 1)
-        .eq('ano', hoje.getFullYear())
+        .eq('mes', currentPeriod.mes)
+        .eq('ano', currentPeriod.ano)
         .maybeSingle();
       
-      const saldoInicial = orcamentoMensal?.saldo_inicial || 0;
+      const saldoInicial = safeNumber(orcamentoMensal?.saldo_inicial, 0);
       console.log('💰 Saldo inicial encontrado:', saldoInicial);
     
       // Calcular entradas e saídas do mês atual (excluindo saldo inicial)
@@ -141,7 +143,7 @@ export const useFinancialStats = () => {
                dataEntrada.getMonth() === hoje.getMonth() &&
                dataEntrada.getFullYear() === hoje.getFullYear() &&
                entrada.categoria !== 'Saldo Inicial';
-      }).reduce((total, entrada) => total + entrada.valor, 0);
+      }).reduce((total, entrada) => total + safeNumber(entrada.valor, 0), 0);
       
       const saidasMes = saidas.filter(saida => {
         const dataSaida = new Date(saida.data);
@@ -149,7 +151,7 @@ export const useFinancialStats = () => {
                dataSaida.getMonth() === hoje.getMonth() &&
                dataSaida.getFullYear() === hoje.getFullYear() &&
                saida.categoria !== 'Saldo Inicial';
-      }).reduce((total, saida) => total + saida.valor, 0);
+      }).reduce((total, saida) => total + safeNumber(saida.valor, 0), 0);
 
       console.log('📊 Movimentações do mês:', {
         entradas: entradasMes,
@@ -171,11 +173,20 @@ export const useFinancialStats = () => {
       // Calcular uso de cartão (aproximação baseada em transações)
       const gastosCartao = saidasMes;
 
-      const rendaRegistrada = getTotalRendaAtiva();
+      const rendaRegistrada = safeNumber(getTotalRendaAtiva(), 0);
       const saldoMovimentacoesMes = entradasMes - saidasMes;
       
       // Saldo computado = saldo inicial + movimentações do mês
       const saldoComputado = saldoInicial + saldoMovimentacoesMes;
+      
+      logFinancialCalculation('useFinancialStats - calculate', {
+        saldoInicial,
+        entradasMes,
+        saidasMes,
+        saldoMovimentacoesMes,
+        saldoComputado,
+        rendaRegistrada
+      });
       
       console.log('🎯 Resultado dos cálculos:', {
         rendaRegistrada,
@@ -186,7 +197,7 @@ export const useFinancialStats = () => {
         transacoesManuais
       });
     
-      const metaEconomia = profile?.meta_economia_mensal || 0;
+      const metaEconomia = safeNumber(profile?.meta_economia_mensal, 0);
       const percentualMeta = metaEconomia > 0 ? (saldoComputado / metaEconomia) * 100 : 0;
 
       // Gerar alertas inteligentes
@@ -228,7 +239,7 @@ export const useFinancialStats = () => {
         });
       }
 
-      const limiteTotal = getTotalLimite();
+      const limiteTotal = safeNumber(getTotalLimite(), 0);
       if (limiteTotal > 0 && gastosCartao > limiteTotal * 0.8) {
         alertas.push({
           id: '5',

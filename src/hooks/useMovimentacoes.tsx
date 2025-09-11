@@ -1,34 +1,18 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useFinancialCache } from "@/contexts/FinancialDataContext";
+import { useFinancialCache } from "@/hooks/useFinancialCache";
 import { useRealtime } from "@/contexts/RealtimeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizePhoneNumber } from "@/lib/phone-utils";
 import { detectarECriarCartoesAutomaticos } from "@/lib/cartao-utils";
 import { useToast } from "@/hooks/use-toast";
 import { useCartaoProcessamento } from "@/hooks/useCartaoProcessamento";
+import { categorizeMovimentacao, logFinancialCalculation } from "@/lib/financial-utils";
 import type { Cartao } from "@/hooks/useCompromissosFinanceiros";
+import type { BaseMovimentacao } from "@/types/financial";
 
-export interface Movimentacao {
-  id: string;
-  valor: number;
-  data: string;
-  categoria?: string;
-  nome?: string;
-  titulo?: string;
-  forma_pagamento?: string;
-  estabelecimento?: string;
-  observacao?: string;
-  tipo_movimento?: string;
-  numero_wpp?: string;
-  instituicao?: string;
-  cartao_final?: string;
-  ultimos_digitos?: string;
-  apelido?: string;
-  origem?: string;
-  recorrente?: boolean;
-  id_transacao?: string;
-  isEntrada: boolean;
+export interface Movimentacao extends BaseMovimentacao {
+  // This interface now extends the centralized BaseMovimentacao
 }
 
 interface MovimentacoesData {
@@ -55,39 +39,9 @@ export const useMovimentacoes = () => {
   const lastFetchRef = useRef<string>('');
   const isFetchingRef = useRef(false);
 
+  // Use centralized categorization logic
   const categorizarMovimentacao = useCallback((item: any): boolean => {
-    // Verificar primeiro o campo tipo_movimento
-    if (item.tipo_movimento) {
-      return item.tipo_movimento.toLowerCase() === 'entrada';
-    }
-
-    // Verificar categoria por palavras-chave
-    const categoria = (item.categoria || '').toLowerCase();
-    const nome = (item.nome || '').toLowerCase();
-    
-    const palavrasEntrada = [
-      'pagamento', 'recebimento', 'entrada', 'salário', 'renda', 
-      'venda', 'depósito', 'pix recebido', 'transferência recebida',
-      'cliente', 'receita'
-    ];
-
-    const palavrasSaida = [
-      'compra', 'gasto', 'saída', 'pagamento de', 'despesa',
-      'aluguel', 'conta', 'supermercado', 'combustível'
-    ];
-
-    // Verificar se é entrada
-    if (palavrasEntrada.some(palavra => categoria.includes(palavra) || nome.includes(palavra))) {
-      return true;
-    }
-
-    // Verificar se é saída
-    if (palavrasSaida.some(palavra => categoria.includes(palavra) || nome.includes(palavra))) {
-      return false;
-    }
-
-    // Default: valores positivos são entradas, negativos são saídas
-    return item.valor > 0;
+    return categorizeMovimentacao(item);
   }, []);
 
   const fetchMovimentacoes = useCallback(async (forceRefresh = false) => {
@@ -137,38 +91,43 @@ export const useMovimentacoes = () => {
 
       let registros: any[] = [];
 
-      // Obter o mês e ano atual
+      // Buscar dados dos últimos 12 meses para cálculos precisos
       const currentDate = new Date();
-      const currentMonth = currentDate.getMonth() + 1; // getMonth() retorna 0-11
-      const currentYear = currentDate.getFullYear();
+      const twelveMonthsAgo = new Date(currentDate);
+      twelveMonthsAgo.setMonth(currentDate.getMonth() - 12);
       
-      // Calcular primeira e última data do mês atual
-      const startOfMonth = new Date(currentYear, currentMonth - 1, 1).toISOString().split('T')[0];
-      const endOfMonth = new Date(currentYear, currentMonth, 0).toISOString().split('T')[0];
+      const startDate = twelveMonthsAgo.toISOString().split('T')[0];
+      const endDate = currentDate.toISOString().split('T')[0];
 
-      // Estratégia 1: Buscar por user_id (dados inseridos manualmente) - apenas do mês atual
+      console.log('🔍 useMovimentacoes - Buscando dados do período:', {
+        startDate,
+        endDate,
+        mesesIncluidos: 12
+      });
+
+      // Estratégia 1: Buscar por user_id (dados inseridos manualmente) - últimos 12 meses
       const { data: registrosPorUserId, error: errorUserId } = await supabase
         .from('registros_financeiros')
         .select('*')
         .eq('user_id', user.id)
         .neq('categoria', 'Saldo Inicial') // Filtrar registros de Saldo Inicial
-        .gte('data', startOfMonth) // Data maior ou igual ao início do mês
-        .lte('data', endOfMonth) // Data menor ou igual ao fim do mês
+        .gte('data', startDate) // Data dos últimos 12 meses
+        .lte('data', endDate) // Data até hoje
         .order('data', { ascending: false });
 
       if (registrosPorUserId && registrosPorUserId.length > 0) {
         registros = [...registrosPorUserId];
       }
 
-      // Estratégia 2: Buscar por numero_wpp - todos os números associados a este user_id (apenas do mês atual)
+      // Estratégia 2: Buscar por numero_wpp - todos os números associados a este user_id (últimos 12 meses)
       const { data: registrosPorWhatsapp } = await supabase
         .from('registros_financeiros')
         .select('*')
         .eq('user_id', user.id) // Buscar por user_id específico ao invés de número
         .neq('categoria', 'Saldo Inicial')
         .not('numero_wpp', 'is', null) // Apenas registros com número de WhatsApp
-        .gte('data', startOfMonth) // Data maior ou igual ao início do mês
-        .lte('data', endOfMonth) // Data menor ou igual ao fim do mês
+        .gte('data', startDate) // Data dos últimos 12 meses
+        .lte('data', endDate) // Data até hoje
         .order('data', { ascending: false });
 
       if (registrosPorWhatsapp && registrosPorWhatsapp.length > 0) {
@@ -193,6 +152,13 @@ export const useMovimentacoes = () => {
         setCache(cacheKey, emptyData, 30000); // 30 seconds for empty results
         return;
       }
+
+      console.log(`📊 Processando ${registros.length} registros financeiros dos últimos 12 meses`);
+      logFinancialCalculation('useMovimentacoes - fetch', { 
+        totalRegistros: registros.length,
+        periodoInicio: startDate,
+        periodoFim: endDate 
+      });
 
       // Processar e categorizar os dados
       const movimentacoesProcessadas: Movimentacao[] = registros.map((item: any) => {

@@ -5,17 +5,20 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatCurrency(value: number): string {
-  // Handle NaN and invalid values
-  if (isNaN(value) || value === null || value === undefined) {
+export function formatCurrency(value: any): string {
+  // Enhanced validation and fallback
+  const safeValue = typeof value === 'number' && !isNaN(value) && isFinite(value) ? value : 0;
+  
+  try {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
-    }).format(0);
+    }).format(safeValue);
+  } catch (error) {
+    console.warn('Error formatting currency:', error);
+    return `R$ ${safeValue.toFixed(2).replace('.', ',')}`;
   }
-  
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value);
 }
+
+// Legacy alias - will be deprecated in favor of formatCurrencySafe from financial-utils
+export const formatCurrencySafe = formatCurrency;

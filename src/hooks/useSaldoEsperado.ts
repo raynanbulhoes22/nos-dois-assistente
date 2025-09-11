@@ -3,6 +3,7 @@ import { useFontesRenda } from "./useFontesRenda";
 import { useGastosFixos } from "./useGastosFixos";
 import { useContasParceladas } from "./useContasParceladas";
 import { useCartoes } from "./useCartoes";
+import { safeNumber, logFinancialCalculation } from "@/lib/financial-utils";
 
 export const useSaldoEsperado = (saldoInicial: number, mes?: number, ano?: number) => {
   const { getTotalRendaAtiva } = useFontesRenda();
@@ -11,22 +12,35 @@ export const useSaldoEsperado = (saldoInicial: number, mes?: number, ano?: numbe
   const { cartoes } = useCartoes();
 
   const saldoEsperado = useMemo(() => {
-    const rendaMensal = getTotalRendaAtiva();
-    const gastoFixoMensal = getTotalGastosFixosAtivos();
-    const parcelasMensal = getTotalParcelasAtivas();
+    const rendaMensal = safeNumber(getTotalRendaAtiva(), 0);
+    const gastoFixoMensal = safeNumber(getTotalGastosFixosAtivos(), 0);
+    const parcelasMensal = safeNumber(getTotalParcelasAtivas(), 0);
+    const saldoInicialSafe = safeNumber(saldoInicial, 0);
     
     // Saldo Esperado = Saldo Inicial + Receitas - (Gastos fixos + Parcelas)
-    const saldoProjetado = saldoInicial + rendaMensal - (gastoFixoMensal + parcelasMensal);
+    const saldoProjetado = saldoInicialSafe + rendaMensal - (gastoFixoMensal + parcelasMensal);
+    const variacao = saldoProjetado - saldoInicialSafe;
+    const percentualVariacao = saldoInicialSafe !== 0 ? 
+      ((saldoProjetado - saldoInicialSafe) / Math.abs(saldoInicialSafe)) * 100 : 0;
     
-    return {
+    const result = {
       saldoProjetado,
       rendaMensal,
       gastoFixoMensal,
       parcelasMensal,
       totalSaidas: gastoFixoMensal + parcelasMensal,
-      variacao: saldoProjetado - saldoInicial,
-      percentualVariacao: saldoInicial !== 0 ? ((saldoProjetado - saldoInicial) / Math.abs(saldoInicial)) * 100 : 0
+      variacao,
+      percentualVariacao: safeNumber(percentualVariacao, 0)
     };
+
+    logFinancialCalculation('useSaldoEsperado', {
+      saldoInicial: saldoInicialSafe,
+      rendaMensal,
+      gastoFixoMensal,
+      parcelasMensal
+    }, result);
+
+    return result;
   }, [saldoInicial, getTotalRendaAtiva, getTotalGastosFixosAtivos, getTotalParcelasAtivas, cartoes]);
 
   return saldoEsperado;

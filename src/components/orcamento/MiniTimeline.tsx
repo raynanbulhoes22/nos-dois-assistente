@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { safeNumber } from "@/lib/financial-utils";
 
 interface TimelineItem {
   mes: number;
@@ -114,7 +115,7 @@ export const MiniTimeline = ({
                         previsao.status === 'quase_negativo' ? 'text-critical' :
                         previsao.status === 'deficit' ? 'text-error' : 'text-neutral'
                       )}>
-                        {previsao.saldoProjetado.toLocaleString('pt-BR', { 
+                        {safeNumber(previsao.saldoProjetado, 0).toLocaleString('pt-BR', { 
                           style: 'currency', 
                           currency: 'BRL' 
                         })}
@@ -139,14 +140,14 @@ export const MiniTimeline = ({
                          previsao.status === 'deficit' ? '🔴 Déficit' : '⚪ Sem dados'}
                       </span>
                     </div>
-                    {previsao.receitas > 0 && (
-                      <div className="flex justify-between gap-3">
-                        <span className="text-muted-foreground">Disponível:</span>
-                        <span className="font-medium text-xs">
-                          {((previsao.saldoProjetado / previsao.receitas) * 100).toFixed(1)}% da renda
-                        </span>
-                      </div>
-                    )}
+                     {safeNumber(previsao.receitas, 0) > 0 && (
+                       <div className="flex justify-between gap-3">
+                         <span className="text-muted-foreground">Disponível:</span>
+                         <span className="font-medium text-xs">
+                           {((safeNumber(previsao.saldoProjetado, 0) / safeNumber(previsao.receitas, 1)) * 100).toFixed(1)}% da renda
+                         </span>
+                       </div>
+                     )}
                   </div>
                   {/* Arrow */}
                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-border"></div>

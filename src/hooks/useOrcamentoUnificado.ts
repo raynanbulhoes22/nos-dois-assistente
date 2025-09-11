@@ -201,7 +201,8 @@ export const useOrcamentoUnificado = (mes?: number, ano?: number) => {
           timelineMeses.push({
             mes: mesTimeline,
             ano: anoTimeline,
-            saldo: i <= 0 ? saldoAtual : saldoProjetado,
+            saldoProjetado: i <= 0 ? saldoAtual : saldoProjetado,
+            receitas: totalRendaAtiva,
             status,
             isCurrent: i === 0
           });

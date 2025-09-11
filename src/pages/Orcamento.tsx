@@ -273,13 +273,19 @@ export const Orcamento = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <MiniTimeline 
-            previsoes={timelineMeses} 
-            currentMonth={mesAtual}
-            currentYear={anoAtual}
-            onMonthSelect={(mes, ano) => navegarMes(mes > mesAtual ? 'proximo' : 'anterior')}
-            getMesNome={getMesNome}
-          />
+          {timelineMeses.length > 0 ? (
+            <MiniTimeline 
+              previsoes={timelineMeses} 
+              currentMonth={mesAtual}
+              currentYear={anoAtual}
+              onMonthSelect={(mes, ano) => navegarMes(mes > mesAtual ? 'proximo' : 'anterior')}
+              getMesNome={getMesNome}
+            />
+          ) : (
+            <div className="flex justify-center py-8">
+              <p className="text-muted-foreground">Carregando timeline...</p>
+            </div>
+          )}
         </CardContent>
       </Card>
 

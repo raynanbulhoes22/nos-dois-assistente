@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,17 +8,20 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Wallet, Edit2, TrendingUp, TrendingDown, Plus, AlertCircle, Minus, Target, Clock, DollarSign, Info } from 'lucide-react';
 import { useOrcamentos } from '@/hooks/useOrcamentos';
-import { useFinancialStats } from '@/hooks/useFinancialStats';
 import { useAuth } from '@/hooks/useAuth';
-import { useSaldoEsperado } from "@/hooks/useSaldoEsperado";
 import { useSaldoInicial } from "@/hooks/useSaldoInicial";
 import { useMovimentacoes } from "@/hooks/useMovimentacoes";
 import { useGastosFixos } from "@/hooks/useGastosFixos";
 import { useContasParceladas } from "@/hooks/useContasParceladas";
+import { useFontesRenda } from "@/hooks/useFontesRenda";
+import { useCompromissosFinanceiros } from "@/hooks/useCompromissosFinanceiros";
 import { supabase } from '@/integrations/supabase/client';
 import { recalcularSaldosEmCascata } from "@/lib/saldo-utils";
 import { useToast } from '@/hooks/use-toast';
 import { CardDetailModal } from "./CardDetailModal";
+import { calcularSaldoMes } from "@/lib/saldo-calculation";
+import { safeNumber, formatCurrencySafe } from "@/lib/financial-utils";
+import type { FinancialPeriod } from "@/types/financial";
 
 interface SaldoInicialCardProps {
   mes: number;
@@ -28,7 +31,6 @@ interface SaldoInicialCardProps {
 export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const { user } = useAuth();
   const { getOrcamentoByMesAno, updateOrcamento, createOrcamento, refetch } = useOrcamentos();
-  const { saldoInicial, saldoComputado, saldoAtual } = useFinancialStats();
   const { toast } = useToast();
   
   // Hook para garantir continuidade automática dos saldos
@@ -39,14 +41,17 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   const [saldoInicialFromDB, setSaldoInicialFromDB] = useState<number>(0);
   const [saldoAtualComputado, setSaldoAtualComputado] = useState<number>(0);
   const [activeDetailModal, setActiveDetailModal] = useState<string | null>(null);
+  const [isCalculating, setIsCalculating] = useState(false);
   
-  // Hook para calcular saldo esperado (usando saldo inicial como base)
-  const saldoEsperado = useSaldoEsperado(saldoInicialFromDB);
-  
-  // Hooks para dados dos modais
+  // Hooks para dados dos modais - com period filtering
   const { movimentacoes } = useMovimentacoes();
-  const { gastosFixos } = useGastosFixos();
-  const { contas } = useContasParceladas();
+  const { fontes, getTotalRendaAtiva } = useFontesRenda();
+  const { gastosFixos, getTotalGastosFixosAtivos } = useGastosFixos();
+  const { contas, getTotalParcelasAtivas } = useContasParceladas();
+  const { compromissos } = useCompromissosFinanceiros();
+  
+  // Criar período financeiro
+  const period: FinancialPeriod = { mes, ano };
 
   const orcamento = getOrcamentoByMesAno(mes, ano);
   // Usar o saldo dos registros financeiros em vez do orçamento
@@ -75,41 +80,28 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
     buscarSaldoInicial();
   }, [user, mes, ano]);
 
-  // Calcular saldo atual corretamente baseado no saldo inicial dos registros financeiros
+  // Calcular saldo atual usando a função centralizada
   useEffect(() => {
     const calcularSaldoAtual = async () => {
-      if (!user) return;
+      if (!user || isCalculating) return;
       
-      const primeiroDiaMes = new Date(ano, mes - 1, 1);
-      const ultimoDiaMes = new Date(ano, mes, 0);
-      
-      // Buscar todas as movimentações do mês (exceto saldo inicial)
-      const { data: movimentacoes, error } = await supabase
-        .from('registros_financeiros')
-        .select('valor, tipo_movimento')
-        .eq('user_id', user.id)
-        .neq('categoria', 'Saldo Inicial')
-        .gte('data', primeiroDiaMes.toISOString().split('T')[0])
-        .lte('data', ultimoDiaMes.toISOString().split('T')[0]);
-      
-      if (!error && movimentacoes) {
-        const totalMovimentacoes = movimentacoes.reduce((total, mov) => {
-          const valor = mov.tipo_movimento === 'entrada' ? mov.valor : -mov.valor;
-          return total + valor;
-        }, 0);
-        
-        setSaldoAtualComputado(saldoInicialFromDB + totalMovimentacoes);
+      setIsCalculating(true);
+      try {
+        const saldoCalculation = await calcularSaldoMes(user.id, period);
+        setSaldoAtualComputado(safeNumber(saldoCalculation.saldoFinal, 0));
+      } catch (error) {
+        console.error('Erro ao calcular saldo atual:', error);
+        setSaldoAtualComputado(0);
+      } finally {
+        setIsCalculating(false);
       }
     };
     
     calcularSaldoAtual();
-  }, [user, mes, ano, saldoInicialFromDB]);
+  }, [user, mes, ano, saldoInicialFromDB, period, isCalculating]);
   
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
+    return formatCurrencySafe(value);
   };
 
   const getStatusBadge = (valor: number) => {
@@ -190,13 +182,46 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
   };
 
   // Calcular evolução corretamente baseado nos dados dos registros financeiros
-  const evolucaoSaldo = saldoAtualComputado - saldoInicialAtual;
+  const evolucaoSaldo = safeNumber(saldoAtualComputado, 0) - safeNumber(saldoInicialFromDB, 0);
   const isPositiveEvolution = evolucaoSaldo >= 0;
   
   // Calcular porcentagem de evolução
-  const evolucaoPercentual = saldoInicialAtual !== 0 
-    ? ((evolucaoSaldo / Math.abs(saldoInicialAtual)) * 100)
+  const evolucaoPercentual = saldoInicialFromDB !== 0 
+    ? ((evolucaoSaldo / Math.abs(saldoInicialFromDB)) * 100)
     : 0;
+
+  // Dados calculados com memoização
+  const saldoEsperadoData = useMemo(() => {
+    // Filtrar dados pelo período específico
+    const fontesAtivas = fontes.filter(f => f.ativa);
+    const gastosAtivos = gastosFixos.filter(g => g.ativo);
+    const contasAtivas = contas.filter(c => {
+      // Verificar se a parcela está ativa no período específico
+      const dataInicio = new Date(c.data_primeira_parcela);
+      const mesInicio = dataInicio.getMonth() + 1;
+      const anoInicio = dataInicio.getFullYear();
+      const mesesDecorridos = (ano - anoInicio) * 12 + (mes - mesInicio);
+      const parcelaAtual = mesesDecorridos + 1;
+      return parcelaAtual > 0 && parcelaAtual <= c.total_parcelas && parcelaAtual > c.parcelas_pagas;
+    });
+
+    const rendaMensal = fontesAtivas.reduce((total, f) => total + safeNumber(f.valor, 0), 0);
+    const gastoFixoMensal = gastosAtivos.reduce((total, g) => total + safeNumber(g.valor_mensal, 0), 0);
+    const parcelasMensal = contasAtivas.reduce((total, c) => total + safeNumber(c.valor_parcela, 0), 0);
+    const totalSaidas = gastoFixoMensal + parcelasMensal;
+    const saldoProjetado = safeNumber(saldoInicialFromDB, 0) + rendaMensal - totalSaidas;
+
+    return {
+      rendaMensal,
+      gastoFixoMensal,
+      parcelasMensal,
+      totalSaidas,
+      saldoProjetado,
+      fontesAtivas,
+      gastosAtivos,
+      contasAtivas
+    };
+  }, [fontes, gastosFixos, contas, saldoInicialFromDB, mes, ano]);
 
   // Preparar dados para os modais
   const getSaldoAtualItems = () => {
@@ -206,47 +231,53 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
     }) || [];
 
     const entradas = currentMonthMovimentacoes
-      .filter(mov => mov.tipo_movimento === 'entrada')
-      .reduce((total, mov) => total + Number(mov.valor), 0);
+      .filter(mov => mov.isEntrada || mov.tipo_movimento === 'entrada')
+      .reduce((total, mov) => total + safeNumber(mov.valor, 0), 0);
     
     const saidas = currentMonthMovimentacoes
-      .filter(mov => mov.tipo_movimento === 'saida')
-      .reduce((total, mov) => total + Number(mov.valor), 0);
+      .filter(mov => !mov.isEntrada && mov.tipo_movimento !== 'entrada')
+      .reduce((total, mov) => total + safeNumber(mov.valor, 0), 0);
 
     return [
-      { label: "Saldo Inicial", value: saldoInicialFromDB || 0, type: "neutral" as const },
-      { label: "Total de Entradas", value: entradas, type: "positive" as const },
-      { label: "Total de Saídas", value: saidas, type: "negative" as const },
+      { label: "Saldo Inicial", value: safeNumber(saldoInicialFromDB, 0), type: "neutral" as const },
+      { label: "Total de Entradas", value: safeNumber(entradas, 0), type: "positive" as const },
+      { label: "Total de Saídas", value: safeNumber(saidas, 0), type: "negative" as const },
     ];
   };
 
   const getSaldoEsperadoItems = () => [
-    { label: "Saldo Inicial", value: saldoInicialFromDB || 0, type: "neutral" as const },
-    { label: "Receitas Fixas", value: saldoEsperado.rendaMensal, type: "positive" as const },
-    { label: "Gastos Fixos", value: saldoEsperado.gastoFixoMensal, type: "negative" as const },
-    { label: "Parcelas", value: saldoEsperado.parcelasMensal, type: "negative" as const },
+    { label: "Saldo Inicial", value: safeNumber(saldoInicialFromDB, 0), type: "neutral" as const },
+    { label: "Receitas Fixas", value: safeNumber(saldoEsperadoData.rendaMensal, 0), type: "positive" as const },
+    { label: "Gastos Fixos", value: safeNumber(saldoEsperadoData.gastoFixoMensal, 0), type: "negative" as const },
+    { label: "Parcelas", value: safeNumber(saldoEsperadoData.parcelasMensal, 0), type: "negative" as const },
   ];
 
   const getSaidasEsperadasItems = () => {
-    const gastosAtivos = gastosFixos?.filter(g => g.ativo) || [];
-    const parcelasAtivas = contas?.filter(p => p.ativa) || [];
+    // Mostrar TODOS os gastos e parcelas, não apenas top N
+    const allItems: Array<{ label: string; value: number; type: "negative" }> = [];
     
-    const topGastos = gastosAtivos
-      .sort((a, b) => Number(b.valor_mensal) - Number(a.valor_mensal))
-      .slice(0, 3);
+    // Adicionar todos os gastos fixos ativos
+    saldoEsperadoData.gastosAtivos.forEach(g => {
+      allItems.push({
+        label: `${g.nome} (Gasto Fixo)`,
+        value: safeNumber(g.valor_mensal, 0),
+        type: "negative" as const
+      });
+    });
     
-    const topParcelas = parcelasAtivas
-      .sort((a, b) => Number(b.valor_parcela) - Number(a.valor_parcela))
-      .slice(0, 2);
+    // Adicionar todas as parcelas ativas no período
+    saldoEsperadoData.contasAtivas.forEach(c => {
+      const parcelaAtual = Math.floor((ano - new Date(c.data_primeira_parcela).getFullYear()) * 12 + 
+                                   (mes - 1 - new Date(c.data_primeira_parcela).getMonth())) + 1;
+      allItems.push({
+        label: `${c.nome || c.descricao} (${parcelaAtual}/${c.total_parcelas})`,
+        value: safeNumber(c.valor_parcela, 0),
+        type: "negative" as const
+      });
+    });
 
-    return [
-      ...topGastos.map(g => ({ label: g.nome, value: Number(g.valor_mensal), type: "negative" as const })),
-      ...topParcelas.map(p => ({ 
-        label: p.descricao, 
-        value: Number(p.valor_parcela), 
-        type: "negative" as const 
-      })),
-    ];
+    // Ordenar por valor (maiores primeiro)
+    return allItems.sort((a, b) => b.value - a.value);
   };
 
   return (
@@ -317,13 +348,13 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
 
         {/* Card 3: Saldo Esperado */}
         <Card 
-          className={`metric-card ${saldoEsperado.saldoProjetado >= saldoInicialFromDB ? 'metric-card-success' : 'metric-card-warning'} cursor-pointer hover:bg-muted/50 transition-colors`}
+          className={`metric-card ${saldoEsperadoData.saldoProjetado >= saldoInicialFromDB ? 'metric-card-success' : 'metric-card-warning'} cursor-pointer hover:bg-muted/50 transition-colors`}
           onClick={() => setActiveDetailModal('saldo-esperado')}
         >
           <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col space-y-1 sm:space-y-2">
               <div className="flex items-center gap-1 sm:gap-2">
-                <div className={`icon-container ${saldoEsperado.saldoProjetado >= saldoInicialFromDB ? 'icon-success' : 'icon-warning'}`}>
+                <div className={`icon-container ${saldoEsperadoData.saldoProjetado >= saldoInicialFromDB ? 'icon-success' : 'icon-warning'}`}>
                   <Target className="h-3 w-3 sm:h-4 sm:w-4" />
                 </div>
                 <span className="text-xs sm:text-sm font-medium text-muted-foreground">
@@ -333,9 +364,9 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
               </div>
               <div className="space-y-1">
                 <p className={`text-lg sm:text-xl lg:text-2xl font-bold ${
-                  saldoEsperado.saldoProjetado >= 0 ? 'text-success' : 'text-error'
+                  saldoEsperadoData.saldoProjetado >= 0 ? 'text-success' : 'text-error'
                 }`}>
-                  {formatCurrency(saldoEsperado.saldoProjetado)}
+                  {formatCurrency(saldoEsperadoData.saldoProjetado)}
                 </p>
                 <div className="flex items-center gap-1">
                   <Clock className="h-3 w-3 text-muted-foreground" />
@@ -344,9 +375,9 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
                   </p>
                   <Badge 
                     variant="outline" 
-                    className={`text-xs px-1 py-0 h-4 ${getStatusBadge(saldoEsperado.saldoProjetado).class}`}
+                    className={`text-xs px-1 py-0 h-4 ${getStatusBadge(saldoEsperadoData.saldoProjetado).class}`}
                   >
-                    {getStatusBadge(saldoEsperado.saldoProjetado).text}
+                    {getStatusBadge(saldoEsperadoData.saldoProjetado).text}
                   </Badge>
                 </div>
               </div>
@@ -372,14 +403,14 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
               </div>
               <div className="space-y-1">
                 <p className="text-lg sm:text-xl lg:text-2xl font-bold text-warning">
-                  {formatCurrency(saldoEsperado.totalSaidas)}
+                  {formatCurrency(saldoEsperadoData.totalSaidas)}
                 </p>
                 <div className="space-y-0.5">
                   <p className="text-xs text-muted-foreground">
-                    Fixos: {formatCurrency(saldoEsperado.gastoFixoMensal)}
+                    Fixos: {formatCurrency(saldoEsperadoData.gastoFixoMensal)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Parcelas: {formatCurrency(saldoEsperado.parcelasMensal)}
+                    Parcelas: {formatCurrency(saldoEsperadoData.parcelasMensal)}
                   </p>
                 </div>
               </div>
@@ -460,18 +491,18 @@ export const SaldoInicialCard = ({ mes, ano }: SaldoInicialCardProps) => {
       <CardDetailModal
         isOpen={activeDetailModal === 'saldo-esperado'}
         onClose={() => setActiveDetailModal(null)}
-        title="Saldo Esperado"
-        value={saldoEsperado.saldoProjetado}
-        explanation="Projeção baseada em receitas e gastos fixos do mês"
+        title={`Saldo Esperado - ${mes}/${ano}`}
+        value={saldoEsperadoData.saldoProjetado}
+        explanation={`Projeção baseada em receitas e gastos fixos para ${mes}/${ano}`}
         items={getSaldoEsperadoItems()}
       />
 
       <CardDetailModal
         isOpen={activeDetailModal === 'saidas-esperadas'}
         onClose={() => setActiveDetailModal(null)}
-        title="Saídas Esperadas"
-        value={saldoEsperado.totalSaidas}
-        explanation="Compromissos fixos e parcelas do mês"
+        title={`Saídas Esperadas - ${mes}/${ano}`}
+        value={saldoEsperadoData.totalSaidas}
+        explanation={`Todos os compromissos fixos e parcelas previstas para ${mes}/${ano}`}
         items={getSaidasEsperadasItems()}
       />
     </TooltipProvider>
